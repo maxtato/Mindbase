@@ -1,0 +1,768 @@
+{
+  "version": 1,
+  "projects": [
+    {
+      "id": "p_3da06053",
+      "workspace": "professional",
+      "mode": "custom",
+      "name": "Amélioration des ventes",
+      "description": "Analyser les raisons des faibles résultats de l'équipe de vente à domicile cette année et définir des actions correctives efficaces.",
+      "objective": "Analyser les raisons des faibles résultats de l'équipe de vente à domicile cette année et définir des actions correctives efficaces.",
+      "context": "Les résultats de vente à domicile de l'équipe cette année sont en deçà des attentes, impactant la performance globale de l'entreprise. Il est nécessaire d'identifier les causes de cette baisse et de mettre en place des solutions adaptées pour remédier à cette situation.",
+      "status": "active",
+      "progress": 0,
+      "currentPriority": "Définir le prochain pas concret pour enclencher le projet proprement.",
+      "nextStep": "Créer une première étape pour transformer l'objectif en plan d'exécution.",
+      "decisions": [],
+      "risks": [],
+      "blockers": [],
+      "actions": [],
+      "steps": [
+        {
+          "id": "s_b4ffb268",
+          "title": "Collecte des données de performance",
+          "description": "Rassembler et organiser toutes les données relatives aux ventes de l'équipe sur l'année en cours.",
+          "status": "in_progress",
+          "order": 1,
+          "priority": "medium",
+          "tasks": [
+            {
+              "title": "Compiler les données de ventes",
+              "description": "Récupérer et consolider les chiffres de ventes mensuels et annuels de chaque vendeur dans un rapport synthétique.",
+              "expected": "Récupérer et consolider les chiffres de ventes mensuels et annuels de chaque vendeur dans un rapport synthétique.",
+              "priority": "medium",
+              "source": "ai",
+              "id": "t_189e8740",
+              "done": false,
+              "status": "in_progress",
+              "order": 1,
+              "blocked": false,
+              "checklist": [
+                {
+                  "id": "cl_1778188493729_0",
+                  "label": "Identifier les sources internes de données de ventes mensuelles et annuelles",
+                  "done": true
+                },
+                {
+                  "id": "cl_1778188493729_1",
+                  "label": "Extraire les données de ventes par vendeur depuis les systèmes informatiques",
+                  "done": true
+                },
+                {
+                  "id": "cl_1778188493729_2",
+                  "label": "Consolider les données extraites dans un fichier unique",
+                  "done": true
+                },
+                {
+                  "id": "cl_1778188493729_3",
+                  "label": "Vérifier l’exactitude et la cohérence des données compilées",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778188493729_4",
+                  "label": "Synthétiser les données en tableaux et graphiques clairs",
+                  "done": false
+                }
+              ],
+              "dueDate": "2026-05-11"
+            },
+            {
+              "title": "Analyser les retours clients",
+              "description": "Collecter et classer les feedbacks clients reçus durant l'année pour identifier d'éventuels points faibles.",
+              "expected": "Collecter et classer les feedbacks clients reçus durant l'année pour identifier d'éventuels points faibles.",
+              "priority": "medium",
+              "source": "ai",
+              "id": "t_bbdf4dfc",
+              "done": false,
+              "status": "todo",
+              "order": 2,
+              "blocked": false,
+              "dueDate": "2026-05-12"
+            },
+            {
+              "title": "Examiner les rapports d'activité",
+              "description": "Recueillir les rapports d’activité des vendeurs pour comprendre les méthodes et fréquences de contact clients.",
+              "expected": "Recueillir les rapports d’activité des vendeurs pour comprendre les méthodes et fréquences de contact clients.",
+              "priority": "medium",
+              "source": "ai",
+              "id": "t_66a574e4",
+              "done": false,
+              "status": "todo",
+              "order": 3,
+              "blocked": false
+            }
+          ]
+        },
+        {
+          "id": "s_9506b192",
+          "title": "Diagnostic des causes",
+          "description": "Identifier précisément les facteurs internes et externes ayant contribué aux faibles résultats.",
+          "status": "todo",
+          "order": 2,
+          "priority": "medium",
+          "tasks": [
+            {
+              "title": "Comparer avec les années précédentes",
+              "description": "Réaliser une analyse comparative des performances actuelles avec celles des années passées pour repérer les écarts.",
+              "expected": "Réaliser une analyse comparative des performances actuelles avec celles des années passées pour repérer les écarts.",
+              "priority": "medium",
+              "source": "ai",
+              "id": "t_9e58b411",
+              "done": false,
+              "status": "todo",
+              "order": 1,
+              "blocked": false,
+              "dueDate": "2026-05-11"
+            },
+            {
+              "title": "Identifier les faiblesses internes",
+              "description": "Mettre en évidence les problématiques liées à la formation, motivation, outils ou organisation de l'équipe.",
+              "expected": "Mettre en évidence les problématiques liées à la formation, motivation, outils ou organisation de l'équipe.",
+              "priority": "medium",
+              "source": "ai",
+              "id": "t_ea9b7671",
+              "done": false,
+              "status": "todo",
+              "order": 2,
+              "blocked": false
+            },
+            {
+              "title": "Évaluer l’environnement externe",
+              "description": "Examiner les éléments du marché ou concurrentiels susceptibles d'avoir impacté les ventes.",
+              "expected": "Examiner les éléments du marché ou concurrentiels susceptibles d'avoir impacté les ventes.",
+              "priority": "medium",
+              "source": "ai",
+              "id": "t_d78e32c6",
+              "done": false,
+              "status": "todo",
+              "order": 3,
+              "blocked": false,
+              "checklist": [
+                {
+                  "id": "cl_1778188468992_0",
+                  "label": "Collecter des données sur l'évolution du marché de la vente à domicile",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778188468992_1",
+                  "label": "Analyser les changements dans le comportement des consommateurs",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778188468992_2",
+                  "label": "Étudier les stratégies et performances des concurrents directs",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778188468992_3",
+                  "label": "Évaluer l'impact des réglementations ou contraintes externes récentes",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778188480021_0",
+                  "label": "Collecter des données récentes sur l'évolution du marché de la vente à domicile",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778188480021_1",
+                  "label": "Analyser les changements dans le comportement des consommateurs ciblés",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778188480021_2",
+                  "label": "Étudier les stratégies et performances des concurrents directs",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778188480021_3",
+                  "label": "Évaluer l'impact des réglementations ou contraintes externes récentes",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778188570156_0",
+                  "label": "Collecter des rapports sectoriels récents sur la vente à domicile",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778188570156_1",
+                  "label": "Analyser les données démographiques et économiques impactant la clientèle",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778188570156_2",
+                  "label": "Identifier les nouveaux concurrents et leurs parts de marché",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778188570156_3",
+                  "label": "Recueillir les informations sur les régulations impactant le secteur",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778188570156_4",
+                  "label": "Synthétiser les résultats pour en extraire des conclusions clés",
+                  "done": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "s_2eb90778",
+          "title": "Définition des actions correctives",
+          "description": "Proposer des mesures concrètes pour améliorer les performances commerciales de l'équipe.",
+          "status": "todo",
+          "order": 3,
+          "priority": "medium",
+          "tasks": [
+            {
+              "title": "Élaborer un plan de formation",
+              "description": "Rédiger un programme de formation ciblé pour répondre aux lacunes identifiées.",
+              "expected": "Rédiger un programme de formation ciblé pour répondre aux lacunes identifiées.",
+              "priority": "medium",
+              "source": "ai",
+              "id": "t_f84b90e1",
+              "done": false,
+              "status": "todo",
+              "order": 1,
+              "blocked": false,
+              "dueDate": "2026-05-15"
+            },
+            {
+              "title": "Optimiser l'organisation commerciale",
+              "description": "Proposer des ajustements dans la planification des visites et la gestion des leads.",
+              "expected": "Proposer des ajustements dans la planification des visites et la gestion des leads.",
+              "priority": "medium",
+              "source": "ai",
+              "id": "t_d2fb55c4",
+              "done": false,
+              "status": "todo",
+              "order": 2,
+              "blocked": false
+            },
+            {
+              "title": "Mettre en place un suivi régulier",
+              "description": "Instaurer des indicateurs et réunions périodiques pour suivre l'avancement des actions correctives.",
+              "expected": "Instaurer des indicateurs et réunions périodiques pour suivre l'avancement des actions correctives.",
+              "priority": "medium",
+              "source": "ai",
+              "id": "t_4610e561",
+              "done": false,
+              "status": "todo",
+              "order": 3,
+              "blocked": false
+            }
+          ]
+        },
+        {
+          "id": "s_d6b8a273",
+          "title": "Mise en œuvre et suivi",
+          "description": "Déployer les actions définies et assurer leur suivi pour garantir l'amélioration des résultats.",
+          "status": "todo",
+          "order": 4,
+          "priority": "medium",
+          "tasks": [
+            {
+              "title": "Lancer les formations",
+              "description": "Organiser les sessions de formation avec tous les vendeurs et assurer leur participation effective.",
+              "expected": "Organiser les sessions de formation avec tous les vendeurs et assurer leur participation effective.",
+              "priority": "medium",
+              "source": "ai",
+              "id": "t_6f2f051c",
+              "done": false,
+              "status": "todo",
+              "order": 1,
+              "blocked": false
+            },
+            {
+              "title": "Modifier les processus commerciaux",
+              "description": "Implémenter les nouvelles procédures dans l'organisation et veiller à leur respect.",
+              "expected": "Implémenter les nouvelles procédures dans l'organisation et veiller à leur respect.",
+              "priority": "medium",
+              "source": "ai",
+              "id": "t_a3d88dd4",
+              "done": false,
+              "status": "todo",
+              "order": 2,
+              "blocked": false
+            },
+            {
+              "title": "Suivre les indicateurs clés",
+              "description": "Collecter régulièrement les données de performance post-implémentation pour mesurer l'efficacité des actions.",
+              "expected": "Collecter régulièrement les données de performance post-implémentation pour mesurer l'efficacité des actions.",
+              "priority": "medium",
+              "source": "ai",
+              "id": "t_e98778d8",
+              "done": false,
+              "status": "todo",
+              "order": 3,
+              "blocked": false
+            }
+          ]
+        }
+      ],
+      "activity": [],
+      "updatedAt": "2026-05-07T21:19:13.181Z",
+      "color": "#4C7EFF",
+      "projectType": "execution",
+      "subcategory": "strategie",
+      "subcategoryColor": "#4C7EFF",
+      "priority": "medium",
+      "isCustomSubcategory": false,
+      "statusMode": "auto",
+      "files": [],
+      "people": [],
+      "teams": [],
+      "teamMessages": []
+    },
+    {
+      "id": "p_d3649335",
+      "workspace": "personal",
+      "mode": "assisted",
+      "name": "Road trip USA",
+      "description": "Ce projet vise à préparer un road trip aux USA en tenant compte d'exigences fortes liées au budget et au calendrier. Il inclut la gestion des financements, les démarches administratives et la planification logistique du trajet et des hébergements. Les enjeux principaux consistent à optimiser les coûts tout en garantissant la conformité des documents de voyage et la prestation des réservations. La réussite dépend d'une coordination efficace entre les intervenants et du respect des échéances pour éviter des surcoûts ou annulations.",
+      "objective": "Organiser un road trip aux USA en optimisant logistique, budget et itinéraire précis.",
+      "context": "Le road trip doit respecter un budget maîtrisé et des délais stricts liés aux démarches administratives. La coordination des parties prenantes est cruciale pour valider le financement et structurer le voyage. La planification doit être rigoureuse tout en offrant une certaine flexibilité dans le calendrier global.",
+      "status": "preparing",
+      "progress": 11,
+      "currentPriority": "Une étape clé, la réservation du véhicule, est déjà validée. Cependant, une grande majorité des tâches restent en cours, avec plusieurs retards importants notamment sur le budget, les hébergements et l'itinéraire. Aucune difficulté de blocage majeure n'est signalée pour l'instant.",
+      "nextStep": "Prioriser l'estimation complète du budget pour sécuriser le financement\nEngager rapidement les démarches administratives nécessaires aux visas et assurances\nConfirmer et réserver les hébergements pour garantir disponibilité et tarifs\nFinaliser l'itinéraire détaillé pour optimiser temps de trajet et étapes",
+      "decisions": [],
+      "risks": [
+        {
+          "id": "risk_ai_1778240403258_0",
+          "title": "Retard sur l'estimation budgétaire critique",
+          "severity": "medium",
+          "mitigation": "Prioriser l'estimation du budget pour garantir la validation des fonds nécessaires.",
+          "status": "open"
+        },
+        {
+          "id": "risk_ai_1778240403258_1",
+          "title": "Préparations administratives non engagées à temps",
+          "severity": "medium",
+          "mitigation": "Démarrer rapidement les démarches pour visas, assurances et documents obligatoires.",
+          "status": "open"
+        },
+        {
+          "id": "risk_ai_1778240403258_2",
+          "title": "Itinéraire et hébergements non bloqués à temps",
+          "severity": "medium",
+          "mitigation": "Confirmer et réserver rapidement pour assurer disponibilité et tarifs avantageux.",
+          "status": "open"
+        }
+      ],
+      "blockers": [],
+      "actions": [],
+      "steps": [
+        {
+          "id": "s_4d2cb961",
+          "title": "Budget et financement",
+          "description": "Planification et gestion des coûts du projet.",
+          "status": "in_progress",
+          "order": 1,
+          "priority": "high",
+          "tasks": [
+            {
+              "id": "t_d410056c",
+              "title": "Estimer le budget global du road trip",
+              "done": false,
+              "status": "waiting",
+              "priority": "high",
+              "expected": "Établir un budget détaillé chiffré, incluant transport, hébergement, repas et activités, avec un total global validé pour la planification du road trip aux USA.",
+              "order": 1,
+              "source": "manual",
+              "blocked": false,
+              "realization": "Location du camping-car estimée à 3200 €, poste majeur du budget transport.\nCoût estimé de location du camping-car : 3200 €\nC'est fait",
+              "statusChangedAt": "2026-05-06T18:54:10.001Z",
+              "dueDate": "2026-05-16"
+            },
+            {
+              "id": "t_27e2a990",
+              "title": "Rechercher les options de financement ou économies possibles",
+              "done": false,
+              "status": "waiting",
+              "priority": "medium",
+              "expected": "Identifier sources de financement, aides ou plans d'économies pour le financement du road trip.",
+              "order": 2,
+              "source": "manual",
+              "blocked": false,
+              "dueDate": "2026-05-01",
+              "checklist": [
+                {
+                  "id": "cl_1778234188189_0",
+                  "label": "Lister les aides financières publiques accessibles au projet de voyage",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778234188189_1",
+                  "label": "Comparer les offres de cartes de crédit ou fidélité avec avantages voyage",
+                  "done": false
+                }
+              ]
+            },
+            {
+              "id": "t_284ea980",
+              "title": "Établir un plan de paiement des principales réservations",
+              "done": false,
+              "status": "in_progress",
+              "priority": "medium",
+              "expected": "Coordonner les dates et montants des paiements des hébergements, voitures, activités.",
+              "order": 3,
+              "source": "manual",
+              "blocked": false,
+              "dueDate": "2026-05-14",
+              "checklist": [
+                {
+                  "id": "cl_1778239761500_0",
+                  "label": "Lister toutes les réservations principales avec dates et montants",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778239761500_1",
+                  "label": "Créer un calendrier des échéances de paiement pour chaque réservation",
+                  "done": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "s_3a01179b",
+          "title": "Préparation administrative",
+          "description": "Toutes les démarches administratives nécessaires au bon déroulement du voyage.",
+          "status": "in_progress",
+          "order": 2,
+          "priority": "high",
+          "tasks": [
+            {
+              "id": "t_c3de8e5c",
+              "title": "Vérifier les assurances adaptées au voyage",
+              "done": false,
+              "status": "waiting",
+              "priority": "medium",
+              "expected": "Choisir et souscrire une assurance voyage et une assurance auto couvrant la totalité du séjour et les spécificités du road trip aux USA, en fournissant les justificatifs.",
+              "order": 1,
+              "source": "manual",
+              "blocked": false,
+              "checklist": [
+                {
+                  "id": "cl_1778140130977_0",
+                  "label": "Lister les besoins spécifiques d'assurance voyage et auto",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778140130977_1",
+                  "label": "Comparer les offres d'assurance en ligne",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778140130977_2",
+                  "label": "Vérifier les garanties et exclusions",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778140130977_3",
+                  "label": "Contacter les assureurs pour clarifications",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778140130977_4",
+                  "label": "Choisir la meilleure offre selon budget et couverture",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778140130977_5",
+                  "label": "Souscrire à l'assurance choisie",
+                  "done": false
+                }
+              ],
+              "dueDate": "2026-05-01"
+            },
+            {
+              "id": "t_563d3e9f",
+              "title": "Obtenir ou renouveler les documents de voyage nécessaires",
+              "done": false,
+              "status": "todo",
+              "priority": "medium",
+              "expected": "Obtenir tous les documents nécessaires comme passeport valide, visa et permis de conduire international.",
+              "order": 2,
+              "source": "manual",
+              "blocked": false,
+              "dueDate": "2026-05-20",
+              "checklist": [
+                {
+                  "id": "cl_1778234996156_0",
+                  "label": "Prendre rendez-vous à la mairie ou préfecture pour renouvellement passeport",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778234996156_1",
+                  "label": "Remplir et envoyer la demande de visa sur le site officiel",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778234996156_2",
+                  "label": "Faire une demande de permis de conduire international en préfecture",
+                  "done": false
+                }
+              ]
+            },
+            {
+              "id": "t_5f4ccc58",
+              "title": "S'informer sur les règles de conduite et permis requis",
+              "done": false,
+              "status": "in_progress",
+              "priority": "medium",
+              "expected": "Lister les règles de conduite importantes et vérifier si un permis international est nécessaire.",
+              "order": 3,
+              "source": "manual",
+              "blocked": false,
+              "realization": "Permis Francias suffisant",
+              "dueDate": "2026-05-29",
+              "checklist": [
+                {
+                  "id": "cl_1778234960955_0",
+                  "label": "Consulter le site officiel de l'administration routière américaine",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778234960955_1",
+                  "label": "Vérifier la liste des règles de conduite spécifiques à l'État concerné",
+                  "done": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "s_a196e691",
+          "title": "Transport et hébergement",
+          "description": "Réserver et organiser le moyen de transport et le logement pendant le road trip.",
+          "status": "in_progress",
+          "order": 3,
+          "priority": "medium",
+          "tasks": [
+            {
+              "id": "t_7ad075b4",
+              "title": "Choisir et réserver le véhicule adapté au road trip",
+              "done": true,
+              "status": "done",
+              "priority": "medium",
+              "expected": "Sélectionner un véhicule fiable et adapté et effectuer la réservation.",
+              "order": 1,
+              "source": "manual",
+              "blocked": false,
+              "realization": "Précision : le road trip se fera en camping-car avec la femme et le fils de l'utilisateur, à prendre en compte pour la réservation du véhicule.\nLe camping car a été reservé",
+              "completionDetails": "Le camping car a été reservé",
+              "completionSource": "manual",
+              "completedAt": "2026-05-06T19:35:33.537Z"
+            },
+            {
+              "id": "t_c59aedce",
+              "title": "Planifier et réserver les hébergements sur le parcours",
+              "done": false,
+              "status": "in_progress",
+              "priority": "high",
+              "expected": "Sélectionner et réserver les hébergements adaptés à chaque étape de l’itinéraire en respectant le budget et garantissant disponibilité et confort.",
+              "order": 2,
+              "source": "manual",
+              "blocked": false,
+              "realization": "Prise en compte de la préférence pour campings avec accès à l'eau et électricité pour garantir le confort lors des nuits en camping-car.",
+              "checklist": [
+                {
+                  "id": "cl_1778140674922_0",
+                  "label": "Lister les étapes clés avec dates et lieux précis",
+                  "done": true
+                },
+                {
+                  "id": "cl_1778140674922_1",
+                  "label": "Rechercher hébergements disponibles selon critères et budget",
+                  "done": true
+                },
+                {
+                  "id": "cl_1778140674922_2",
+                  "label": "Comparer tarifs et avis des hébergements sélectionnés",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778140674922_3",
+                  "label": "Réserver les hébergements adaptés pour chaque étape",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778140674922_4",
+                  "label": "Confirmer les réservations et conserver les justificatifs",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778235039050_0",
+                  "label": "Lister précisément les étapes du parcours avec dates et lieux",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778235039050_1",
+                  "label": "Réserver les hébergements retenus correspondant aux préférences",
+                  "done": false
+                }
+              ],
+              "dueDate": "2026-05-28"
+            },
+            {
+              "id": "t_6e2279a2",
+              "title": "Définir un itinéraire détaillé pour le road trip",
+              "done": false,
+              "status": "in_progress",
+              "priority": "medium",
+              "expected": "Produire un itinéraire détaillé comprenant les étapes principales, le kilométrage estimé, les temps de trajet et les possibles arrêts.",
+              "order": 3,
+              "source": "manual",
+              "blocked": false,
+              "realization": "Document généré : Itinéraire détaillé road trip USA - 4 au 21 juillet\nLancement de la planification détaillée de l'itinéraire du 4 au 21 juillet, intégrant les parcs nationaux.\nParcs prioritaires à visiter : Grand Canyon, Monument Valley, Bryce Canyon, Zion et Yosemite.\nProposé un calendrier détaillé sur environ 15 jours intégrant Grand Canyon, Monument Valley, Bryce Canyon, Zion, Yosemite, Los Angeles, Las Vegas et San Francisco.\nAjout du calendrier jour par jour du 4 au 21 juillet incluant parcs nationaux, villes et trajets importants.\nCalendrier jour par jour détaillé fourni : de Los Angeles le 4 juillet à retour le 21 juillet, avec Grand Canyon, Monument Valley, Bryce Canyon, Zion, Yosemite, Las Vegas, San Francisco.\nPréférence campings avec accès à l'eau et à l'électricité prise en compte dans la planification.\nC'est fait",
+              "statusChangedAt": "2026-05-06T19:14:11.024Z",
+              "checklist": [
+                {
+                  "id": "cl_b176b4d6",
+                  "label": "Préciser la durée des arrêts dans chaque parc national",
+                  "done": false
+                },
+                {
+                  "id": "cl_52bf0fb0",
+                  "label": "Définir les types d’activités (randonnée, visites, détente, etc.)",
+                  "done": false
+                },
+                {
+                  "id": "cl_3243b402",
+                  "label": "Confirmer les préférences pour les hébergements (camping, hôtels, autres)",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778159154155_0",
+                  "label": "Collecter les destinations incontournables du road trip",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778159154155_1",
+                  "label": "Estimer les distances et durées entre chaque étape",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778159154155_2",
+                  "label": "Identifier les points d'intérêt et arrêts potentiels",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778159154155_3",
+                  "label": "Tracer l'itinéraire sur une carte numérique",
+                  "done": false
+                },
+                {
+                  "id": "cl_1778159154155_4",
+                  "label": "Vérifier la cohérence avec hébergements réservés",
+                  "done": false
+                }
+              ],
+              "dueDate": "2026-05-01"
+            }
+          ]
+        }
+      ],
+      "activity": [
+        {
+          "id": "act_3fd29911",
+          "date": "2026-05-07T10:33:04.776Z",
+          "title": "Tâche avancée",
+          "detail": "Définir un itinéraire détaillé pour le road trip · C'est fait · Checklist encore incomplète",
+          "tone": "neutral"
+        },
+        {
+          "id": "act_8c512799",
+          "date": "2026-05-07T10:32:15.637Z",
+          "title": "Tâche avancée",
+          "detail": "Estimer le budget global du road trip · C'est fait · Checklist encore incomplète",
+          "tone": "neutral"
+        },
+        {
+          "id": "act_7579148f",
+          "date": "2026-05-06T19:35:33.537Z",
+          "title": "Tâche terminée",
+          "detail": "Choisir et réserver le véhicule adapté au road trip · Le camping car a été reservé",
+          "tone": "success"
+        }
+      ],
+      "updatedAt": "2026-05-08T21:04:19.434Z",
+      "color": "#0EA5E9",
+      "projectType": "execution",
+      "subcategory": "voyage",
+      "subcategoryColor": "#0EA5E9",
+      "priority": "medium",
+      "isCustomSubcategory": false,
+      "statusMode": "manual",
+      "files": [],
+      "people": [],
+      "teams": [],
+      "teamMessages": [],
+      "statusSettings": {
+        "task": {
+          "todo": {
+            "systemStatus": "todo",
+            "label": "À faire",
+            "color": "#64748B",
+            "enabled": true
+          },
+          "in_progress": {
+            "systemStatus": "in_progress",
+            "label": "En cours",
+            "color": "#F59E0B",
+            "enabled": true
+          },
+          "waiting": {
+            "systemStatus": "waiting",
+            "label": "En attente",
+            "color": "#3B82F6",
+            "enabled": true
+          },
+          "blocked": {
+            "systemStatus": "blocked",
+            "label": "Bloquée",
+            "color": "#EF4444",
+            "enabled": true
+          },
+          "done": {
+            "systemStatus": "done",
+            "label": "Terminée",
+            "color": "#22C55E",
+            "enabled": true
+          }
+        },
+        "customTask": [],
+        "step": {
+          "todo": {
+            "systemStatus": "todo",
+            "label": "À faire",
+            "color": "#64748B",
+            "enabled": true
+          },
+          "in_progress": {
+            "systemStatus": "in_progress",
+            "label": "En cours",
+            "color": "#F59E0B",
+            "enabled": true
+          },
+          "waiting": {
+            "systemStatus": "waiting",
+            "label": "En attente",
+            "color": "#3B82F6",
+            "enabled": true
+          },
+          "done": {
+            "systemStatus": "done",
+            "label": "Terminée",
+            "color": "#22C55E",
+            "enabled": true
+          }
+        },
+        "customStep": []
+      }
+    }
+  ]
+}

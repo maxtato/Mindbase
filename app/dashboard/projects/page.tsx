@@ -1,0 +1,42 @@
+import Link from "next/link";
+import { Topbar } from "@/components/layout/topbar";
+import { ProjectsGrid } from "@/components/projects/projects-grid";
+import { getProjectsForWorkspace } from "@/lib/project-store";
+import { getWorkspace, workspaceTheme } from "@/lib/workspace";
+
+export default async function ProjectsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ workspace?: string }>;
+}) {
+  const sp = await searchParams;
+  const workspace = getWorkspace(sp.workspace);
+  const theme = workspaceTheme[workspace];
+  const qs = `workspace=${workspace}`;
+  const projects = await getProjectsForWorkspace(workspace);
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      <Topbar
+        title="Projets"
+        workspace={workspace}
+        action={
+          <Link
+            href={`/dashboard/projects/new?${qs}`}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap"
+            style={{ background: theme.accent, color: "#fff" }}
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+              <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+            Nouveau projet
+          </Link>
+        }
+      />
+
+      <div className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-8 py-6 max-w-[1100px] mx-auto w-full">
+        <ProjectsGrid projects={projects} workspace={workspace} qs={qs} />
+      </div>
+    </div>
+  );
+}
