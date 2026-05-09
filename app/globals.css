@@ -1214,6 +1214,64 @@ summary {
   box-shadow: var(--mb-shadow-float);
 }
 
+/* Task detail drawer — responsive sizing.
+   Desktop: centered modal with max dimensions.
+   Mobile: respects iPhone safe-areas (notch + home indicator) and the
+   fixed bottom nav (~60px) so the drawer does not get clipped. */
+.mb-task-drawer {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(1220px, calc(100vw - 32px));
+  height: min(820px, calc(100dvh - 40px));
+  border-radius: 20px;
+}
+
+@media (max-width: 768px) {
+  .mb-task-drawer {
+    /* Anchor with explicit top/bottom rather than centering: it lets us
+       respect safe-areas and the bottom nav cleanly. */
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
+    left: calc(env(safe-area-inset-left, 0px) + 12px);
+    right: calc(env(safe-area-inset-right, 0px) + 12px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
+    transform: none;
+    width: auto;
+    height: auto;
+    max-height: none;
+    border-radius: 18px;
+  }
+}
+
+/* Sub-panel that opens above the task drawer (Date, Person, Files, etc.).
+   Same iPhone safe-area handling. */
+.mb-task-subpanel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 768px) {
+  .mb-task-subpanel {
+    top: calc(env(safe-area-inset-top, 0px) + 16px);
+    left: calc(env(safe-area-inset-left, 0px) + 16px);
+    right: calc(env(safe-area-inset-right, 0px) + 16px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
+    transform: none;
+    width: auto !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .mb-task-subpanel-discussion {
+    /* Discussion panel keeps flex layout so the input sticks to the bottom. */
+    display: flex;
+    flex-direction: column;
+  }
+}
+
 .mb-project-pilotbar-actions-secondary {
   display: flex;
   align-items: center;

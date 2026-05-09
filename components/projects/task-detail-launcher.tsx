@@ -219,14 +219,8 @@ function TaskDetailModal({
         role="dialog"
         aria-modal="true"
         aria-label={task.title}
-        className="mb-modal-surface rounded-[20px] overflow-hidden"
+        className="mb-modal-surface mb-task-drawer rounded-[20px] overflow-hidden"
         style={{
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "min(1180px, calc(100vw - 32px))",
-          maxHeight: "min(880px, calc(100dvh - 40px))",
           display: "flex",
           flexDirection: "column",
           zIndex: 80,

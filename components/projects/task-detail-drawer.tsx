@@ -391,14 +391,8 @@ function TaskDetailDrawerInner({
         role="dialog"
         aria-modal="true"
         aria-label={`Détails de la tâche ${task.title}`}
-        className="mb-modal-surface overflow-hidden"
+        className="mb-modal-surface mb-task-drawer overflow-hidden"
         style={{
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          height: "min(820px, calc(100dvh - 40px))",
-          width: "min(1220px, calc(100vw - 32px))",
           zIndex: 60,
           display: "flex",
           flexDirection: "column",
@@ -1235,12 +1229,8 @@ function TaskDetailPanel({
         }}
       />
       <div
-        className="mb-modal-surface rounded-2xl p-4"
+        className={`mb-modal-surface mb-task-subpanel rounded-2xl p-4 ${isDiscussion ? "mb-task-subpanel-discussion" : ""}`}
         style={{
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
           width: isDiscussion ? "min(640px, calc(100vw - 32px))" : "min(520px, calc(100vw - 32px))",
           height: isDiscussion ? "min(620px, calc(100dvh - 64px))" : undefined,
           maxHeight: isDiscussion ? undefined : "min(560px, calc(100dvh - 64px))",
