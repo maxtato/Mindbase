@@ -301,12 +301,20 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
               rows={taskStatuses}
               accentColor={theme.accent}
               onChange={setTaskStatuses}
+              statusOrder={TASK_STATUS_ORDER}
+              defaultLabels={taskStatusLabels}
+              defaultColors={TASK_STATUS_DEFAULT_COLORS}
+              scope="task"
             />
             <CreationStatusEditor
               title="Étapes"
               rows={stepStatuses}
               accentColor={theme.accent}
               onChange={setStepStatuses}
+              statusOrder={STEP_STATUS_ORDER}
+              defaultLabels={stepStatusLabels}
+              defaultColors={STEP_STATUS_DEFAULT_COLORS}
+              scope="step"
             />
 
             {state.message && (
@@ -374,56 +382,170 @@ function CreationStatusEditor<TStatus extends string>({
   rows,
   accentColor,
   onChange,
+  statusOrder,
+  defaultLabels,
+  defaultColors,
+  scope,
 }: {
   title: string;
   rows: Array<EditableStatus<TStatus>>;
   accentColor: string;
   onChange: (rows: Array<EditableStatus<TStatus>>) => void;
+  statusOrder: TStatus[];
+  defaultLabels: Record<TStatus, string>;
+  defaultColors: Record<TStatus, string>;
+  scope: "task" | "step";
 }) {
   function updateRow(id: string, patch: Partial<EditableStatus<TStatus>>) {
     onChange(rows.map((row) => (row.id === id ? { ...row, ...patch } : row)));
   }
 
-  // Liste minimaliste : un statut par ligne, juste nom + couleur. Le mapping
-  // vers la catégorie système reste interne (pré-rempli sur les statuts de
-  // base) pour que le Kanban garde sa cohérence — l'utilisateur n'a jamais
-  // à s'en soucier.
+  function removeRow(id: string) {
+    if (rows.length <= 1) return;
+    onChange(rows.filter((row) => row.id !== id));
+  }
+
+  function addCustomStatus() {
+    const fallback = statusOrder[0];
+    onChange([
+      ...rows,
+      {
+        id: `${scope}-custom-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        systemStatus: fallback,
+        label: "Nouveau statut",
+        color: defaultColors[fallback],
+        base: false,
+      },
+    ]);
+  }
+
+  function restoreBaseStatus(status: TStatus) {
+    onChange([
+      ...rows,
+      {
+        id: `${scope}-${status}`,
+        systemStatus: status,
+        label: defaultLabels[status],
+        color: defaultColors[status],
+        base: true,
+      },
+    ]);
+  }
+
+  const hiddenBaseStatuses = statusOrder.filter(
+    (status) => !rows.some((row) => row.base && row.systemStatus === status),
+  );
+
   return (
     <div className="rounded-2xl p-4" style={{ background: surface.s3, border: `1px solid ${surface.borderSubtle}` }}>
-      <p className="mb-3 text-xs font-bold" style={{ color: text.primary }}>
-        {title}
-      </p>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <p className="text-xs font-bold" style={{ color: text.primary }}>
+          {title}
+        </p>
+        <button
+          type="button"
+          onClick={addCustomStatus}
+          className="shrink-0 rounded-xl px-3 py-1.5 text-[11px] font-semibold"
+          style={{ background: accentColor, color: "#FFFFFF", border: "none", cursor: "pointer" }}
+        >
+          + Ajouter
+        </button>
+      </div>
 
       <div className="flex flex-col gap-2">
         {rows.map((row) => (
           <div
             key={row.id}
-            className="flex items-center gap-2 rounded-xl px-3 py-2"
+            className="rounded-xl p-2.5"
             style={{ background: surface.s1, border: `1px solid ${surface.borderSubtle}` }}
           >
-            <label
-              className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-              style={{ background: row.color, cursor: "pointer", overflow: "hidden" }}
-              aria-label={`Couleur ${row.label}`}
+            <div
+              className="grid items-center gap-2"
+              style={{ gridTemplateColumns: row.base ? "36px minmax(0, 1fr) 32px" : "36px minmax(0, 1fr) minmax(96px, 0.6fr) 32px" }}
             >
+              <label
+                className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                style={{ background: row.color, cursor: "pointer", overflow: "hidden" }}
+                aria-label={`Couleur ${row.label}`}
+              >
+                <input
+                  type="color"
+                  value={row.color}
+                  onChange={(event) => updateRow(row.id, { color: event.target.value })}
+                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                />
+              </label>
               <input
-                type="color"
-                value={row.color}
-                onChange={(event) => updateRow(row.id, { color: event.target.value })}
-                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                value={row.label}
+                onChange={(event) => updateRow(row.id, { label: event.target.value })}
+                placeholder="Nom du statut"
+                className="h-9 min-w-0 rounded-lg px-3 text-[13px] font-medium outline-none"
+                style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.borderSubtle}` }}
+                aria-label={`Nom du statut ${row.label}`}
               />
-            </label>
-            <input
-              value={row.label}
-              onChange={(event) => updateRow(row.id, { label: event.target.value })}
-              placeholder="Nom du statut"
-              className="h-9 flex-1 rounded-lg px-3 text-[13px] font-medium outline-none"
-              style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.borderSubtle}` }}
-              aria-label={`Nom du statut ${row.label}`}
-            />
+              {!row.base && (
+                <select
+                  value={row.systemStatus}
+                  onChange={(event) => updateRow(row.id, { systemStatus: event.target.value as TStatus })}
+                  className="h-9 min-w-0 rounded-lg px-2 text-[11px] font-semibold outline-none"
+                  style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.borderSubtle}` }}
+                  aria-label="Catégorie système"
+                >
+                  {statusOrder.map((status) => (
+                    <option key={status} value={status}>
+                      {defaultLabels[status]}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <button
+                type="button"
+                onClick={() => removeRow(row.id)}
+                disabled={rows.length <= 1}
+                className="flex h-9 w-9 items-center justify-center rounded-lg"
+                style={{
+                  background: rows.length <= 1 ? surface.s2 : "var(--mb-delete-bg)",
+                  color: rows.length <= 1 ? text.ghost : "var(--mb-delete-text)",
+                  border: `1px solid ${rows.length <= 1 ? surface.borderSubtle : "var(--mb-delete-border)"}`,
+                  cursor: rows.length <= 1 ? "not-allowed" : "pointer",
+                }}
+                title="Supprimer le statut"
+                aria-label="Supprimer le statut"
+              >
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            {row.base && (
+              <p className="mt-1 pl-[44px] text-[10px] leading-snug" style={{ color: text.muted }}>
+                Catégorie système : {defaultLabels[row.systemStatus]}
+              </p>
+            )}
           </div>
         ))}
       </div>
+
+      {hiddenBaseStatuses.length > 0 && (
+        <div className="mt-3 rounded-xl p-2.5" style={{ background: surface.s1, border: `1px dashed ${surface.borderSubtle}` }}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: text.muted }}>
+            Statuts masqués
+          </p>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {hiddenBaseStatuses.map((status) => (
+              <button
+                key={status}
+                type="button"
+                onClick={() => restoreBaseStatus(status)}
+                className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.borderSubtle}`, cursor: "pointer" }}
+              >
+                Restaurer {defaultLabels[status]}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
