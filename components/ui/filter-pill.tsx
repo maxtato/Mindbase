@@ -176,23 +176,50 @@ export function FilterPill<T extends string>({
       </button>
 
       {mounted && open && menuPosition && createPortal(
-        <div
-          ref={menuRef}
-          role="listbox"
-          className="mb-filter-pill-menu"
-          style={{
-            position: "fixed",
-            // Si flipped, on ancre par le bas du menu juste au-dessus du
-            // bouton (transform translateY(-100%) via "bottom" anchor).
-            ...(menuPosition.flipped
-              ? { bottom: window.innerHeight - menuPosition.top }
-              : { top: menuPosition.top }),
-            left: menuPosition.left,
-            width: menuPosition.width || undefined,
-            minWidth: Math.max(180, menuPosition.width),
-            ["--mb-filter-accent" as string]: accent,
-          } as React.CSSProperties}
-        >
+        <>
+          {/* Backdrop transparent : capture tous les taps hors menu pour
+              fermer la popover. Sans ça, sur iOS Safari un "ghost click"
+              synthétique tombe sur la carte sous le menu (kanban tâche,
+              cellule calendrier…) juste après le démontage, ce qui ouvre
+              une carte par erreur quand on sélectionne un filtre. */}
+          <button
+            type="button"
+            aria-hidden
+            tabIndex={-1}
+            onClick={() => setOpen(false)}
+            onPointerDown={(event) => {
+              // Empêche le focus de quitter le bouton de filtre et le
+              // click synthétique de se propager au layer du dessous.
+              event.preventDefault();
+              setOpen(false);
+            }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 1199,
+              background: "transparent",
+              border: "none",
+              cursor: "default",
+              padding: 0,
+            }}
+          />
+          <div
+            ref={menuRef}
+            role="listbox"
+            className="mb-filter-pill-menu"
+            style={{
+              position: "fixed",
+              // Si flipped, on ancre par le bas du menu juste au-dessus du
+              // bouton (transform translateY(-100%) via "bottom" anchor).
+              ...(menuPosition.flipped
+                ? { bottom: window.innerHeight - menuPosition.top }
+                : { top: menuPosition.top }),
+              left: menuPosition.left,
+              width: menuPosition.width || undefined,
+              minWidth: Math.max(180, menuPosition.width),
+              ["--mb-filter-accent" as string]: accent,
+            } as React.CSSProperties}
+          >
           {options.map((option) => {
             const isSelected = option.value === value;
             return (
@@ -237,7 +264,8 @@ export function FilterPill<T extends string>({
               </button>
             );
           })}
-        </div>,
+          </div>
+        </>,
         document.body,
       )}
     </>

@@ -1301,14 +1301,16 @@ summary {
 
 /* Anti-zoom iOS Safari : sur iPhone, focus dans un input dont la
    font-size est < 16px déclenche un zoom automatique du viewport.
-   On force 16px sur les inputs et select courts (login, date, etc.),
-   mais on laisse les <textarea> respecter leur fontSize inline pour
-   que les longs champs (Attendu / Réalisation / Note) restent
-   visuellement cohérents avec le reste du drawer. iOS zoom au focus
-   du textarea, mais comme l'utilisateur reste dedans pour taper,
-   c'est un seul zoom acceptable plutôt qu'un texte XXL permanent. */
+   On force 16px sur les inputs et select "système" (login, date, etc.)
+   mais on exclut :
+     - <textarea> (champs longs Attendu/Réalisation/Note/Discussion)
+     - .mb-input (inputs courts intégrés dans le drawer comme
+       "Ajouter une sous-action" ou "Écrire un message" : doivent
+       rester cohérents visuellement avec le reste de la carte)
+   Trade-off : iOS zoom au premier focus, mais l'utilisateur reste
+   dans le champ pour taper donc un seul zoom est acceptable. */
 @media (max-width: 768px) {
-  input,
+  input:not(.mb-input),
   select,
   [contenteditable="true"] {
     font-size: 16px !important;
