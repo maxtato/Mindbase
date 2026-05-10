@@ -1,7 +1,9 @@
+import { cookies } from "next/headers";
 import { Sidebar } from "./sidebar";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 import { surface } from "@/lib/design-tokens";
 import { getSidebarStatsByWorkspace } from "@/lib/project-store";
+import { getWorkspace } from "@/lib/workspace";
 
 // Padding-bottom mobile retiré du wrapper : la bottom nav (position:fixed)
 // flotte au-dessus du contenu. Les pages s'auto-padent via une règle CSS
@@ -9,7 +11,9 @@ import { getSidebarStatsByWorkspace } from "@/lib/project-store";
 // IMPORTANT : Sidebar et MobileBottomNav lisent le workspace via
 // window.location au lieu de useSearchParams — ainsi aucun Suspense boundary
 // n'est introduit au niveau du shell (qui, en streaming SSR + iOS Safari,
-// rendait tout le contenu de la page dans un <div hidden>).
+// rendait tout le contenu de la page dans un <div hidden>). Pour que la
+// couleur active soit correcte AU PREMIER RENDU (et pas après hydration),
+// on injecte le workspace lu via le cookie côté server.
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -17,6 +21,8 @@ interface AppShellProps {
 
 export async function AppShell({ children }: AppShellProps) {
   const sidebarStats = await getSidebarStatsByWorkspace();
+  const cookieStore = await cookies();
+  const initialWorkspace = getWorkspace(cookieStore.get("mindbase-workspace")?.value);
 
   return (
     <div className="flex h-full overflow-hidden" style={{ background: surface.bg }}>
@@ -29,8 +35,10 @@ export async function AppShell({ children }: AppShellProps) {
       </div>
 
       {/* Bottom nav mobile — rendu direct sans Suspense pour assurer la
-          présence de tous les handlers tactiles dès le premier paint. */}
-      <MobileBottomNav />
+          présence de tous les handlers tactiles dès le premier paint.
+          On lui donne le workspace initial pour que la couleur active
+          soit correcte dès le SSR (sinon flash violet→bleu en pro). */}
+      <MobileBottomNav initialWorkspace={initialWorkspace} />
     </div>
   );
 }

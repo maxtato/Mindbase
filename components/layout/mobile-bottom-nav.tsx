@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
+import type { Workspace } from "@/lib/workspace";
 import { surface, text } from "@/lib/design-tokens";
 
 const NAV_ITEMS = [
@@ -84,15 +85,25 @@ const NAV_ITEMS = [
   },
 ] as const;
 
-export function MobileBottomNav() {
+interface MobileBottomNavProps {
+  /** Workspace lu côté server (cookie) pour avoir la bonne couleur active
+   *  dès le premier rendu sur iPhone, avant l'hydratation. */
+  initialWorkspace?: Workspace;
+}
+
+export function MobileBottomNav({ initialWorkspace }: MobileBottomNavProps = {}) {
   const pathname = usePathname();
   // Lit le workspace depuis l'URL côté client uniquement — évite useSearchParams
   // (et donc le Suspense boundary qui casse le rendu sur iOS Safari streaming).
-  const [workspaceParam, setWorkspaceParam] = useState<string | null>(null);
+  // L'init avec initialWorkspace évite le flash de couleur au premier rendu.
+  const [workspaceParam, setWorkspaceParam] = useState<string | null>(initialWorkspace ?? null);
   useEffect(() => {
     const update = () => {
       const sp = new URLSearchParams(window.location.search);
-      setWorkspaceParam(sp.get("workspace"));
+      const value = sp.get("workspace");
+      // Ne reset pas vers null si l'URL n'a pas le param (le middleware le
+      // recolle, mais entre-temps on garde notre dernière valeur connue).
+      if (value) setWorkspaceParam(value);
     };
     update();
     window.addEventListener("popstate", update);
