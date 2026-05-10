@@ -121,7 +121,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
         </span>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-6 py-7">
+      <main className="mb-mobile-scroll flex-1 overflow-y-auto px-3 sm:px-6 py-4 sm:py-7">
         {aiOpen && (
           <div className="mx-auto mb-5 w-full max-w-[1480px]">
             <AIProjectCreator workspace={workspace} open={aiOpen} onOpenChange={setAiOpen} />

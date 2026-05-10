@@ -77,7 +77,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
 
   return (
     <section
-      className="rounded-[28px] p-5"
+      className="rounded-[20px] sm:rounded-[28px] p-3.5 sm:p-5"
       style={{
         background: surface.s1,
         border: `1.5px solid ${theme.accent}`,
@@ -145,7 +145,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
 
       {suggestion && (
         <div className="mt-5 grid gap-4">
-          <div className="rounded-2xl p-4" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
+          <div className="rounded-2xl p-3 sm:p-4" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
             <p className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>Nom</p>
             <p className="mt-1 text-base font-bold" style={{ color: text.primary }}>{suggestion.name}</p>
 
@@ -156,13 +156,13 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
             <p className="mt-1 text-sm" style={{ color: text.secondary }}>{suggestion.context}</p>
           </div>
 
-          <div className="rounded-2xl p-4" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
+          <div className="rounded-2xl p-3 sm:p-4" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
             <p className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
               Étapes proposées ({suggestion.steps.length})
             </p>
             <ol className="mt-2 grid gap-3">
               {suggestion.steps.map((step, index) => (
-                <li key={index} className="rounded-xl p-3" style={{ background: surface.s1, border: `1px solid ${surface.borderSubtle}` }}>
+                <li key={index} className="rounded-xl p-2.5 sm:p-3" style={{ background: surface.s1, border: `1px solid ${surface.borderSubtle}` }}>
                   <p className="text-sm font-bold" style={{ color: text.primary }}>
                     {index + 1}. {step.title}
                   </p>
@@ -171,7 +171,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
                   )}
                   <ul className="mt-2 grid gap-1.5">
                     {step.tasks.map((task, ti) => (
-                      <li key={ti} className="rounded-lg px-3 py-2" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
+                      <li key={ti} className="rounded-lg px-2.5 sm:px-3 py-2" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
                         <p className="mb-task-title text-[12px] font-semibold" style={{ color: text.primary }}>· {task.title}</p>
                         <p className="mt-0.5 text-[11px]" style={{ color: text.muted }}>
                           <span style={{ color: theme.accent, fontWeight: 600 }}>Attendu :</span> {task.expected}
