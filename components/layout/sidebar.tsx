@@ -23,17 +23,24 @@ interface SidebarWorkspaceStats {
 
 interface SidebarProps {
   stats: Record<Workspace, SidebarWorkspaceStats>;
+  /** Workspace lu côté server (cookie) pour avoir les bons liens dès le
+   *  SSR. Sinon le state initial null générerait des hrefs ?workspace=
+   *  personal qui peuvent être suivis avant que l'hydratation ne corrige. */
+  initialWorkspace?: Workspace;
 }
 
-export function Sidebar({ stats }: SidebarProps) {
+export function Sidebar({ stats, initialWorkspace }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   // Lit le workspace depuis l'URL côté client uniquement (pas de useSearchParams).
-  const [workspaceParam, setWorkspaceParam] = useState<string | null>(null);
+  const [workspaceParam, setWorkspaceParam] = useState<string | null>(initialWorkspace ?? null);
   useEffect(() => {
     const update = () => {
       const sp = new URLSearchParams(window.location.search);
-      setWorkspaceParam(sp.get("workspace"));
+      const value = sp.get("workspace");
+      // Ne reset pas vers null si l'URL n'a pas le param (le middleware
+      // le recolle), on garde la dernière valeur connue.
+      if (value) setWorkspaceParam(value);
     };
     update();
     window.addEventListener("popstate", update);

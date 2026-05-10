@@ -26,8 +26,10 @@ export async function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="flex h-full overflow-hidden" style={{ background: surface.bg }}>
-      {/* Sidebar — masquée < sm via Tailwind, plus de Suspense boundary. */}
-      <Sidebar stats={sidebarStats} />
+      {/* Sidebar — masquée < sm via Tailwind, plus de Suspense boundary.
+          On lui passe initialWorkspace pour que les liens SSR pointent
+          déjà vers le bon workspace, sans dépendre de l'hydratation. */}
+      <Sidebar stats={sidebarStats} initialWorkspace={initialWorkspace} />
 
       {/* Main area */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
