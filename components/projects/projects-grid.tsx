@@ -163,19 +163,20 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
                   style={{
                     background: surface.s1,
                     border: `1px solid ${surface.border}`,
-                    borderRadius: 24,
                   }}
                 >
-                  {/* Solid colored header band */}
+                  {/* Solid colored header band — paddings réduits en mobile
+                      pour laisser plus de place au contenu et que les cartes
+                      tiennent confortablement dans l'écran iPhone. */}
                   <div
-                    className="p-5"
+                    className="p-3.5 sm:p-5"
                     style={{
                       background: subcategoryDisplay.color,
                       borderBottom: `1px solid ${surface.borderSubtle}`,
                     }}
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center justify-between gap-2 sm:gap-3">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                         <ProjectIdentityEditor
                           key={`${project.id}-${project.subcategory}`}
                           projectId={project.id}
@@ -189,7 +190,7 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
                           onColor
                         />
                         <div className="min-w-0">
-                          <p className="text-[19px] font-bold leading-tight truncate" style={{ color: surface.onColor }}>
+                          <p className="text-[16px] sm:text-[19px] font-bold leading-tight truncate" style={{ color: surface.onColor }}>
                             {project.name}
                           </p>
                         </div>
@@ -201,7 +202,7 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
                     </div>
                   </div>
 
-                  <div className="p-5" style={{ background: surface.s1 }}>
+                  <div className="p-3.5 sm:p-5" style={{ background: surface.s1 }}>
                     <div className="mb-3">
                       <ProjectMetaRow project={project} compact />
                     </div>

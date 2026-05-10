@@ -23,13 +23,14 @@ export default async function ProjectsPage({
         action={
           <Link
             href={`/dashboard/projects/new?${qs}`}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap"
+            aria-label="Nouveau projet"
+            className="flex items-center gap-1.5 rounded-xl text-xs font-bold whitespace-nowrap px-2 py-2 sm:px-3.5"
             style={{ background: theme.accent, color: "#fff" }}
           >
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
               <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
-            Nouveau projet
+            <span className="hidden sm:inline">Nouveau projet</span>
           </Link>
         }
       />
