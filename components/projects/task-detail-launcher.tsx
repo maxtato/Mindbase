@@ -34,6 +34,11 @@ interface TaskDetailLauncherProps {
    *  reset son scroll quand on coche un item de checklist. */
   onChecklistChange?: (next: ChecklistItem[]) => void;
   onTaskChange?: (input: TaskUpdateInput) => void;
+  /** Mode "controlled" : si fourni, l'ouverture du drawer est pilotée par
+   *  le parent (ex : le calendrier qui gère un selectedTask global pour
+   *  éviter le démontage du portail quand sa modal liste se ferme). */
+  controlledOpen?: boolean;
+  onControlledOpenChange?: (open: boolean) => void;
 }
 
 // Lance un modal qui réutilise EXACTEMENT le visuel et les codes de la
@@ -56,25 +61,37 @@ export function TaskDetailLauncher({
   trigger,
   onChecklistChange,
   onTaskChange,
+  controlledOpen,
+  onControlledOpenChange,
 }: TaskDetailLauncherProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [open, setOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = (next: boolean) => {
+    if (isControlled) {
+      onControlledOpenChange?.(next);
+    } else {
+      setInternalOpen(next);
+    }
+  };
   const [draftTask, setDraftTask] = useState(task);
   const [, startTransition] = useTransition();
 
   // Auto-ouvrir le drawer si l'URL contient taskId qui correspond à cette
   // tâche. Permet d'arriver depuis le dashboard ou kanban directement sur
   // une tâche ouverte. La fermeture nettoie le paramètre pour rester sur
-  // la page projet sans drawer.
-  const urlTaskId = searchParams?.get("taskId");
+  // la page projet sans drawer. Désactivé en mode contrôlé (le parent gère).
+  const urlTaskId = isControlled ? null : searchParams?.get("taskId");
   useEffect(() => {
-    if (urlTaskId === task.id) setOpen(true);
-  }, [urlTaskId, task.id]);
+    if (isControlled) return;
+    if (urlTaskId === task.id) setInternalOpen(true);
+  }, [urlTaskId, task.id, isControlled]);
 
   function clearTaskIdFromUrl() {
-    if (!urlTaskId) return;
+    if (isControlled || !urlTaskId) return;
     const next = new URLSearchParams(searchParams?.toString() ?? "");
     next.delete("taskId");
     const qs = next.toString();

@@ -1299,6 +1299,23 @@ summary {
   transform: translate(-50%, -50%);
 }
 
+/* Anti-zoom iOS Safari : sur iPhone, focus dans un input dont la
+   font-size est < 16px déclenche un zoom automatique du viewport
+   ("auto-scale on focus"). On force tous les contrôles texte à au
+   moins 16px sur les écrans tactiles, ce qui désactive le zoom.
+   Le rendu visuel n'est pas affecté car on contre-balance avec un
+   transform à l'échelle (scale) qui ramène la taille perçue. Mais
+   pour rester simple, on accepte simplement un texte un poil plus
+   grand dans les inputs sur mobile. */
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea,
+  [contenteditable="true"] {
+    font-size: 16px !important;
+  }
+}
+
 @media (max-width: 768px) {
   .mb-task-subpanel {
     top: calc(env(safe-area-inset-top, 0px) + 16px);

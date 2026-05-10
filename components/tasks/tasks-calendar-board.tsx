@@ -61,6 +61,11 @@ export function TasksCalendarBoard({
   // Quand une cellule a plusieurs tâches : un premier tap sur la carte
   // preview "éclate" toutes les tâches du jour pour qu'on puisse choisir.
   const [expandedDate, setExpandedDate] = useState<string | null>(null);
+  // Tâche actuellement ouverte dans un drawer contrôlé. On lifte le state ici
+  // (plutôt que dans chaque CalendarTaskCard) pour qu'une tâche cliquée
+  // depuis la modal "liste du jour" survive à la fermeture de cette modal —
+  // sinon le portail React du drawer serait démonté avec sa source.
+  const [openTaskItem, setOpenTaskItem] = useState<TaskItem | null>(null);
   const [dateOverrides, setDateOverrides] = useState<Record<string, string>>({});
   const [pendingDateChange, setPendingDateChange] = useState<{ item: TaskItem; date: string } | null>(null);
   const monthStart = parseMonth(month);
@@ -376,17 +381,14 @@ export function TasksCalendarBoard({
                                             setDraggingKey(null);
                                             setDragOverDate(null);
                                           }}
-                                          // On navigue vers la page projet avec taskId=… plutôt
-                                          // que d'ouvrir un drawer en place : le CalendarTaskCard
-                                          // serait démonté quand la modal liste se ferme, ce qui
-                                          // tuerait le portal du drawer. La page projet auto-
-                                          // ouvre le drawer via le useSearchParams() du
-                                          // TaskDetailLauncher (cf. dashboard).
+                                          // On ferme la modal liste ET on ouvre le drawer
+                                          // contrôlé au niveau du calendrier. Le drawer est
+                                          // rendu plus bas (pas dans cette modal) donc il
+                                          // survit à la fermeture de la liste. À la fermeture
+                                          // du drawer, on revient au calendrier.
                                           onClickOverride={() => {
                                             setExpandedDate(null);
-                                            router.push(
-                                              `/dashboard/projects/${item.project.id}?workspace=${workspace}&taskId=${item.entry.task.id}`,
-                                            );
+                                            setOpenTaskItem(item);
                                           }}
                                         />
                                       ))}
@@ -448,6 +450,34 @@ export function TasksCalendarBoard({
           </aside>
         </div>
       </section>
+      {/* Drawer de tâche contrôlé par le calendrier. Vit hors de la modal
+          "liste du jour" → ne se démonte pas quand cette modal se ferme.
+          La key force un remount quand l'utilisateur passe d'une tâche à
+          l'autre (sinon le drawer garderait l'ancien draftTask). */}
+      {openTaskItem && (
+        <TaskDetailLauncher
+          key={`${openTaskItem.project.id}-${openTaskItem.entry.task.id}`}
+          projectId={openTaskItem.project.id}
+          workspace={workspace}
+          stepId={openTaskItem.entry.stepId}
+          stepTitle={openTaskItem.entry.stepTitle}
+          stepDescription={
+            openTaskItem.project.steps?.find((s) => s.id === openTaskItem.entry.stepId)?.description
+          }
+          task={openTaskItem.entry.task}
+          accentColor={openTaskItem.project.subcategoryColor}
+          projectPeople={openTaskItem.project.people ?? []}
+          projectTeams={openTaskItem.project.teams ?? []}
+          statusSettings={openTaskItem.project.statusSettings}
+          controlledOpen
+          onControlledOpenChange={(next) => {
+            if (!next) setOpenTaskItem(null);
+          }}
+          // Pas de trigger : le drawer s'ouvre automatiquement (controlledOpen
+          // = true), aucun bouton n'est rendu.
+          trigger={() => null}
+        />
+      )}
     </>
   );
 }
