@@ -991,8 +991,19 @@ function DiscussionField({
   accentColor: string;
   projectPeople?: Array<{ id: string; name: string }>;
 }) {
-  const router = useRouter();
-  const messages = useMemo(() => task.discussion ?? [], [task.discussion]);
+  // Messages en attente d'être pris en compte par le serveur, affichés
+  // localement pour que l'envoi soit immédiat sans router.refresh
+  // (qui fermerait le drawer). Quand le task.discussion serveur les
+  // contient, on les filtre pour éviter les doublons.
+  const [pendingMessages, setPendingMessages] = useState<TaskDiscussionMessage[]>([]);
+  const messages = useMemo(() => {
+    const persisted = task.discussion ?? [];
+    const persistedKeys = new Set(persisted.map((m) => `${m.authorName}|${m.content}`));
+    const stillPending = pendingMessages.filter(
+      (m) => !persistedKeys.has(`${m.authorName}|${m.content}`),
+    );
+    return [...persisted, ...stillPending];
+  }, [task.discussion, pendingMessages]);
   const [draft, setDraft] = useState("");
   const [isPending, startTransition] = useTransition();
   const [mentionsOpen, setMentionsOpen] = useState(false);
@@ -1023,16 +1034,31 @@ function DiscussionField({
   const send = () => {
     if (!canSend || !projectId || !stepId) return;
     const content = draft.trim();
+    // Optimistic local message : l'utilisateur voit son envoi tout de
+    // suite, le drawer reste ouvert (pas de router.refresh).
+    const optimistic: TaskDiscussionMessage = {
+      id: `local_${Date.now()}`,
+      authorName: "Maxime",
+      content,
+      createdAt: new Date().toISOString(),
+    };
+    setPendingMessages((current) => [...current, optimistic]);
+    setDraft("");
     startTransition(async () => {
       try {
         await addTaskDiscussionMessageAction(projectId, stepId, task.id, {
           authorName: "Maxime",
           content,
         });
-        setDraft("");
-        router.refresh();
+        // Le serveur a persisté ; au prochain re-render (avec task à jour)
+        // le message sera dans task.discussion et le useMemo retire
+        // l'optimistic via le dedupe par author|content.
       } catch (error) {
         console.error("[discussion] send failed", error);
+        // En cas d'erreur, on retire le pending pour ne pas afficher un
+        // message fantôme et on remet le brouillon.
+        setPendingMessages((current) => current.filter((m) => m.id !== optimistic.id));
+        setDraft(content);
       }
     });
   };

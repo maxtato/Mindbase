@@ -104,18 +104,17 @@ export function TaskDetailLauncher({
   }, [task, open]);
 
   function handleUpdate(input: TaskUpdateInput) {
+    // Toujours optimiste sur le state local : le drawer reflète
+    // immédiatement la modification (statut, date, attendu, …) et reste
+    // monté. Pas de router.refresh qui remonterait le launcher et
+    // fermerait le drawer en plein milieu de l'édition. Les compteurs
+    // globaux (sidebar, dashboard) se re-sync à la prochaine navigation.
     setDraftTask((current) => ({ ...current, ...input }));
     if (onTaskChange) {
-      // Propagation optimiste vers le parent — pas besoin de refresh RSC.
       onTaskChange(input);
-      startTransition(async () => {
-        await updateTaskAction(projectId, stepId, task.id, input);
-      });
-      return;
     }
     startTransition(async () => {
       await updateTaskAction(projectId, stepId, task.id, input);
-      router.refresh();
     });
   }
 

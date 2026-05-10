@@ -13,6 +13,7 @@ import { ProjectControls, ProjectSettingsMenu } from "@/components/projects/proj
 import { ProjectFilesLauncher } from "@/components/projects/project-files-launcher";
 import { ProjectTeamChatLauncher } from "@/components/projects/project-team-chat-launcher";
 import { ProjectMultiView } from "@/components/projects/project-multi-view";
+import { ProjectRailDetails } from "@/components/projects/project-rail-details";
 import { ExpandableText } from "@/components/projects/expandable-text";
 import { resolveProjectSubcategoryDisplay } from "@/lib/project-taxonomy";
 import {
@@ -75,7 +76,7 @@ export default async function ProjectDetailPage({
             </main>
 
             <aside className="mb-project-rail mb-project-rail-scroll">
-              <details className="mb-project-rail-shell" open>
+              <ProjectRailDetails>
                 <summary className="mb-project-rail-toggle" aria-label="Afficher ou replier la synthèse">
                   <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                     <path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -143,7 +144,7 @@ export default async function ProjectDetailPage({
                     )}
                   </ProjectRailCard>
                 </div>
-              </details>
+              </ProjectRailDetails>
             </aside>
           </div>
         </div>
