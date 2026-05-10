@@ -104,7 +104,7 @@ export default async function DashboardPage({
             </Link>
           </section>
 
-          {/* KPI principaux — rangée de 3 chiffres. */}
+          {/* KPI principaux — rangée de 3 chiffres, tous cliquables. */}
           <section className="grid grid-cols-3 gap-3">
             <KpiTile
               label="Projets"
@@ -116,21 +116,25 @@ export default async function DashboardPage({
               label="Tâches"
               value={kpiTasks}
               accent={theme.accent}
+              href={`/dashboard/kanban?${qs}`}
             />
             <KpiTile
               label="En retard"
               value={kpiOverdue}
               accent={kpiOverdue > 0 ? errorTokens.text : text.muted}
               tone={kpiOverdue > 0 ? "danger" : "neutral"}
+              href={`/dashboard/kanban?${qs}`}
             />
           </section>
 
-          {/* Grid 2×2 — desktop. Sur mobile, tout passe en une colonne. */}
+          {/* Grid 2×2 — desktop. Sur mobile, tout passe en une colonne.
+              Chaque carte est cliquable et mène à la liste pertinente. */}
           <div className="grid gap-4 lg:grid-cols-2">
             <Card
               title="Répartition des tâches"
               meta={totalTasks > 0 ? `${totalTasks} tâche${totalTasks > 1 ? "s" : ""}` : undefined}
               accent={theme.accent}
+              href={`/dashboard/kanban?${qs}`}
             >
               <StatusStackedBar breakdown={breakdown} />
             </Card>
@@ -139,6 +143,7 @@ export default async function DashboardPage({
               title="Tâches à venir"
               meta={plannedTasks.length > 0 ? `${plannedTasks.length}` : undefined}
               accent={theme.accent}
+              href={`/dashboard/calendar?${qs}`}
             >
               <WeekPlanningPanel tasks={plannedTasks} workspace={workspace} />
             </Card>
@@ -147,15 +152,12 @@ export default async function DashboardPage({
               title="Projets ouverts"
               meta={`${openProjects.length} projet${openProjects.length > 1 ? "s" : ""}`}
               accent={theme.accent}
+              href={`/dashboard/projects?${qs}`}
               action={
                 openProjects.length > 0 ? (
-                  <Link
-                    href={`/dashboard/projects?${qs}`}
-                    className="text-[11px] font-semibold"
-                    style={{ color: theme.accent }}
-                  >
+                  <span className="text-[11px] font-semibold" style={{ color: theme.accent }}>
                     Voir tous →
-                  </Link>
+                  </span>
                 ) : undefined
               }
             >
@@ -194,20 +196,32 @@ interface CardProps {
   meta?: string;
   accent: string;
   action?: ReactNode;
+  href?: string;
   children: ReactNode;
 }
 
-function Card({ title, meta, accent, action, children }: CardProps) {
+function Card({ title, meta, accent, action, href, children }: CardProps) {
   return (
     <section
-      className="flex min-w-0 flex-col gap-3 rounded-[20px] p-4 lg:p-5"
+      className="relative flex min-w-0 flex-col gap-3 rounded-[20px] p-4 lg:p-5"
       style={{
         background: surface.s1,
         border: `1px solid ${surface.borderSubtle}`,
         boxShadow: "var(--mb-shadow-xs)",
       }}
     >
-      <header className="flex items-center justify-between gap-3">
+      {/* Overlay-link en arrière-plan : la carte entière est cliquable mais
+          les liens/boutons à l'intérieur (z-10) restent prioritaires. Évite
+          d'imbriquer un <a> dans un <a>, ce qui est invalide en HTML. */}
+      {href && (
+        <Link
+          href={href}
+          aria-label={title}
+          className="absolute inset-0 rounded-[20px]"
+          style={{ zIndex: 0 }}
+        />
+      )}
+      <header className="relative flex items-center justify-between gap-3" style={{ zIndex: 1 }}>
         <div className="flex min-w-0 items-center gap-2">
           <span
             aria-hidden
@@ -225,7 +239,9 @@ function Card({ title, meta, accent, action, children }: CardProps) {
         </div>
         {action}
       </header>
-      <div className="min-w-0">{children}</div>
+      <div className="relative min-w-0" style={{ zIndex: 1 }}>
+        {children}
+      </div>
     </section>
   );
 }

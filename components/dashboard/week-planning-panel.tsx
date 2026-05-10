@@ -96,7 +96,7 @@ function PlannedTaskRow({
 
   return (
     <Link
-      href={`/dashboard/projects/${entry.project.id}?workspace=${workspace}`}
+      href={`/dashboard/projects/${entry.project.id}?workspace=${workspace}&taskId=${entry.task.id}`}
       className="relative flex items-center justify-between gap-2 rounded-xl px-3 py-2"
       style={{
         background: surface.s1,

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { updateTaskAction } from "@/app/dashboard/projects/[id]/actions";
 import { TaskExpandedPreview } from "@/components/projects/task-expanded-preview";
 import type { ChecklistItem, ProjectPerson, ProjectStatusSettings, ProjectTeam, Task } from "@/lib/mock-data";
@@ -58,9 +58,28 @@ export function TaskDetailLauncher({
   onTaskChange,
 }: TaskDetailLauncherProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [draftTask, setDraftTask] = useState(task);
   const [, startTransition] = useTransition();
+
+  // Auto-ouvrir le drawer si l'URL contient taskId qui correspond à cette
+  // tâche. Permet d'arriver depuis le dashboard ou kanban directement sur
+  // une tâche ouverte. La fermeture nettoie le paramètre pour rester sur
+  // la page projet sans drawer.
+  const urlTaskId = searchParams?.get("taskId");
+  useEffect(() => {
+    if (urlTaskId === task.id) setOpen(true);
+  }, [urlTaskId, task.id]);
+
+  function clearTaskIdFromUrl() {
+    if (!urlTaskId) return;
+    const next = new URLSearchParams(searchParams?.toString() ?? "");
+    next.delete("taskId");
+    const qs = next.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }
 
   // Resync local quand la prop tâche change (ex: hot reload, refresh server).
   useEffect(() => {
@@ -155,7 +174,10 @@ export function TaskDetailLauncher({
           projectPeople={projectPeople}
           projectTeams={projectTeams}
           statusSettings={statusSettings}
-          onClose={() => setOpen(false)}
+          onClose={() => {
+            setOpen(false);
+            clearTaskIdFromUrl();
+          }}
           onUpdate={handleUpdate}
           onChecklistMutated={handleChecklistMutated}
         />
