@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { kv } from "@vercel/kv";
 import type { Workspace } from "@/lib/workspace";
 import { projects as projectSeeds, type Action, type ChecklistItem, type Decision, type Project, type ProjectActivityItem, type ProjectFile, type ProjectMode, type ProjectPerson, type ProjectStatus, type ProjectStatusSettings, type ProjectTeam, type ProjectTeamMessage, type Risk, type Step, type StepStatus, type Task, type TaskDiscussionMessage, type TaskStatus } from "@/lib/mock-data";
 import {
@@ -584,47 +585,60 @@ function sanitizeIdList(ids: string[] | undefined) {
 // que crasher les Server Components avec un EROFS.
 const IS_READONLY_FS = Boolean(process.env.VERCEL) || process.env.NODE_ENV === "production";
 
-// Cache de mutations en mémoire — utilisé quand le FS est read-only
-// (Vercel) pour que les delete/archive/update soient visibles au moins
-// pendant la durée de vie de l'instance serverless. À remplacer par une
-// vraie DB (Supabase) pour de la persistance durable.
-//   id → version courante du projet (incluant `deleted: true` pour les
-//   suppressions). Utilisé par applyMutationCache.
-const mutationCache = new Map<string, Project>();
+// Vercel KV (Redis) — source de vérité partagée entre toutes les
+// instances serverless quand l'addon est branché. Sans ça, chaque
+// instance avait son propre cache mémoire, ce qui causait des 404
+// aléatoires quand l'utilisateur naviguait sur une instance qui
+// n'avait jamais vu la création/mutation.
+const KV_AVAILABLE = Boolean(process.env.KV_REST_API_URL || process.env.KV_URL);
+const KV_KEY = "mindbase:projects";
 
-function applyMutationCache(projects: Project[]): Project[] {
-  if (mutationCache.size === 0) return projects;
-  const seen = new Set<string>();
-  const merged: Project[] = projects.map((project) => {
-    seen.add(project.id);
-    const override = mutationCache.get(project.id);
-    return override ?? project;
-  });
-  // Projets créés en mémoire qui n'existaient pas dans le store de base
-  for (const [id, project] of mutationCache.entries()) {
-    if (!seen.has(id)) merged.push(project);
-  }
-  return merged;
+interface KvStore {
+  version: number;
+  projects: Project[];
 }
 
 async function ensureProjectStore() {
-  // Garde large : peu importe l'erreur (FS, JSON parse, lecture, etc.) on
-  // retombe sur les seeds plutôt que faire crasher tout le rendu serveur
-  // sur des plateformes où le FS de l'app n'est pas garanti.
-  let base: Project[];
+  // Priorité 1 : Vercel KV (Redis), source de vérité partagée entre les
+  // instances serverless. Activé automatiquement quand les env vars KV
+  // sont injectées par Vercel.
+  if (KV_AVAILABLE) {
+    try {
+      const stored = await kv.get<KvStore>(KV_KEY);
+      if (stored && Array.isArray(stored.projects) && stored.projects.length > 0) {
+        return stored.projects.map((project) => normalizeProject(project as Project));
+      }
+      // Pas encore initialisé → on hydrate avec les seeds.
+      const seeds = cloneSeedProjects().map((project) => normalizeProject(project));
+      try {
+        await kv.set(KV_KEY, { version: STORE_VERSION, projects: seeds } satisfies KvStore);
+      } catch (error) {
+        console.error("[project-store] KV seed write failed:", error);
+      }
+      return seeds;
+    } catch (error) {
+      console.error("[project-store] KV read failed, falling back to seeds:", error);
+      return cloneSeedProjects().map((project) => normalizeProject(project));
+    }
+  }
+
+  // Priorité 2 : filesystem local (dev). Garde large : si la lecture
+  // échoue pour une raison quelconque (FS, JSON parse…), on retombe sur
+  // les seeds plutôt que faire crasher tout le rendu serveur.
   try {
     const content = await readFile(PROJECTS_FILE_PATH, "utf8");
     const parsed = JSON.parse(content) as Partial<ProjectStoreFile>;
     const projectList = Array.isArray(parsed.projects) ? parsed.projects : [];
-    base = projectList.map((project) => normalizeProject(project as Project));
+    const normalized = projectList.map((project) => normalizeProject(project as Project));
 
-    if (parsed.version !== STORE_VERSION || base.length !== projectList.length) {
+    if (parsed.version !== STORE_VERSION || normalized.length !== projectList.length) {
       try {
-        await persistProjects(base);
+        await persistProjects(normalized);
       } catch {
         // ignore : version-bump persist est best-effort
       }
     }
+    return normalized;
   } catch (error) {
     const isMissingFile =
       typeof error === "object" &&
@@ -638,27 +652,24 @@ async function ensureProjectStore() {
     if (!isMissingFile) {
       console.error("[project-store] read failed, falling back to seeds:", error);
     }
-    base = cloneSeedProjects().map((project) => normalizeProject(project));
+    return cloneSeedProjects().map((project) => normalizeProject(project));
   }
-  // Couvre les mutations en cours (archivage, suppression, édition…) qui
-  // n'ont pas été persistées sur le FS — typiquement en environnement
-  // serverless en lecture seule (Vercel).
-  return applyMutationCache(base);
 }
 
 async function persistProjects(projects: Project[]) {
-  // Toujours mettre à jour le cache mémoire pour que les mutations soient
-  // visibles immédiatement, peu importe si l'écriture FS aboutit ou non.
-  for (const project of projects) {
-    mutationCache.set(project.id, project);
-  }
-  // No-op en lecture seule : Vercel et la plupart des hébergements
-  // serverless n'autorisent pas l'écriture sur le filesystem en dehors de
-  // /tmp. On évite l'erreur EROFS et on garde les modifs uniquement en
-  // mémoire (à remplacer par Supabase / une DB quand la persistance
-  // importera).
-  if (IS_READONLY_FS) {
+  // Priorité 1 : KV. Source de vérité partagée pour Vercel.
+  if (KV_AVAILABLE) {
+    try {
+      await kv.set(KV_KEY, { version: STORE_VERSION, projects } satisfies KvStore);
+    } catch (error) {
+      console.error("[project-store] KV write failed:", error);
+    }
     return;
+  }
+
+  // Priorité 2 : FS local en dev.
+  if (IS_READONLY_FS) {
+    return; // hébergeur read-only sans KV → on n'a nulle part où écrire
   }
   const payload: ProjectStoreFile = {
     version: STORE_VERSION,
@@ -669,8 +680,6 @@ async function persistProjects(projects: Project[]) {
     await mkdir(path.dirname(PROJECTS_FILE_PATH), { recursive: true });
     await writeFile(PROJECTS_FILE_PATH, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
   } catch (error) {
-    // Dernier filet de sécurité : si on a manqué la détection prod, on
-    // n'explose pas le render à cause de la persistance.
     console.error("[project-store] persist failed, ignoring:", error);
   }
 }
