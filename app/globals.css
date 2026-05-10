@@ -2052,7 +2052,12 @@ textarea::placeholder {
 
   .mb-mobile-scroll {
     padding-inline: 0.75rem !important;
-    padding-block: 0.75rem !important;
+    padding-top: 0.75rem !important;
+    /* La bottom nav (~57 px) est en position: fixed et masque le bas
+       de la zone scrollable. On réserve la place pour qu'on puisse
+       scroller jusqu'au dernier élément + un peu de respiration et
+       la safe-area du home indicator. */
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   .mb-kanban-grid {
