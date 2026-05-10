@@ -82,7 +82,10 @@ export function TaskExpandedPreview({
         </TaskPreviewPane>
 
         <TaskPreviewPane>
-          <RealizationField task={task} onUpdate={onUpdate} accentColor={accentColor} bulletAccent={aiAccent} />
+          {/* Checklist au-dessus de Réalisation : on coche les sous-actions
+              au fur et à mesure du travail, puis on note ce qui a été
+              réellement livré dans Réalisation. L'ordre suit le flux
+              naturel d'avancement de la tâche. */}
           <ChecklistField
             task={task}
             onChecklistMutated={onChecklistMutated}
@@ -91,6 +94,7 @@ export function TaskExpandedPreview({
             projectId={projectId}
             stepId={stepId}
           />
+          <RealizationField task={task} onUpdate={onUpdate} accentColor={accentColor} bulletAccent={aiAccent} />
         </TaskPreviewPane>
 
         <TaskPreviewPane>

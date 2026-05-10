@@ -1300,17 +1300,16 @@ summary {
 }
 
 /* Anti-zoom iOS Safari : sur iPhone, focus dans un input dont la
-   font-size est < 16px déclenche un zoom automatique du viewport
-   ("auto-scale on focus"). On force tous les contrôles texte à au
-   moins 16px sur les écrans tactiles, ce qui désactive le zoom.
-   Le rendu visuel n'est pas affecté car on contre-balance avec un
-   transform à l'échelle (scale) qui ramène la taille perçue. Mais
-   pour rester simple, on accepte simplement un texte un poil plus
-   grand dans les inputs sur mobile. */
+   font-size est < 16px déclenche un zoom automatique du viewport.
+   On force 16px sur les inputs et select courts (login, date, etc.),
+   mais on laisse les <textarea> respecter leur fontSize inline pour
+   que les longs champs (Attendu / Réalisation / Note) restent
+   visuellement cohérents avec le reste du drawer. iOS zoom au focus
+   du textarea, mais comme l'utilisateur reste dedans pour taper,
+   c'est un seul zoom acceptable plutôt qu'un texte XXL permanent. */
 @media (max-width: 768px) {
   input,
   select,
-  textarea,
   [contenteditable="true"] {
     font-size: 16px !important;
   }
