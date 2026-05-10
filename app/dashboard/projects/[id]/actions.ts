@@ -169,7 +169,13 @@ export async function updateProjectPriorityAction(id: string, priority: ProjectP
 }
 
 export async function archiveProjectAction(id: string, workspace: string) {
-  await updateProject(id, { status: "archived" });
+  // Archivage = "geler" le projet :
+  //   - status -> archived (filtré du dashboard, accessible via le filtre)
+  //   - activity[] -> vidé : c'est la seule donnée non affichée mais
+  //     accumulée pour servir à l'évolution du projet. Tout le reste
+  //     (tâches, fichiers, discussions, décisions, risques…) reste
+  //     visible quand on rouvre le projet archivé.
+  await updateProject(id, { status: "archived", activity: [] });
   revalidatePath("/dashboard/projects");
   revalidatePath("/dashboard");
   redirect(`/dashboard/projects?workspace=${workspace}`);

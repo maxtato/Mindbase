@@ -1396,6 +1396,8 @@ export interface UpdateProjectInput extends Partial<Omit<CreateProjectInput, "wo
   nextStep?: string;
   statusMode?: Project["statusMode"];
   risks?: Project["risks"];
+  /** Permet de purger / réinitialiser l'historique d'activité (ex: archivage). */
+  activity?: Project["activity"];
 }
 
 function buildTemplateSteps(templateKey: string, now: string): Step[] {
