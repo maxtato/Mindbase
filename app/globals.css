@@ -2028,13 +2028,11 @@ textarea::placeholder {
   }
 
   .mb-filter-pill-menu {
-    left: 0.75rem !important;
-    right: 0.75rem !important;
-    top: auto !important;
-    bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
-    width: auto !important;
-    min-width: 0 !important;
-    max-height: min(320px, calc(100dvh - 140px));
+    /* Reste positionné juste sous le bouton filtre (cf. getBoundingClientRect
+       côté JS) au lieu d'apparaître en bas de l'écran. Garde quand même un
+       max-height + scroll si le menu est trop long pour la place restante. */
+    max-height: min(60dvh, calc(100dvh - 160px));
+    overflow-y: auto;
     z-index: 1200;
   }
 

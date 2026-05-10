@@ -873,7 +873,9 @@ function ChecklistRow({
 
   return (
     <div
-      className="flex items-center gap-2 group"
+      // items-start (au lieu de items-center) pour que la checkbox reste
+      // alignée en haut quand le label wrappe sur plusieurs lignes.
+      className="flex items-start gap-2 group"
       style={{
         background: surface.s3,
         border: `1px solid ${surface.borderSubtle}`,
@@ -885,7 +887,7 @@ function ChecklistRow({
         type="button"
         onClick={onToggle}
         disabled={!editable}
-        className="inline-flex items-center justify-center shrink-0"
+        className="inline-flex items-center justify-center shrink-0 mt-0.5"
         style={{
           width: 16,
           height: 16,
@@ -932,12 +934,17 @@ function ChecklistRow({
       ) : (
         <span
           onClick={() => editable && setEditing(true)}
-          className="flex-1 truncate"
+          className="flex-1 min-w-0 break-words"
           style={{
             fontSize: 12,
             color: item.done ? text.muted : text.secondary,
             textDecoration: item.done ? "line-through" : "none",
             cursor: editable ? "text" : "default",
+            // Wrap multi-lignes : on garde tout le texte visible plutôt
+            // que de tronquer avec une ellipsis. overflowWrap: anywhere
+            // gère aussi les très longs mots (URLs collées, etc.).
+            overflowWrap: "anywhere",
+            lineHeight: 1.4,
           }}
         >
           {item.label}

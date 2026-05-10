@@ -51,7 +51,7 @@ export function FilterPill<T extends string>({
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number; width: number; flipped: boolean } | null>(null);
   const [mounted, setMounted] = useState(false);
   const selected = options.find((option) => option.value === value);
   const accent = accentColor ?? "var(--mb-mauve)";
@@ -69,10 +69,32 @@ export function FilterPill<T extends string>({
       const button = buttonRef.current;
       if (!button) return;
       const rect = button.getBoundingClientRect();
+      const viewportH = window.innerHeight;
+      const menuH = menuRef.current?.offsetHeight ?? 240; // best-effort estimate
+      // Si on n'a pas la place en dessous mais qu'on a la place au-dessus,
+      // on flip le menu vers le haut. Évite de devoir afficher le menu
+      // off-screen ou en bottom-sheet sur mobile.
+      const spaceBelow = viewportH - rect.bottom;
+      const spaceAbove = rect.top;
+      const flipped = spaceBelow < Math.min(menuH, 220) && spaceAbove > spaceBelow;
+      // Sur petit écran on aligne le menu au left/right de la viewport
+      // avec une marge, plutôt qu'au bouton (lisible + accessible au pouce).
+      const isMobile = window.innerWidth < 640;
+      let left: number;
+      let width: number;
+      if (isMobile) {
+        const margin = 12;
+        left = margin;
+        width = Math.max(0, window.innerWidth - margin * 2);
+      } else {
+        left = align === "end" ? rect.right - 220 : rect.left;
+        width = rect.width;
+      }
       setMenuPosition({
-        top: rect.bottom + 6,
-        left: align === "end" ? rect.right - 220 : rect.left,
-        width: rect.width,
+        top: flipped ? rect.top - 6 : rect.bottom + 6,
+        left,
+        width,
+        flipped,
       });
     }
 
@@ -160,8 +182,13 @@ export function FilterPill<T extends string>({
           className="mb-filter-pill-menu"
           style={{
             position: "fixed",
-            top: menuPosition.top,
+            // Si flipped, on ancre par le bas du menu juste au-dessus du
+            // bouton (transform translateY(-100%) via "bottom" anchor).
+            ...(menuPosition.flipped
+              ? { bottom: window.innerHeight - menuPosition.top }
+              : { top: menuPosition.top }),
             left: menuPosition.left,
+            width: menuPosition.width || undefined,
             minWidth: Math.max(180, menuPosition.width),
             ["--mb-filter-accent" as string]: accent,
           } as React.CSSProperties}

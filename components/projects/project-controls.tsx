@@ -468,14 +468,10 @@ function ProjectStatusSettingsModal({
         role="dialog"
         aria-modal="true"
         aria-label="Personnalisation des statuts"
-        className="mb-modal-surface rounded-3xl overflow-hidden"
+        className="mb-modal-surface mb-task-drawer rounded-3xl overflow-hidden"
         style={{
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "min(1080px, calc(100vw - 32px))",
-          maxHeight: "min(760px, calc(100dvh - 40px))",
+          // Position + width + height héritées de .mb-task-drawer (cf.
+          // app/globals.css) qui gère déjà safe-areas iPhone et bottom-nav.
           overflowY: "auto",
           zIndex: 80,
         }}
