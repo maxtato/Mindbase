@@ -120,19 +120,21 @@ export function TaskDetailLauncher({
   }
 
   function handleChecklistMutated(nextChecklist: ChecklistItem[]) {
+    // Mise à jour optimiste du state local : le drawer reflète immédiatement
+    // la nouvelle checklist sans re-fetch RSC. C'est ce qui évite que le
+    // drawer ne se "ferme" visuellement quand on coche un item ou applique
+    // une suggestion IA.
     setDraftTask((current) => ({ ...current, checklist: nextChecklist }));
     if (onChecklistChange) {
-      // Optimisme côté parent → pas de router.refresh qui ferait sauter la
-      // modal / scroller la page sous l'utilisateur.
       onChecklistChange(nextChecklist);
-      startTransition(async () => {
-        await updateTaskAction(projectId, stepId, task.id, { checklist: nextChecklist });
-      });
-      return;
     }
     startTransition(async () => {
+      // Persiste côté serveur en arrière-plan. PAS de router.refresh ici :
+      // ça déclencherait un re-render du Server Component parent qui peut
+      // remonter le launcher (et fermer le drawer). Les vues globales
+      // (sidebar stats, dashboard counters) seront re-sync à la prochaine
+      // navigation.
       await updateTaskAction(projectId, stepId, task.id, { checklist: nextChecklist });
-      router.refresh();
     });
   }
 

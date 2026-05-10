@@ -681,7 +681,7 @@ function ChecklistField({
     if (!projectId || !stepId || !aiSuggestions || aiSuggestions.length === 0) return;
     setAiPending(true);
     try {
-      await applyAIChecklistAction({
+      const { checklist: nextChecklist } = await applyAIChecklistAction({
         projectId,
         stepId,
         taskId: task.id,
@@ -689,7 +689,11 @@ function ChecklistField({
         mode,
       });
       setAiSuggestions(null);
-      router.refresh();
+      // Met à jour la checklist localement via le callback du TaskDetailLauncher
+      // pour que le drawer reflète immédiatement les nouveaux items sans
+      // re-fetch (router.refresh aurait remonté le launcher et fermé le
+      // drawer en plein milieu de l'interaction utilisateur).
+      onChecklistMutated?.(nextChecklist);
     } catch (err) {
       setAiError(err instanceof Error ? err.message : "Erreur IA.");
     } finally {

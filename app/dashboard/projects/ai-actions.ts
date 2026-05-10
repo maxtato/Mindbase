@@ -20,6 +20,7 @@ import {
 import { getDisplayStepTitle } from "@/lib/project-display";
 import { getWorkspace, type Workspace } from "@/lib/workspace";
 import type { ProjectPriority } from "@/lib/project-taxonomy";
+import type { ChecklistItem } from "@/lib/mock-data";
 
 // 1a) Création de projet assistée — étape 1 : génération de la proposition
 export async function suggestProjectFromDescriptionAction(
@@ -186,7 +187,7 @@ export async function applyAIChecklistAction(input: {
   taskId: string;
   items: string[];
   mode: "replace" | "append";
-}): Promise<void> {
+}): Promise<{ checklist: ChecklistItem[] }> {
   const project = await getProjectById(input.projectId);
   if (!project) throw new Error("Projet introuvable.");
   const step = (project.steps ?? []).find((s) => s.id === input.stepId);
@@ -195,19 +196,21 @@ export async function applyAIChecklistAction(input: {
   if (!task) throw new Error("Tâche introuvable.");
 
   const cleaned = input.items.map((item) => item.trim()).filter(Boolean);
-  const newItems = cleaned.map((label, index) => ({
+  const newItems: ChecklistItem[] = cleaned.map((label, index) => ({
     id: `cl_${Date.now()}_${index}`,
     label,
     done: false,
   }));
 
-  const nextChecklist =
+  const nextChecklist: ChecklistItem[] =
     input.mode === "replace" ? newItems : [...(task.checklist ?? []), ...newItems];
 
   await updateTaskInStep(input.projectId, input.stepId, input.taskId, {
     checklist: nextChecklist,
   });
 
-  revalidatePath(`/dashboard/projects/${input.projectId}`);
-  refresh();
+  // PAS de revalidatePath/refresh ici : ça remonterait le drawer ouvert
+  // de l'utilisateur. La nouvelle checklist est retournée au client qui
+  // va l'injecter dans son state local via onChecklistMutated.
+  return { checklist: nextChecklist };
 }
