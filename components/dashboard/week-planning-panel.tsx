@@ -22,9 +22,14 @@ interface PlannedTask {
 interface WeekPlanningPanelProps {
   tasks: PlannedTask[];
   workspace: string;
+  /** Limite globale de tâches affichées avant le bouton "Voir plus".
+   *  Réparties selon les buckets dans l'ordre overdue → today → tomorrow → week. */
+  limit?: number;
+  /** Lien "Voir plus" (vers le calendrier ou une vue plus large). */
+  seeMoreHref?: string;
 }
 
-export function WeekPlanningPanel({ tasks, workspace }: WeekPlanningPanelProps) {
+export function WeekPlanningPanel({ tasks, workspace, limit = 6, seeMoreHref }: WeekPlanningPanelProps) {
   const buckets = bucketize(tasks);
   const order: Array<keyof typeof buckets> = ["overdue", "today", "tomorrow", "week"];
   const meta: Record<keyof typeof buckets, { label: string; color: string }> = {
@@ -42,11 +47,19 @@ export function WeekPlanningPanel({ tasks, workspace }: WeekPlanningPanelProps) 
     );
   }
 
+  // On distribue le `limit` total entre les buckets (priorité du plus urgent
+  // au moins urgent). Une fois le quota atteint, on arrête d'afficher.
+  let remaining = limit;
+  const totalShown = Math.min(limit, tasks.length);
+  const totalHidden = tasks.length - totalShown;
+
   return (
     <div className="flex flex-col gap-3">
       {order.map((key) => {
         const items = buckets[key];
-        if (items.length === 0) return null;
+        if (items.length === 0 || remaining <= 0) return null;
+        const visible = items.slice(0, remaining);
+        remaining -= visible.length;
         return (
           <section key={key} className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between gap-2">
@@ -58,18 +71,22 @@ export function WeekPlanningPanel({ tasks, workspace }: WeekPlanningPanelProps) 
               </span>
             </div>
             <div className="flex flex-col gap-1.5">
-              {items.slice(0, 4).map((entry) => (
+              {visible.map((entry) => (
                 <PlannedTaskRow key={entry.id} entry={entry} workspace={workspace} bucket={key} />
               ))}
-              {items.length > 4 && (
-                <p className="text-[10.5px]" style={{ color: text.ghost }}>
-                  +{items.length - 4} autre{items.length - 4 > 1 ? "s" : ""}
-                </p>
-              )}
             </div>
           </section>
         );
       })}
+      {totalHidden > 0 && seeMoreHref && (
+        <Link
+          href={seeMoreHref}
+          className="self-start text-[11px] font-semibold"
+          style={{ color: text.muted }}
+        >
+          Voir plus ({totalHidden}) →
+        </Link>
+      )}
     </div>
   );
 }

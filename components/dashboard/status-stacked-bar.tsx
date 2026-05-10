@@ -121,15 +121,18 @@ export function StatusStackedBar({ breakdown }: StatusStackedBarProps) {
   }
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-4">
-      {/* Le donut prend toute la largeur disponible et reste carré.
-          On limite à 360px max pour que ça reste élégant sur très grand
-          écran sans dominer la carte. container-type permet aux unités
-          cqi/cqw de fonctionner sur les éléments enfants. */}
+    <div
+      className="flex h-full w-full flex-col items-center justify-center gap-5"
+      style={{ paddingBlock: 8, paddingInline: 12 }}
+    >
+      {/* Le donut prend une bonne partie de la largeur disponible mais on
+          laisse de la respiration autour pour que ça reste équilibré dans
+          la carte. container-type permet aux unités cqi/cqw de fonctionner
+          sur les éléments enfants. */}
       <div
-        className="relative w-full"
+        className="relative"
         style={{
-          maxWidth: 360,
+          width: "min(78%, 280px)",
           aspectRatio: "1 / 1",
           containerType: "inline-size",
         }}

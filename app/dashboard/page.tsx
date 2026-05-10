@@ -19,7 +19,8 @@ import type { Project, Task, TaskStatus } from "@/lib/mock-data";
 import { StatusStackedBar } from "@/components/dashboard/status-stacked-bar";
 import { WeekPlanningPanel, buildPlannedTasks } from "@/components/dashboard/week-planning-panel";
 import { ActivityFeedPanel, buildActivityFeed } from "@/components/dashboard/activity-feed-panel";
-import { ActiveProjectCard } from "@/components/dashboard/active-project-card";
+import { KpiCard, type KpiTask } from "@/components/dashboard/kpi-card";
+import { resolveProjectSubcategoryDisplay } from "@/lib/project-taxonomy";
 
 type DashboardTask = {
   project: Project;
@@ -61,10 +62,28 @@ export default async function DashboardPage({
   // Activité récente (dérivée du state des projets)
   const activityFeed = buildActivityFeed(projects);
 
-  // KPI principaux affichés en haut du dashboard.
+  // KPI principaux affichés en haut du dashboard. Les listes sont ensuite
+  // injectées dans le popover de chaque KpiCard pour permettre à l'utilisateur
+  // de drill-down sur les tâches concernées.
   const kpiProjects = openProjects.length;
+  const overdueTasks = openTasks.filter(({ entry }) => isTaskOverdue(entry.task));
   const kpiTasks = openTasks.length;
-  const kpiOverdue = openTasks.filter(({ entry }) => isTaskOverdue(entry.task)).length;
+  const kpiOverdue = overdueTasks.length;
+
+  const taskHref = (item: DashboardTask) =>
+    `/dashboard/projects/${item.project.id}?workspace=${workspace}&taskId=${item.entry.task.id}`;
+  const toKpiTask = (item: DashboardTask, meta?: KpiTask["meta"], metaTone?: KpiTask["metaTone"]): KpiTask => ({
+    key: `${item.project.id}-${item.entry.task.id}`,
+    title: item.entry.task.title,
+    projectName: item.project.name,
+    projectColor: resolveProjectSubcategoryDisplay(item.project).color,
+    href: taskHref(item),
+    meta,
+    metaTone,
+  });
+
+  const openTasksKpi = openTasks.map((item) => toKpiTask(item));
+  const overdueTasksKpi = overdueTasks.map((item) => toKpiTask(item, "En retard", "danger"));
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -104,26 +123,30 @@ export default async function DashboardPage({
             </Link>
           </section>
 
-          {/* KPI principaux — rangée de 3 chiffres, tous cliquables. */}
+          {/* KPI principaux — rangée de 3 chiffres. Les KPI tâches ouvrent
+              un popover listant les tâches concernées (clic sur une tâche
+              du popover → navigation vers la page projet + drawer auto-
+              ouvert). KPI projets reste un lien vers la liste des projets. */}
           <section className="grid grid-cols-3 gap-3">
-            <KpiTile
+            <KpiCard
               label="Projets"
               value={kpiProjects}
-              accent={statusColor.blue.text}
+              tone="info"
               href={`/dashboard/projects?${qs}`}
             />
-            <KpiTile
-              label="Tâches"
+            <KpiCard
+              label="Tâches ouvertes"
               value={kpiTasks}
-              accent={theme.accent}
-              href={`/dashboard/kanban?${qs}`}
+              tone={kpiTasks > 0 ? "warn" : "neutral"}
+              tasks={openTasksKpi}
+              emptyLabel="Aucune tâche ouverte."
             />
-            <KpiTile
+            <KpiCard
               label="En retard"
               value={kpiOverdue}
-              accent={kpiOverdue > 0 ? errorTokens.text : text.muted}
-              tone={kpiOverdue > 0 ? "danger" : "neutral"}
-              href={`/dashboard/kanban?${qs}`}
+              tone={kpiOverdue > 0 ? "critical" : "neutral"}
+              tasks={overdueTasksKpi}
+              emptyLabel="Aucune tâche en retard."
             />
           </section>
 
@@ -143,31 +166,36 @@ export default async function DashboardPage({
               title="Tâches à venir"
               meta={plannedTasks.length > 0 ? `${plannedTasks.length}` : undefined}
               accent={theme.accent}
-              href={`/dashboard/calendar?${qs}`}
             >
-              <WeekPlanningPanel tasks={plannedTasks} workspace={workspace} />
+              <WeekPlanningPanel
+                tasks={plannedTasks}
+                workspace={workspace}
+                limit={6}
+                seeMoreHref={`/dashboard/calendar?${qs}`}
+              />
             </Card>
 
             <Card
               title="Projets ouverts"
               meta={`${openProjects.length} projet${openProjects.length > 1 ? "s" : ""}`}
               accent={theme.accent}
-              href={`/dashboard/projects?${qs}`}
-              action={
-                openProjects.length > 0 ? (
-                  <span className="text-[11px] font-semibold" style={{ color: theme.accent }}>
-                    Voir tous →
-                  </span>
-                ) : undefined
-              }
             >
               {openProjects.length === 0 ? (
                 <EmptyState label="Aucun projet ouvert dans cet espace." />
               ) : (
-                <div className="grid gap-3">
-                  {openProjects.slice(0, 4).map((project) => (
-                    <ActiveProjectCard key={project.id} project={project} workspace={workspace} />
+                <div className="flex flex-col gap-2">
+                  {openProjects.slice(0, 3).map((project) => (
+                    <CompactProjectRow key={project.id} project={project} workspace={workspace} />
                   ))}
+                  {openProjects.length > 3 && (
+                    <Link
+                      href={`/dashboard/projects?${qs}`}
+                      className="self-start text-[11px] font-semibold"
+                      style={{ color: text.muted }}
+                    >
+                      Voir plus ({openProjects.length - 3}) →
+                    </Link>
+                  )}
                 </div>
               )}
             </Card>
@@ -254,50 +282,58 @@ function EmptyState({ label }: { label: string }) {
   );
 }
 
-interface KpiTileProps {
-  label: string;
-  value: number;
-  accent: string;
-  href?: string;
-  tone?: "neutral" | "danger";
-}
-
-function KpiTile({ label, value, accent, href, tone = "neutral" }: KpiTileProps) {
-  const content = (
-    <div
-      className="flex h-full flex-col justify-between gap-2 rounded-[20px] px-4 py-4 lg:px-5 lg:py-5"
+// Carte projet compacte pour le dashboard : juste titre + barre d'avancement
+// + une ligne d'infos utiles (statut + % + nombre de tâches restantes).
+// Tient sur ~3 lignes, pour qu'on puisse en aligner 3 dans la carte.
+function CompactProjectRow({ project, workspace }: { project: Project; workspace: string }) {
+  const display = resolveProjectSubcategoryDisplay(project);
+  const href = `/dashboard/projects/${project.id}?workspace=${workspace}`;
+  const allTasks = flattenProjectTasks(project);
+  const remainingTasks = allTasks.filter((entry) => deriveTaskStatus(entry.task) !== "done").length;
+  const progress = Math.max(0, Math.min(100, Math.round(project.progress ?? 0)));
+  return (
+    <Link
+      href={href}
+      className="flex min-w-0 flex-col gap-2 rounded-xl px-3 py-2.5"
       style={{
-        background: tone === "danger" && value > 0 ? errorTokens.bg : surface.s1,
-        border: `1px solid ${tone === "danger" && value > 0 ? errorTokens.border : surface.borderSubtle}`,
-        boxShadow: "var(--mb-shadow-xs)",
+        background: surface.s2,
+        border: `1px solid ${surface.borderSubtle}`,
       }}
     >
-      <p
-        className="text-[10px] font-semibold uppercase tracking-[0.14em]"
-        style={{ color: text.muted }}
+      <div className="flex min-w-0 items-center gap-2">
+        <span
+          aria-hidden
+          className="inline-block h-2 w-2 shrink-0 rounded-full"
+          style={{ background: display.color }}
+        />
+        <p
+          className="min-w-0 flex-1 truncate text-[12.5px] font-semibold"
+          style={{ color: text.primary }}
+        >
+          {project.name}
+        </p>
+        <span
+          className="shrink-0 text-[10.5px] font-bold tabular-nums"
+          style={{ color: text.muted }}
+        >
+          {progress}%
+        </span>
+      </div>
+      <div
+        className="relative h-1 w-full overflow-hidden rounded-full"
+        style={{ background: surface.s3 }}
       >
-        {label}
+        <span
+          aria-hidden
+          className="absolute inset-y-0 left-0 rounded-full"
+          style={{ width: `${progress}%`, background: display.color }}
+        />
+      </div>
+      <p className="text-[10.5px]" style={{ color: text.muted }}>
+        {remainingTasks} tâche{remainingTasks > 1 ? "s" : ""} restante{remainingTasks > 1 ? "s" : ""}
       </p>
-      <p
-        className="text-[clamp(1.5rem,5vw,2.5rem)] font-bold leading-none"
-        style={{
-          color: accent,
-          fontVariantNumeric: "tabular-nums",
-          letterSpacing: "-0.02em",
-        }}
-      >
-        {value}
-      </p>
-    </div>
+    </Link>
   );
-  if (href) {
-    return (
-      <Link href={href} className="min-w-0">
-        {content}
-      </Link>
-    );
-  }
-  return <div className="min-w-0">{content}</div>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
