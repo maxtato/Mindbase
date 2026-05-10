@@ -12,6 +12,7 @@ import { FilterPill, FilterPillGroup, type FilterPillOption } from "@/components
 
 type StatusFilter = "open" | "all" | TaskStatus;
 type PriorityFilter = "all" | ProjectPriority;
+type OwnerFilter = "all" | "mine";
 
 interface ProjectOption {
   id: string;
@@ -35,6 +36,8 @@ interface BoardFilterControlsProps {
   showStatus?: boolean;
   priorityFilter?: PriorityFilter;
   showPriority?: boolean;
+  ownerFilter?: OwnerFilter;
+  showOwner?: boolean;
   month?: string;
 }
 
@@ -55,6 +58,11 @@ const PRIORITY_FILTERS: FilterPillOption<PriorityFilter>[] = [
   { value: "low", label: "Basse", dot: "var(--mb-status-green-text)" },
 ];
 
+const OWNER_FILTERS: FilterPillOption<OwnerFilter>[] = [
+  { value: "all", label: "Toutes" },
+  { value: "mine", label: "Mes tâches" },
+];
+
 export function BoardFilterControls({
   basePath,
   workspace,
@@ -66,6 +74,8 @@ export function BoardFilterControls({
   showStatus = false,
   priorityFilter = "all",
   showPriority = false,
+  ownerFilter = "all",
+  showOwner = false,
   month,
 }: BoardFilterControlsProps) {
   const router = useRouter();
@@ -81,17 +91,19 @@ export function BoardFilterControls({
     ...steps.map((step) => ({ value: step.id, label: step.title })),
   ];
 
-  function navigate(next: { projectId?: string; stepId?: string; statusFilter?: StatusFilter; priorityFilter?: PriorityFilter }) {
+  function navigate(next: { projectId?: string; stepId?: string; statusFilter?: StatusFilter; priorityFilter?: PriorityFilter; ownerFilter?: OwnerFilter }) {
     const nextProjectId = next.projectId ?? projectId;
     const nextStepId = nextProjectId !== projectId ? "all" : next.stepId ?? stepId;
     const nextStatus = next.statusFilter ?? statusFilter;
     const nextPriority = next.priorityFilter ?? priorityFilter;
+    const nextOwner = next.ownerFilter ?? ownerFilter;
 
     const params = new URLSearchParams({ workspace });
     if (nextProjectId !== "all") params.set("project", nextProjectId);
     if (nextStepId !== "all") params.set("step", nextStepId);
     if (showStatus && nextStatus !== "open") params.set("status", nextStatus);
     if (showPriority && nextPriority !== "all") params.set("priority", nextPriority);
+    if (showOwner && nextOwner !== "all") params.set("owner", nextOwner);
     if (month) params.set("month", month);
     router.push(`${basePath}?${params.toString()}`);
   }
@@ -136,6 +148,17 @@ export function BoardFilterControls({
           onChange={(nextPriority) => navigate({ priorityFilter: nextPriority })}
           accentColor={theme.accent}
           active={priorityFilter !== "all"}
+          minWidth={142}
+        />
+      )}
+      {showOwner && (
+        <FilterPill
+          label="Tâches"
+          value={ownerFilter}
+          options={OWNER_FILTERS}
+          onChange={(nextOwner) => navigate({ ownerFilter: nextOwner })}
+          accentColor={theme.accent}
+          active={ownerFilter !== "all"}
           minWidth={142}
         />
       )}

@@ -1478,18 +1478,22 @@ function ExpandedFieldPill({
       <span
         style={{
           fontSize: 10.5,
-          fontWeight: 500,
+          fontWeight: 600,
           color: text.muted,
           flexShrink: 0,
         }}
       >
         {label}
       </span>
+      <span aria-hidden style={{ color: text.ghost, opacity: 0.6, flexShrink: 0 }}>·</span>
       <span
         style={{
-          fontSize: 10.5,
-          fontWeight: 500,
-          color: text.secondary,
+          // Cohérent avec les FilterPill : valeur en gras + couleur primaire
+          // pour la rendre plus explicite que le label gauche.
+          fontSize: 11,
+          fontWeight: 700,
+          color: text.primary,
+          letterSpacing: "-0.005em",
           minWidth: 0,
           flex: 1,
           overflow: "hidden",

@@ -25,10 +25,11 @@ import type { ChecklistItem } from "@/lib/mock-data";
 // 1a) Création de projet assistée — étape 1 : génération de la proposition
 export async function suggestProjectFromDescriptionAction(
   description: string,
+  workspace: string,
 ): Promise<AIProjectSuggestion> {
   const cleaned = description.trim();
   if (!cleaned) throw new Error("Décris le projet avant de demander une suggestion.");
-  return generateProjectSuggestion(cleaned);
+  return generateProjectSuggestion(cleaned, getWorkspace(workspace));
 }
 
 // 1b) Création de projet assistée — étape 2 : matérialisation de la proposition

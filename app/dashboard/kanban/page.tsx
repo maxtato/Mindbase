@@ -2,23 +2,27 @@ import { BoardFilterControls } from "@/components/tasks/board-filter-controls";
 import { TasksKanbanBoard } from "@/components/tasks/tasks-kanban-board";
 import { Topbar } from "@/components/layout/topbar";
 import { surface, text } from "@/lib/design-tokens";
-import type { TaskStatus } from "@/lib/mock-data";
+import type { Task, TaskStatus } from "@/lib/mock-data";
 import { flattenProjectTasks } from "@/lib/project-insights";
 import { getProjectsForWorkspace } from "@/lib/project-store";
 import { getDisplayStepTitle } from "@/lib/project-display";
 import { deriveTaskStatus } from "@/lib/project-plan";
 import { getWorkspace } from "@/lib/workspace";
+import { getActiveAccountName } from "@/lib/current-account";
 
 type StatusFilter = "open" | "all" | TaskStatus;
+type OwnerFilter = "all" | "mine";
 
 export default async function KanbanPage({
   searchParams,
 }: {
-  searchParams: Promise<{ workspace?: string; project?: string; step?: string; status?: string }>;
+  searchParams: Promise<{ workspace?: string; project?: string; step?: string; status?: string; owner?: string }>;
 }) {
   const sp = await searchParams;
   const workspace = getWorkspace(sp.workspace);
   const statusFilter = parseStatusFilter(sp.status);
+  const ownerFilter: OwnerFilter = sp.owner === "mine" ? "mine" : "all";
+  const me = getActiveAccountName();
   const projects = (await getProjectsForWorkspace(workspace)).filter(
     (project) => project.status !== "archived" && !project.deleted,
   );
@@ -40,7 +44,8 @@ export default async function KanbanPage({
   const scopedTasks = allTasks
     .filter(({ project }) => selectedProjectId === "all" || project.id === selectedProjectId)
     .filter(({ entry }) => selectedStepId === "all" || entry.stepId === selectedStepId)
-    .filter(({ entry }) => matchStatusFilter(deriveTaskStatus(entry.task), statusFilter));
+    .filter(({ entry }) => matchStatusFilter(deriveTaskStatus(entry.task), statusFilter))
+    .filter(({ entry }) => ownerFilter === "all" || taskBelongsToUser(entry.task, me));
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -57,6 +62,8 @@ export default async function KanbanPage({
             stepId={selectedStepId}
             statusFilter={statusFilter}
             showStatus
+            ownerFilter={ownerFilter}
+            showOwner
           />
 
           {scopedTasks.length === 0 ? (
@@ -101,4 +108,18 @@ function matchStatusFilter(status: TaskStatus, filter: StatusFilter) {
   if (filter === "all") return true;
   if (filter === "open") return status !== "done";
   return status === filter;
+}
+
+// Match "mes tâches" : owner direct ou présent dans assignees.
+// Comparaison sur le prénom pour tolérer "Maxime T." vs "Maxime".
+function taskBelongsToUser(task: Task, me: string) {
+  const meKey = me.trim().toLowerCase().split(" ")[0];
+  if (!meKey) return false;
+  const matches = (name: string | undefined) => {
+    if (!name) return false;
+    const key = name.trim().toLowerCase();
+    return key === me.toLowerCase() || key.split(" ")[0] === meKey;
+  };
+  if (matches(task.owner)) return true;
+  return (task.assignees ?? []).some((name) => matches(name));
 }

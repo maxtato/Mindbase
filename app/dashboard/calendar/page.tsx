@@ -7,16 +7,18 @@ import { getProjectsForWorkspace } from "@/lib/project-store";
 import { getDisplayStepTitle } from "@/lib/project-display";
 import { deriveTaskDisplayPriority, deriveTaskStatus } from "@/lib/project-plan";
 import type { ProjectPriority } from "@/lib/project-taxonomy";
-import type { TaskStatus } from "@/lib/mock-data";
+import type { Task, TaskStatus } from "@/lib/mock-data";
 import { getWorkspace } from "@/lib/workspace";
+import { getActiveAccountName } from "@/lib/current-account";
 
 type StatusFilter = "open" | "all" | TaskStatus;
 type PriorityFilter = "all" | ProjectPriority;
+type OwnerFilter = "all" | "mine";
 
 export default async function CalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ workspace?: string; project?: string; step?: string; month?: string; status?: string; priority?: string }>;
+  searchParams: Promise<{ workspace?: string; project?: string; step?: string; month?: string; status?: string; priority?: string; owner?: string }>;
 }) {
   const sp = await searchParams;
   const workspace = getWorkspace(sp.workspace);
@@ -24,6 +26,8 @@ export default async function CalendarPage({
   const monthParam = formatMonthParam(monthStart);
   const statusFilter = parseStatusFilter(sp.status);
   const priorityFilter = parsePriorityFilter(sp.priority);
+  const ownerFilter: OwnerFilter = sp.owner === "mine" ? "mine" : "all";
+  const me = getActiveAccountName();
 
   const projects = (await getProjectsForWorkspace(workspace)).filter(
     (project) => project.status !== "archived" && !project.deleted,
@@ -47,7 +51,8 @@ export default async function CalendarPage({
     .filter(({ project }) => selectedProjectId === "all" || project.id === selectedProjectId)
     .filter(({ entry }) => selectedStepId === "all" || entry.stepId === selectedStepId)
     .filter(({ entry }) => matchStatusFilter(deriveTaskStatus(entry.task), statusFilter))
-    .filter(({ entry }) => priorityFilter === "all" || deriveTaskDisplayPriority(entry.task) === priorityFilter);
+    .filter(({ entry }) => priorityFilter === "all" || deriveTaskDisplayPriority(entry.task) === priorityFilter)
+    .filter(({ entry }) => ownerFilter === "all" || taskBelongsToUser(entry.task, me));
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -66,6 +71,8 @@ export default async function CalendarPage({
             showStatus
             priorityFilter={priorityFilter}
             showPriority
+            ownerFilter={ownerFilter}
+            showOwner
             month={monthParam}
           />
 
@@ -142,4 +149,17 @@ function matchStatusFilter(status: TaskStatus, filter: StatusFilter) {
   if (filter === "all") return true;
   if (filter === "open") return status !== "done";
   return status === filter;
+}
+
+// Match "mes tâches" : owner direct ou présent dans assignees (prénom-base).
+function taskBelongsToUser(task: Task, me: string) {
+  const meKey = me.trim().toLowerCase().split(" ")[0];
+  if (!meKey) return false;
+  const matches = (name: string | undefined) => {
+    if (!name) return false;
+    const key = name.trim().toLowerCase();
+    return key === me.toLowerCase() || key.split(" ")[0] === meKey;
+  };
+  if (matches(task.owner)) return true;
+  return (task.assignees ?? []).some((name) => matches(name));
 }

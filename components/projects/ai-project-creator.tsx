@@ -42,8 +42,11 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
     setSuggestion(null);
     setPending(true);
     try {
-      const result = await suggestProjectFromDescriptionAction(description);
+      const result = await suggestProjectFromDescriptionAction(description, workspace);
       setSuggestion(result);
+      // L'IA a suggéré un thème : on pré-sélectionne s'il existe dans le workspace.
+      const suggested = subcategoryOptions.find((option) => option.key === result.subcategory);
+      if (suggested) setSubcategory(suggested.key);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur IA.");
     } finally {
