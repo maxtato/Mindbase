@@ -579,6 +579,11 @@ function sanitizeIdList(ids: string[] | undefined) {
   return next.length > 0 ? Array.from(new Set(next)) : undefined;
 }
 
+// Sur Vercel/Lambda les fonctions tournent dans un FS en lecture seule
+// (sauf /tmp). On détecte ça pour swallow les erreurs d'écriture plutôt
+// que crasher les Server Components avec un EROFS.
+const IS_READONLY_FS = Boolean(process.env.VERCEL) || process.env.NODE_ENV === "production";
+
 async function ensureProjectStore() {
   try {
     const content = await readFile(PROJECTS_FILE_PATH, "utf8");
@@ -599,6 +604,12 @@ async function ensureProjectStore() {
       (error as { code?: string }).code === "ENOENT";
 
     if (!isMissingFile) {
+      // En prod (FS read-only), on log et on retombe sur les seeds plutôt
+      // que faire crasher tout le rendu serveur.
+      if (IS_READONLY_FS) {
+        console.error("[project-store] read failed in read-only FS, falling back to seeds:", error);
+        return cloneSeedProjects().map((project) => normalizeProject(project));
+      }
       throw error;
     }
 
@@ -607,6 +618,13 @@ async function ensureProjectStore() {
 }
 
 async function persistProjects(projects: Project[]) {
+  // No-op en lecture seule : Vercel et la plupart des hébergements
+  // serverless n'autorisent pas l'écriture sur le filesystem en dehors de
+  // /tmp. On évite l'erreur EROFS et on perd simplement les modifs (à
+  // remplacer par Supabase / une DB quand la persistance importera).
+  if (IS_READONLY_FS) {
+    return;
+  }
   const payload: ProjectStoreFile = {
     version: STORE_VERSION,
     projects,
