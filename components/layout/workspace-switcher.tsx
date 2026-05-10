@@ -6,6 +6,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import { workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 
@@ -18,6 +19,13 @@ const WORKSPACES: Workspace[] = ["personal", "professional"];
 export function WorkspaceSwitcher({ workspace }: WorkspaceSwitcherProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // Persiste le workspace courant dans un cookie pour que la racine "/"
+  // et tout point d'entrée sans param redirige vers le dernier env utilisé,
+  // au lieu de toujours retomber sur "personal".
+  useEffect(() => {
+    document.cookie = `mindbase-workspace=${workspace}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+  }, [workspace]);
 
   function hrefFor(target: Workspace) {
     const next = new URLSearchParams(searchParams?.toString() ?? "");

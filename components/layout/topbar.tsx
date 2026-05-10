@@ -43,19 +43,32 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
       />
       <div className="flex items-center gap-2 min-w-0 sm:gap-3">
         {/* Mark Mindbase visible uniquement en mobile : la sidebar avec le
-            logo plein n'est pas affichée sur petit écran. */}
+            logo plein n'est pas affichée sur petit écran. On utilise le
+            même asset que la sidebar repliée pour rester cohérent. */}
         <Link
-          href="/dashboard"
+          href={`/dashboard?workspace=${workspace}`}
           aria-label="Accueil Mindbase"
           className="shrink-0 sm:hidden"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 32,
+            height: 32,
+            borderRadius: 9,
+            overflow: "hidden",
+            background: surface.s2,
+            border: `1px solid ${surface.borderSubtle}`,
+          }}
         >
           <Image
-            src="/mindbase-mark.png"
+            src="/mindbase-sidebar-mark.jpeg"
             alt=""
-            width={28}
-            height={28}
+            width={32}
+            height={32}
             priority
-            style={{ display: "block", borderRadius: 6 }}
+            unoptimized
+            style={{ display: "block", objectFit: "contain", width: "100%", height: "100%" }}
           />
         </Link>
         {breadcrumb ?? (
