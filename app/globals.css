@@ -1224,23 +1224,38 @@ summary {
   left: 50%;
   transform: translate(-50%, -50%);
   width: min(1220px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
   height: min(820px, calc(100dvh - 40px));
   border-radius: 20px;
+  /* Force the drawer to never overflow horizontally, even if its content
+     would otherwise push it wider on iOS Safari. */
+  overflow-x: hidden;
 }
 
 @media (max-width: 768px) {
   .mb-task-drawer {
-    /* Anchor with explicit top/bottom rather than centering: it lets us
-       respect safe-areas and the bottom nav cleanly. */
+    /* Use explicit width calculation rather than left+right+width:auto.
+       iOS Safari sometimes stretches width:auto positioned elements past
+       the right edge when content has min-content larger than the
+       computed width. An explicit width is bulletproof. */
     top: calc(env(safe-area-inset-top, 0px) + 12px);
-    left: calc(env(safe-area-inset-left, 0px) + 12px);
-    right: calc(env(safe-area-inset-right, 0px) + 12px);
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
-    transform: none;
-    width: auto;
-    height: auto;
-    max-height: none;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translateX(-50%);
+    width: calc(100vw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    max-width: calc(100vw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    height: calc(100dvh - 24px - 72px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - 24px - 72px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     border-radius: 18px;
+  }
+
+  /* Defensive: any direct child of the drawer's scroll container should
+     never exceed the drawer width. min-width: 0 lets flex/grid items
+     shrink past their content's intrinsic min-content size. */
+  .mb-task-drawer > * {
+    min-width: 0;
+    max-width: 100%;
   }
 }
 
