@@ -1,15 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { updateSession } from "./utils/supabase/middleware";
 
 const WORKSPACE_COOKIE = "mindbase-workspace";
 const VALID_WORKSPACES = new Set(["personal", "professional"]);
 
+// Edge middleware minimal :
+// - normalise /dashboard* sans ?workspace= via le cookie
+// - n'exécute aucune logique Supabase ici (cf. utils/supabase/middleware
+//   qui peut crasher dans le runtime Edge de Vercel sur certaines
+//   versions). Le refresh de session Supabase passera par les
+//   server actions au moment où l'on en aura réellement besoin.
 export function proxy(request: NextRequest) {
-  // Si l'utilisateur arrive sur /dashboard* sans ?workspace=…, on injecte
-  // celui mémorisé dans le cookie (ou "personal" par défaut). Ça évite que
-  // les redirections internes (signup, projets/page.tsx, /projects/[id])
-  // ou un simple bookmark "/dashboard" ne fasse retomber l'utilisateur sur
-  // l'environnement personnel alors qu'il était en pro.
   const { pathname, searchParams } = request.nextUrl;
   if (pathname.startsWith("/dashboard") && !searchParams.has("workspace")) {
     const cookie = request.cookies.get(WORKSPACE_COOKIE)?.value;
@@ -18,7 +18,7 @@ export function proxy(request: NextRequest) {
     redirectUrl.searchParams.set("workspace", workspace);
     return NextResponse.redirect(redirectUrl);
   }
-  return updateSession(request);
+  return NextResponse.next();
 }
 
 export const config = {

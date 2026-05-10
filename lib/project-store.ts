@@ -585,6 +585,9 @@ function sanitizeIdList(ids: string[] | undefined) {
 const IS_READONLY_FS = Boolean(process.env.VERCEL) || process.env.NODE_ENV === "production";
 
 async function ensureProjectStore() {
+  // Garde large : peu importe l'erreur (FS, JSON parse, lecture, etc.) on
+  // retombe sur les seeds plutôt que faire crasher tout le rendu serveur
+  // sur des plateformes où le FS de l'app n'est pas garanti.
   try {
     const content = await readFile(PROJECTS_FILE_PATH, "utf8");
     const parsed = JSON.parse(content) as Partial<ProjectStoreFile>;
@@ -592,7 +595,11 @@ async function ensureProjectStore() {
     const normalized = projectList.map((project) => normalizeProject(project as Project));
 
     if (parsed.version !== STORE_VERSION || normalized.length !== projectList.length) {
-      await persistProjects(normalized);
+      try {
+        await persistProjects(normalized);
+      } catch {
+        // ignore : version-bump persist est best-effort
+      }
     }
 
     return normalized;
@@ -603,16 +610,12 @@ async function ensureProjectStore() {
       "code" in error &&
       (error as { code?: string }).code === "ENOENT";
 
-    if (!isMissingFile) {
-      // En prod (FS read-only), on log et on retombe sur les seeds plutôt
-      // que faire crasher tout le rendu serveur.
-      if (IS_READONLY_FS) {
-        console.error("[project-store] read failed in read-only FS, falling back to seeds:", error);
-        return cloneSeedProjects().map((project) => normalizeProject(project));
-      }
+    if (!isMissingFile && !IS_READONLY_FS) {
       throw error;
     }
-
+    if (!isMissingFile) {
+      console.error("[project-store] read failed, falling back to seeds:", error);
+    }
     return cloneSeedProjects().map((project) => normalizeProject(project));
   }
 }
@@ -630,8 +633,14 @@ async function persistProjects(projects: Project[]) {
     projects,
   };
 
-  await mkdir(path.dirname(PROJECTS_FILE_PATH), { recursive: true });
-  await writeFile(PROJECTS_FILE_PATH, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+  try {
+    await mkdir(path.dirname(PROJECTS_FILE_PATH), { recursive: true });
+    await writeFile(PROJECTS_FILE_PATH, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+  } catch (error) {
+    // Dernier filet de sécurité : si on a manqué la détection prod, on
+    // n'explose pas le render à cause de la persistance.
+    console.error("[project-store] persist failed, ignoring:", error);
+  }
 }
 
 async function queueWrite<T>(operation: () => Promise<T>) {
