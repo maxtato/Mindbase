@@ -87,8 +87,7 @@ export async function createProjectFromAISuggestionAction(input: {
     }
   }
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/projects");
+  revalidatePath("/", "layout");
   redirect(`/dashboard/projects/${project.id}?workspace=${workspace}`);
 }
 

@@ -176,15 +176,18 @@ export async function archiveProjectAction(id: string, workspace: string) {
   //     (tâches, fichiers, discussions, décisions, risques…) reste
   //     visible quand on rouvre le projet archivé.
   await updateProject(id, { status: "archived", activity: [] });
-  revalidatePath("/dashboard/projects");
-  revalidatePath("/dashboard");
+  // Invalide TOUT le router cache (layout + toutes les pages enfants)
+  // — sinon le user voit l'ancien projet quand il revient en arrière
+  // depuis kanban/calendrier/etc., car ces pages restent cachées.
+  revalidatePath("/", "layout");
   redirect(`/dashboard/projects?workspace=${workspace}`);
 }
 
 export async function deleteProjectAction(id: string, workspace: string) {
   await deleteProject(id);
-  revalidatePath("/dashboard/projects");
-  revalidatePath("/dashboard");
+  // Idem : on flush tout le cache layout pour que le projet supprimé
+  // disparaisse de toutes les vues (dashboard, projets, kanban, calendrier).
+  revalidatePath("/", "layout");
   redirect(`/dashboard/projects?workspace=${workspace}`);
 }
 

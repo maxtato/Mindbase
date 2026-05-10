@@ -192,9 +192,9 @@ export async function createProjectAction(
     statusSettings,
   });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/projects");
-  revalidatePath(`/dashboard/projects/${project.id}`);
+  // Layout-level revalidation : invalide aussi le sidebar/topbar/bottom-nav
+  // et toutes les vues (dashboard, projets, kanban, calendrier) d'un coup.
+  revalidatePath("/", "layout");
 
   redirect(`/dashboard/projects/${project.id}?workspace=${project.workspace}`);
 }
@@ -210,8 +210,6 @@ export async function updateProjectIdentityAction(input: {
     subcategory: input.subcategory,
   });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/projects");
-  revalidatePath(`/dashboard/projects/${input.projectId}`);
+  revalidatePath("/", "layout");
   refresh();
 }
