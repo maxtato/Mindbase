@@ -376,6 +376,18 @@ export function TasksCalendarBoard({
                                             setDraggingKey(null);
                                             setDragOverDate(null);
                                           }}
+                                          // On navigue vers la page projet avec taskId=… plutôt
+                                          // que d'ouvrir un drawer en place : le CalendarTaskCard
+                                          // serait démonté quand la modal liste se ferme, ce qui
+                                          // tuerait le portal du drawer. La page projet auto-
+                                          // ouvre le drawer via le useSearchParams() du
+                                          // TaskDetailLauncher (cf. dashboard).
+                                          onClickOverride={() => {
+                                            setExpandedDate(null);
+                                            router.push(
+                                              `/dashboard/projects/${item.project.id}?workspace=${workspace}&taskId=${item.entry.task.id}`,
+                                            );
+                                          }}
                                         />
                                       ))}
                                     </div>
@@ -455,7 +467,11 @@ function CalendarTaskCard({
   onDragEnd: () => void;
   /** Si fourni, remplace l'ouverture de la modal par ce handler. Utilisé
    *  pour la vue "preview" d'une journée à plusieurs tâches : un tap sur la
-   *  carte aperçu doit éclater la pile, pas ouvrir directement la première. */
+   *  carte aperçu doit éclater la pile, pas ouvrir directement la première.
+   *  Aussi utilisé dans la modal "liste de tâches du jour" pour naviguer
+   *  vers la page projet (qui auto-ouvre le drawer via le param taskId)
+   *  plutôt que d'ouvrir un drawer en place — la fermeture de la liste
+   *  démonterait sinon le portal du drawer. */
   onClickOverride?: () => void;
 }) {
   const { project, entry } = item;
