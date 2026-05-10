@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { kv } from "@vercel/kv";
+import { createClient, type RedisClientType } from "redis";
 import type { Workspace } from "@/lib/workspace";
 import { projects as projectSeeds, type Action, type ChecklistItem, type Decision, type Project, type ProjectActivityItem, type ProjectFile, type ProjectMode, type ProjectPerson, type ProjectStatus, type ProjectStatusSettings, type ProjectTeam, type ProjectTeamMessage, type Risk, type Step, type StepStatus, type Task, type TaskDiscussionMessage, type TaskStatus } from "@/lib/mock-data";
 import {
@@ -585,39 +585,71 @@ function sanitizeIdList(ids: string[] | undefined) {
 // que crasher les Server Components avec un EROFS.
 const IS_READONLY_FS = Boolean(process.env.VERCEL) || process.env.NODE_ENV === "production";
 
-// Vercel KV (Redis) — source de vérité partagée entre toutes les
-// instances serverless quand l'addon est branché. Sans ça, chaque
-// instance avait son propre cache mémoire, ce qui causait des 404
-// aléatoires quand l'utilisateur naviguait sur une instance qui
-// n'avait jamais vu la création/mutation.
-const KV_AVAILABLE = Boolean(process.env.KV_REST_API_URL || process.env.KV_URL);
-const KV_KEY = "mindbase:projects";
+// Redis (via le store Vercel Marketplace) — source de vérité partagée
+// entre toutes les instances serverless. Sans ça, chaque instance avait
+// son propre cache mémoire, ce qui causait des 404 aléatoires quand
+// l'utilisateur naviguait sur une instance qui n'avait jamais vu la
+// création/mutation. On lit REDIS_URL injecté par Vercel.
+const REDIS_URL = process.env.REDIS_URL;
+const REDIS_AVAILABLE = Boolean(REDIS_URL);
+const REDIS_KEY = "mindbase:projects";
 
-interface KvStore {
+interface RedisStore {
   version: number;
   projects: Project[];
 }
 
+// Connexion Redis paresseuse, mémoïsée à l'échelle de l'instance
+// serverless pour ne pas se reconnecter à chaque requête. Vercel garde
+// les instances warm un certain temps, donc la même connexion TCP est
+// réutilisée. Les erreurs sont loggées et n'arrêtent pas le rendu.
+type RedisClient = RedisClientType<Record<string, never>, Record<string, never>, Record<string, never>>;
+let redisClientPromise: Promise<RedisClient> | null = null;
+
+function getRedisClient(): Promise<RedisClient> {
+  if (!REDIS_URL) {
+    return Promise.reject(new Error("REDIS_URL is not set"));
+  }
+  if (!redisClientPromise) {
+    const client = createClient({ url: REDIS_URL }) as RedisClient;
+    client.on("error", (err) => {
+      console.error("[project-store] redis error:", err);
+    });
+    redisClientPromise = client.connect().then(() => client).catch((err) => {
+      // Reset pour qu'une prochaine tentative refasse un connect plutôt
+      // que de garder une promesse rejetée à vie.
+      redisClientPromise = null;
+      throw err;
+    });
+  }
+  return redisClientPromise;
+}
+
 async function ensureProjectStore() {
-  // Priorité 1 : Vercel KV (Redis), source de vérité partagée entre les
-  // instances serverless. Activé automatiquement quand les env vars KV
-  // sont injectées par Vercel.
-  if (KV_AVAILABLE) {
+  // Priorité 1 : Redis (Vercel Marketplace via REDIS_URL).
+  if (REDIS_AVAILABLE) {
     try {
-      const stored = await kv.get<KvStore>(KV_KEY);
-      if (stored && Array.isArray(stored.projects) && stored.projects.length > 0) {
-        return stored.projects.map((project) => normalizeProject(project as Project));
+      const client = await getRedisClient();
+      const raw = await client.get(REDIS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<RedisStore>;
+        if (Array.isArray(parsed.projects) && parsed.projects.length > 0) {
+          return parsed.projects.map((project) => normalizeProject(project as Project));
+        }
       }
       // Pas encore initialisé → on hydrate avec les seeds.
       const seeds = cloneSeedProjects().map((project) => normalizeProject(project));
       try {
-        await kv.set(KV_KEY, { version: STORE_VERSION, projects: seeds } satisfies KvStore);
+        await client.set(
+          REDIS_KEY,
+          JSON.stringify({ version: STORE_VERSION, projects: seeds } satisfies RedisStore),
+        );
       } catch (error) {
-        console.error("[project-store] KV seed write failed:", error);
+        console.error("[project-store] redis seed write failed:", error);
       }
       return seeds;
     } catch (error) {
-      console.error("[project-store] KV read failed, falling back to seeds:", error);
+      console.error("[project-store] redis read failed, falling back to seeds:", error);
       return cloneSeedProjects().map((project) => normalizeProject(project));
     }
   }
@@ -657,19 +689,23 @@ async function ensureProjectStore() {
 }
 
 async function persistProjects(projects: Project[]) {
-  // Priorité 1 : KV. Source de vérité partagée pour Vercel.
-  if (KV_AVAILABLE) {
+  // Priorité 1 : Redis. Source de vérité partagée pour Vercel.
+  if (REDIS_AVAILABLE) {
     try {
-      await kv.set(KV_KEY, { version: STORE_VERSION, projects } satisfies KvStore);
+      const client = await getRedisClient();
+      await client.set(
+        REDIS_KEY,
+        JSON.stringify({ version: STORE_VERSION, projects } satisfies RedisStore),
+      );
     } catch (error) {
-      console.error("[project-store] KV write failed:", error);
+      console.error("[project-store] redis write failed:", error);
     }
     return;
   }
 
   // Priorité 2 : FS local en dev.
   if (IS_READONLY_FS) {
-    return; // hébergeur read-only sans KV → on n'a nulle part où écrire
+    return; // hébergeur read-only sans Redis → on n'a nulle part où écrire
   }
   const payload: ProjectStoreFile = {
     version: STORE_VERSION,
