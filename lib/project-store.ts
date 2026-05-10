@@ -584,25 +584,47 @@ function sanitizeIdList(ids: string[] | undefined) {
 // que crasher les Server Components avec un EROFS.
 const IS_READONLY_FS = Boolean(process.env.VERCEL) || process.env.NODE_ENV === "production";
 
+// Cache de mutations en mémoire — utilisé quand le FS est read-only
+// (Vercel) pour que les delete/archive/update soient visibles au moins
+// pendant la durée de vie de l'instance serverless. À remplacer par une
+// vraie DB (Supabase) pour de la persistance durable.
+//   id → version courante du projet (incluant `deleted: true` pour les
+//   suppressions). Utilisé par applyMutationCache.
+const mutationCache = new Map<string, Project>();
+
+function applyMutationCache(projects: Project[]): Project[] {
+  if (mutationCache.size === 0) return projects;
+  const seen = new Set<string>();
+  const merged: Project[] = projects.map((project) => {
+    seen.add(project.id);
+    const override = mutationCache.get(project.id);
+    return override ?? project;
+  });
+  // Projets créés en mémoire qui n'existaient pas dans le store de base
+  for (const [id, project] of mutationCache.entries()) {
+    if (!seen.has(id)) merged.push(project);
+  }
+  return merged;
+}
+
 async function ensureProjectStore() {
   // Garde large : peu importe l'erreur (FS, JSON parse, lecture, etc.) on
   // retombe sur les seeds plutôt que faire crasher tout le rendu serveur
   // sur des plateformes où le FS de l'app n'est pas garanti.
+  let base: Project[];
   try {
     const content = await readFile(PROJECTS_FILE_PATH, "utf8");
     const parsed = JSON.parse(content) as Partial<ProjectStoreFile>;
     const projectList = Array.isArray(parsed.projects) ? parsed.projects : [];
-    const normalized = projectList.map((project) => normalizeProject(project as Project));
+    base = projectList.map((project) => normalizeProject(project as Project));
 
-    if (parsed.version !== STORE_VERSION || normalized.length !== projectList.length) {
+    if (parsed.version !== STORE_VERSION || base.length !== projectList.length) {
       try {
-        await persistProjects(normalized);
+        await persistProjects(base);
       } catch {
         // ignore : version-bump persist est best-effort
       }
     }
-
-    return normalized;
   } catch (error) {
     const isMissingFile =
       typeof error === "object" &&
@@ -616,15 +638,25 @@ async function ensureProjectStore() {
     if (!isMissingFile) {
       console.error("[project-store] read failed, falling back to seeds:", error);
     }
-    return cloneSeedProjects().map((project) => normalizeProject(project));
+    base = cloneSeedProjects().map((project) => normalizeProject(project));
   }
+  // Couvre les mutations en cours (archivage, suppression, édition…) qui
+  // n'ont pas été persistées sur le FS — typiquement en environnement
+  // serverless en lecture seule (Vercel).
+  return applyMutationCache(base);
 }
 
 async function persistProjects(projects: Project[]) {
+  // Toujours mettre à jour le cache mémoire pour que les mutations soient
+  // visibles immédiatement, peu importe si l'écriture FS aboutit ou non.
+  for (const project of projects) {
+    mutationCache.set(project.id, project);
+  }
   // No-op en lecture seule : Vercel et la plupart des hébergements
   // serverless n'autorisent pas l'écriture sur le filesystem en dehors de
-  // /tmp. On évite l'erreur EROFS et on perd simplement les modifs (à
-  // remplacer par Supabase / une DB quand la persistance importera).
+  // /tmp. On évite l'erreur EROFS et on garde les modifs uniquement en
+  // mémoire (à remplacer par Supabase / une DB quand la persistance
+  // importera).
   if (IS_READONLY_FS) {
     return;
   }
@@ -659,8 +691,18 @@ export async function getAllProjects() {
 export async function deleteProject(id: string) {
   return queueWrite(async () => {
     const projects = await ensureProjectStore();
-    const nextProjects = projects.filter((project) => project.id !== id);
-    if (nextProjects.length === projects.length) return;
+    const target = projects.find((project) => project.id === id);
+    if (!target) return;
+    // Soft delete : on marque deleted: true plutôt que de filter le projet
+    // hors de la liste. Comme ça la mutation peut être enregistrée dans
+    // le cache mémoire (via persistProjects) et survivre à la requête
+    // suivante en environnement serverless en lecture seule.
+    // getAllProjects() filtre déjà les projets `deleted` à la lecture.
+    const nextProjects = projects.map((project) =>
+      project.id === id
+        ? { ...project, deleted: true, updatedAt: new Date().toISOString() }
+        : project,
+    );
     await persistProjects(nextProjects);
   });
 }
