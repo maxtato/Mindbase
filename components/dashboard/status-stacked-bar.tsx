@@ -15,12 +15,14 @@ const STATUS_LABELS: Record<TaskStatus, string> = {
   done: "Terminées",
 };
 
+// Aligné avec TASK_STATUS_DEFAULT_COLORS (app/dashboard/projects/actions.ts).
+// Les couleurs sont les mêmes que celles des dots/badges sur les tâches.
 const STATUS_COLOR: Record<TaskStatus, string> = {
-  todo: "var(--mb-status-gray-text)",
-  in_progress: "var(--mb-status-blue-text)",
-  waiting: "var(--mb-status-yellow-text)",
-  blocked: "var(--mb-status-red-text)",
-  done: "var(--mb-status-green-text)",
+  todo: "#64748B",        // slate-500 (À faire)
+  in_progress: "#F59E0B", // amber-500 (En cours)
+  waiting: "#3B82F6",     // blue-500 (En attente)
+  blocked: "#EF4444",     // red-500 (Bloquées)
+  done: "#22C55E",        // green-500 (Terminées)
 };
 
 interface StatusStackedBarProps {
@@ -31,12 +33,15 @@ interface StatusStackedBarProps {
 // dynamiquement à la largeur disponible dans la carte. Les dimensions ci-dessous
 // sont donc des unités viewBox, pas des pixels absolus.
 const SIZE = 100;
-const STROKE = 11;
+const STROKE = 18;
 const RADIUS = (SIZE - STROKE) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 // Espace (en degrés) entre deux arcs de couleur — converti en longueur sur le cercle.
-const GAP_DEG = 4;
+const GAP_DEG = 3;
 const GAP_LENGTH = (GAP_DEG / 360) * CIRCUMFERENCE;
+// Seuil minimum (en fraction du cercle) pour afficher un nombre sur un arc.
+// En dessous, l'arc est trop petit pour lire confortablement le label.
+const MIN_LABEL_FRACTION = 0.06;
 export function StatusStackedBar({ breakdown }: StatusStackedBarProps) {
   const total = STATUS_ORDER.reduce((sum, status) => sum + (breakdown[status] ?? 0), 0);
 
@@ -61,6 +66,59 @@ export function StatusStackedBar({ breakdown }: StatusStackedBarProps) {
   // Position de départ : on remonte d'un quart de tour pour que le premier
   // arc commence en haut (12 h).
   const initialOffset = -CIRCUMFERENCE / 4;
+
+  // Pré-calcul des arcs colorés et des labels numériques au centre
+  // de chaque arc. Système d'angles : 0 = sommet (12 h), sens horaire.
+  const arcs: React.ReactNode[] = [];
+  const labels: React.ReactNode[] = [];
+  let cumOffset = initialOffset;
+  let cumFraction = 0;
+  for (const { status, count } of segments) {
+    const fraction = count / total;
+    const length = Math.max(0, fraction * CIRCUMFERENCE - effectiveGap);
+    arcs.push(
+      <circle
+        key={status}
+        cx={SIZE / 2}
+        cy={SIZE / 2}
+        r={RADIUS}
+        fill="none"
+        stroke={STATUS_COLOR[status]}
+        strokeWidth={STROKE}
+        strokeLinecap="butt"
+        strokeDasharray={`${length} ${CIRCUMFERENCE - length}`}
+        strokeDashoffset={-cumOffset}
+      >
+        <title>{`${STATUS_LABELS[status]} · ${count}`}</title>
+      </circle>
+    );
+    if (fraction >= MIN_LABEL_FRACTION) {
+      const midFraction = cumFraction + fraction / 2;
+      const midAngle = midFraction * 2 * Math.PI;
+      const lx = SIZE / 2 + RADIUS * Math.sin(midAngle);
+      const ly = SIZE / 2 - RADIUS * Math.cos(midAngle);
+      labels.push(
+        <text
+          key={`label-${status}`}
+          x={lx}
+          y={ly}
+          textAnchor="middle"
+          dominantBaseline="central"
+          style={{
+            fill: "#FFFFFF",
+            fontSize: STROKE * 0.55,
+            fontWeight: 700,
+            fontVariantNumeric: "tabular-nums",
+            pointerEvents: "none",
+          }}
+        >
+          {count}
+        </text>
+      );
+    }
+    cumOffset += fraction * CIRCUMFERENCE;
+    cumFraction += fraction;
+  }
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-4">
@@ -93,32 +151,9 @@ export function StatusStackedBar({ breakdown }: StatusStackedBarProps) {
             stroke={surface.s2}
             strokeWidth={STROKE}
           />
-          {segments.reduce<{ circles: React.ReactNode[]; cumOffset: number }>(
-            (acc, { status, count }) => {
-              const fraction = count / total;
-              const length = Math.max(0, fraction * CIRCUMFERENCE - effectiveGap);
-              const offset = acc.cumOffset;
-              acc.circles.push(
-                <circle
-                  key={status}
-                  cx={SIZE / 2}
-                  cy={SIZE / 2}
-                  r={RADIUS}
-                  fill="none"
-                  stroke={STATUS_COLOR[status]}
-                  strokeWidth={STROKE}
-                  strokeLinecap="butt"
-                  strokeDasharray={`${length} ${CIRCUMFERENCE - length}`}
-                  strokeDashoffset={-offset}
-                  transform={`rotate(0 ${SIZE / 2} ${SIZE / 2})`}
-                >
-                  <title>{`${STATUS_LABELS[status]} · ${count}`}</title>
-                </circle>
-              );
-              return { circles: acc.circles, cumOffset: acc.cumOffset + fraction * CIRCUMFERENCE };
-            },
-            { circles: [], cumOffset: initialOffset }
-          ).circles}
+          {arcs}
+          {/* Labels au-dessus des arcs pour rester lisibles. */}
+          {labels}
         </svg>
         {/* Total au centre de l'anneau — taille adaptée à la taille
             du donut grâce aux unités relatives au container (cqw). */}
@@ -153,8 +188,10 @@ export function StatusStackedBar({ breakdown }: StatusStackedBarProps) {
         </div>
       </div>
 
-      {/* Légende en grille 2 colonnes sous le donut, aérée. */}
-      <ul className="grid w-full grid-cols-2 gap-x-4 gap-y-1.5">
+      {/* Légende compacte sous le donut : couleur + nom du statut.
+          Les chiffres sont déjà affichés directement sur les arcs, plus
+          la peine de les dupliquer en bas. */}
+      <ul className="flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-1.5">
         {STATUS_ORDER.map((status) => {
           const count = breakdown[status] ?? 0;
           const empty = count === 0;
@@ -169,18 +206,7 @@ export function StatusStackedBar({ breakdown }: StatusStackedBarProps) {
                 className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ background: STATUS_COLOR[status], opacity: empty ? 0.4 : 1 }}
               />
-              <span className="truncate" style={{ flex: 1 }}>
-                {STATUS_LABELS[status]}
-              </span>
-              <span
-                style={{
-                  fontWeight: 700,
-                  color: empty ? text.muted : text.primary,
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                {count}
-              </span>
+              <span style={{ fontWeight: 600 }}>{STATUS_LABELS[status]}</span>
             </li>
           );
         })}
