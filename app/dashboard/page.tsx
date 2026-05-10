@@ -12,9 +12,9 @@ import type { ReactNode } from "react";
 import { Topbar } from "@/components/layout/topbar";
 import { getProjectsForWorkspace } from "@/lib/project-store";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
-import { flattenProjectTasks, type FlattenedProjectTask } from "@/lib/project-insights";
+import { flattenProjectTasks, isTaskOverdue, type FlattenedProjectTask } from "@/lib/project-insights";
 import { deriveTaskStatus } from "@/lib/project-plan";
-import { surface, text } from "@/lib/design-tokens";
+import { surface, text, error as errorTokens, statusColor } from "@/lib/design-tokens";
 import type { Project, Task, TaskStatus } from "@/lib/mock-data";
 import { StatusStackedBar } from "@/components/dashboard/status-stacked-bar";
 import { WeekPlanningPanel, buildPlannedTasks } from "@/components/dashboard/week-planning-panel";
@@ -61,6 +61,11 @@ export default async function DashboardPage({
   // Activité récente (dérivée du state des projets)
   const activityFeed = buildActivityFeed(projects);
 
+  // KPI principaux affichés en haut du dashboard.
+  const kpiProjects = openProjects.length;
+  const kpiTasks = openTasks.length;
+  const kpiOverdue = openTasks.filter(({ entry }) => isTaskOverdue(entry.task)).length;
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <Topbar title="Dashboard" workspace={workspace} />
@@ -97,6 +102,27 @@ export default async function DashboardPage({
               </span>
               Créer un projet
             </Link>
+          </section>
+
+          {/* KPI principaux — rangée de 3 chiffres. */}
+          <section className="grid grid-cols-3 gap-3">
+            <KpiTile
+              label="Projets"
+              value={kpiProjects}
+              accent={statusColor.blue.text}
+              href={`/dashboard/projects?${qs}`}
+            />
+            <KpiTile
+              label="Tâches"
+              value={kpiTasks}
+              accent={theme.accent}
+            />
+            <KpiTile
+              label="En retard"
+              value={kpiOverdue}
+              accent={kpiOverdue > 0 ? errorTokens.text : text.muted}
+              tone={kpiOverdue > 0 ? "danger" : "neutral"}
+            />
           </section>
 
           {/* Grid 2×2 — desktop. Sur mobile, tout passe en une colonne. */}
@@ -210,6 +236,52 @@ function EmptyState({ label }: { label: string }) {
       {label}
     </p>
   );
+}
+
+interface KpiTileProps {
+  label: string;
+  value: number;
+  accent: string;
+  href?: string;
+  tone?: "neutral" | "danger";
+}
+
+function KpiTile({ label, value, accent, href, tone = "neutral" }: KpiTileProps) {
+  const content = (
+    <div
+      className="flex h-full flex-col justify-between gap-2 rounded-[20px] px-4 py-4 lg:px-5 lg:py-5"
+      style={{
+        background: tone === "danger" && value > 0 ? errorTokens.bg : surface.s1,
+        border: `1px solid ${tone === "danger" && value > 0 ? errorTokens.border : surface.borderSubtle}`,
+        boxShadow: "var(--mb-shadow-xs)",
+      }}
+    >
+      <p
+        className="text-[10px] font-semibold uppercase tracking-[0.14em]"
+        style={{ color: text.muted }}
+      >
+        {label}
+      </p>
+      <p
+        className="text-[clamp(1.5rem,5vw,2.5rem)] font-bold leading-none"
+        style={{
+          color: accent,
+          fontVariantNumeric: "tabular-nums",
+          letterSpacing: "-0.02em",
+        }}
+      >
+        {value}
+      </p>
+    </div>
+  );
+  if (href) {
+    return (
+      <Link href={href} className="min-w-0">
+        {content}
+      </Link>
+    );
+  }
+  return <div className="min-w-0">{content}</div>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -37,11 +37,6 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 // Espace (en degrés) entre deux arcs de couleur — converti en longueur sur le cercle.
 const GAP_DEG = 4;
 const GAP_LENGTH = (GAP_DEG / 360) * CIRCUMFERENCE;
-// Tailles min/max du donut en pixels pour rester lisible sur tous les
-// formats de carte sans déborder.
-const DONUT_MIN_PX = 96;
-const DONUT_MAX_PX = 168;
-
 export function StatusStackedBar({ breakdown }: StatusStackedBarProps) {
   const total = STATUS_ORDER.reduce((sum, status) => sum + (breakdown[status] ?? 0), 0);
 
@@ -68,16 +63,17 @@ export function StatusStackedBar({ breakdown }: StatusStackedBarProps) {
   const initialOffset = -CIRCUMFERENCE / 4;
 
   return (
-    <div className="flex items-center gap-3 sm:gap-4">
+    <div className="flex h-full w-full flex-col items-center justify-center gap-4">
+      {/* Le donut prend toute la largeur disponible et reste carré.
+          On limite à 360px max pour que ça reste élégant sur très grand
+          écran sans dominer la carte. container-type permet aux unités
+          cqi/cqw de fonctionner sur les éléments enfants. */}
       <div
-        className="relative shrink-0"
+        className="relative w-full"
         style={{
-          width: "min(100%, var(--donut-max))",
-          maxWidth: DONUT_MAX_PX,
-          minWidth: DONUT_MIN_PX,
+          maxWidth: 360,
           aspectRatio: "1 / 1",
-          ["--donut-max" as string]: `${DONUT_MAX_PX}px`,
-          flex: "1 1 auto",
+          containerType: "inline-size",
         }}
       >
         <svg
@@ -124,29 +120,32 @@ export function StatusStackedBar({ breakdown }: StatusStackedBarProps) {
             { circles: [], cumOffset: initialOffset }
           ).circles}
         </svg>
-        {/* Total au centre de l'anneau */}
+        {/* Total au centre de l'anneau — taille adaptée à la taille
+            du donut grâce aux unités relatives au container (cqw). */}
         <div
           className="absolute inset-0 flex flex-col items-center justify-center"
           style={{ pointerEvents: "none" }}
         >
           <span
             style={{
-              fontSize: 18,
-              fontWeight: 700,
+              fontSize: "clamp(28px, 14cqi, 56px)",
+              fontWeight: 800,
               color: text.primary,
               fontVariantNumeric: "tabular-nums",
               lineHeight: 1,
+              letterSpacing: "-0.02em",
             }}
           >
             {total}
           </span>
           <span
             style={{
-              marginTop: 2,
-              fontSize: 9,
+              marginTop: 4,
+              fontSize: "clamp(10px, 3cqi, 13px)",
               color: text.muted,
               textTransform: "uppercase",
-              letterSpacing: "0.1em",
+              letterSpacing: "0.14em",
+              fontWeight: 600,
             }}
           >
             tâche{total > 1 ? "s" : ""}
@@ -154,25 +153,28 @@ export function StatusStackedBar({ breakdown }: StatusStackedBarProps) {
         </div>
       </div>
 
-      <ul className="flex flex-1 flex-col gap-1 min-w-0">
+      {/* Légende en grille 2 colonnes sous le donut, aérée. */}
+      <ul className="grid w-full grid-cols-2 gap-x-4 gap-y-1.5">
         {STATUS_ORDER.map((status) => {
           const count = breakdown[status] ?? 0;
           const empty = count === 0;
           return (
             <li
               key={status}
-              className="flex items-center gap-1.5 text-[10.5px]"
+              className="flex items-center gap-2 text-[11.5px]"
               style={{ color: empty ? text.muted : text.secondary }}
             >
               <span
                 aria-hidden
-                className="inline-block h-2 w-2 shrink-0 rounded-full"
+                className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ background: STATUS_COLOR[status], opacity: empty ? 0.4 : 1 }}
               />
-              <span style={{ flex: 1 }}>{STATUS_LABELS[status]}</span>
+              <span className="truncate" style={{ flex: 1 }}>
+                {STATUS_LABELS[status]}
+              </span>
               <span
                 style={{
-                  fontWeight: 600,
+                  fontWeight: 700,
                   color: empty ? text.muted : text.primary,
                   fontVariantNumeric: "tabular-nums",
                 }}
