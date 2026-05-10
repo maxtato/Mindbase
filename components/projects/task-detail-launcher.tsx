@@ -284,7 +284,7 @@ function TaskDetailModal({
         </header>
 
         <div
-          className="flex-1 overflow-y-auto"
+          className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden"
           style={{ background: surface.s1, padding: 12 }}
         >
           {/* Même composant que la vue dépliée du projet → mêmes codes visuels,

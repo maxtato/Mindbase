@@ -1257,6 +1257,37 @@ summary {
     min-width: 0;
     max-width: 100%;
   }
+
+  /* Deep defensive — the task expanded preview rendered inside the drawer
+     contains many flex/grid layouts whose default min-content can push
+     the parent wider than the drawer (especially when a textarea or a
+     header row with multiple buttons sits inside). Force every nested
+     section, grid, flex container, textarea and input to honor the
+     drawer's width on mobile. */
+  .mb-task-drawer .mb-task-expanded-preview,
+  .mb-task-drawer .mb-task-expanded-preview-grid,
+  .mb-task-drawer section,
+  .mb-task-drawer textarea,
+  .mb-task-drawer input,
+  .mb-task-drawer .mb-input {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .mb-task-drawer textarea,
+  .mb-task-drawer input,
+  .mb-task-drawer .mb-input {
+    width: 100%;
+  }
+
+  /* Allow flex children to shrink past their min-content. Without this,
+     a row containing "ATTENDU" + "Suggestion IA" pill can be wider than
+     its parent because flex items default to min-width: auto. */
+  .mb-task-drawer .flex > *,
+  .mb-task-drawer .grid > * {
+    min-width: 0;
+  }
 }
 
 /* Sub-panel that opens above the task drawer (Date, Person, Files, etc.).
