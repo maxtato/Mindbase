@@ -7,6 +7,20 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Mindbase — Think. Structure. Create.",
   description: "Reliez vos projets, tâches, fichiers et décisions en un seul endroit.",
+  applicationName: "Mindbase",
+  // Active le mode PWA / standalone sur iOS quand l'app est ajoutée à l'écran
+  // d'accueil : pas de barre Safari, status bar adaptée au thème sombre.
+  appleWebApp: {
+    capable: true,
+    title: "Mindbase",
+    statusBarStyle: "black-translucent",
+  },
+  // Hint Apple : tuile par défaut Win/Edge (PWA installable côté desktop).
+  other: {
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-title": "Mindbase",
+  },
 };
 
 // Viewport iPhone-friendly : largeur fluide, pas de zoom forcé,
