@@ -44,15 +44,15 @@ async function main() {
 
   const tasks = [
     // App Router file-based metadata : Next sert ces fichiers directement.
-    { size: 180, output: path.join(root, "app", "apple-icon.png"), markRatio: 0.92 },
-    { size: 512, output: path.join(root, "app", "icon.png"), markRatio: 0.88 },
+    { size: 180, output: path.join(root, "app", "apple-icon.png"), markRatio: 0.78 },
+    { size: 512, output: path.join(root, "app", "icon.png"), markRatio: 0.74 },
 
     // PWA manifest icons (référencés par app/manifest.ts).
-    { size: 192, output: path.join(root, "public", "icons", "icon-192.png"), markRatio: 0.88 },
-    { size: 512, output: path.join(root, "public", "icons", "icon-512.png"), markRatio: 0.88 },
+    { size: 192, output: path.join(root, "public", "icons", "icon-192.png"), markRatio: 0.74 },
+    { size: 512, output: path.join(root, "public", "icons", "icon-512.png"), markRatio: 0.74 },
 
-    // Maskable : safe zone à ~70 % (les launchers Android peuvent rogner).
-    { size: 512, output: path.join(root, "public", "icons", "icon-maskable-512.png"), markRatio: 0.7 },
+    // Maskable : safe zone resserrée (les launchers Android peuvent rogner).
+    { size: 512, output: path.join(root, "public", "icons", "icon-maskable-512.png"), markRatio: 0.6 },
   ];
 
   for (const task of tasks) {
