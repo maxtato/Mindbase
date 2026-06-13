@@ -28,6 +28,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // Taille figée : pas de zoom / dézoom possible sur les pages de l'app.
+  maximumScale: 1,
+  minimumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f2f3f5" },

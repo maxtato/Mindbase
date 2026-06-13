@@ -1084,6 +1084,14 @@ summary {
   gap: 1rem;
 }
 
+/* Les items de grille ont min-width:auto par défaut → ils peuvent déborder de
+   leur piste (et donc de l'écran sur iPhone) quand leur contenu a un
+   min-content large. On force min-width:0 pour qu'ils tiennent dans la piste. */
+.mb-projects-grid > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .mb-project-overview-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
@@ -1865,6 +1873,20 @@ textarea::placeholder {
     justify-content: flex-start;
     border-right: 0;
     padding-right: 0;
+    /* Toutes les actions (Assistant IA, Collaborer, fichiers, chat, réglages)
+       sur UNE seule ligne — plus de réglages qui tombe à la ligne suivante.
+       Scroll horizontal discret si ça dépasse l'écran. */
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .mb-project-pilotbar-actions-secondary::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mb-project-pilotbar-actions-secondary > * {
+    flex-shrink: 0;
   }
 
   /* Mobile : layout 2 rangées, lisible sur 375px.
@@ -2094,6 +2116,9 @@ textarea::placeholder {
        scroller jusqu'au dernier élément + un peu de respiration et
        la safe-area du home indicator. */
     padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    /* Aucun débordement horizontal possible sur mobile (cartes qui
+       dépassaient à droite) — le contenu reste dans l'écran. */
+    overflow-x: hidden;
   }
 
   .mb-kanban-grid {

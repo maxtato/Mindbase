@@ -9,6 +9,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
+import { broadcastWorkspace } from "@/lib/workspace-client";
 
 interface WorkspaceSwitcherProps {
   workspace: Workspace;
@@ -50,6 +51,7 @@ export function WorkspaceSwitcher({ workspace }: WorkspaceSwitcherProps) {
           <Link
             key={item}
             href={hrefFor(item)}
+            onClick={() => broadcastWorkspace(item)}
             role="tab"
             aria-selected={active}
             title={itemTheme.label}
