@@ -66,8 +66,9 @@ export function Sidebar({ stats, initialWorkspace }: SidebarProps) {
     return () => mediaQuery.removeEventListener("change", syncCollapsed);
   }, []);
 
-  const brandWidth = collapsed ? 48 : 188;
-  const brandHeight = collapsed ? 48 : 56;
+  const brandWidth = collapsed ? 52 : 188;
+  const brandHeight = collapsed ? 52 : 64;
+  const brandLogoSize = collapsed ? 46 : 42;
 
   const isActive = (href: string, exact = false) =>
     exact ? pathname === href : pathname.startsWith(href);
@@ -190,16 +191,16 @@ export function Sidebar({ stats, initialWorkspace }: SidebarProps) {
           <Image
             src="/mindbase-iphone.png"
             alt="Mindbase"
-            width={collapsed ? 34 : 30}
-            height={collapsed ? 34 : 30}
+            width={brandLogoSize}
+            height={brandLogoSize}
             priority
             className="shrink-0"
-            style={{ display: "block", objectFit: "contain", borderRadius: 8 }}
+            style={{ display: "block", objectFit: "contain", borderRadius: 10 }}
           />
           {!collapsed && (
             <span
               style={{
-                fontSize: 19,
+                fontSize: 24,
                 fontWeight: 700,
                 letterSpacing: "-0.02em",
                 lineHeight: 1,

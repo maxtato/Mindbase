@@ -1,5 +1,3 @@
-import Image from "next/image";
-import Link from "next/link";
 import { workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { surface, text } from "@/lib/design-tokens";
@@ -47,27 +45,6 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
         }}
       />
       <div className="flex items-center gap-2 min-w-0 sm:gap-3">
-        {/* Mark Mindbase visible uniquement en mobile : la sidebar avec le
-            logo plein n'est pas affichée sur petit écran. */}
-        <Link
-          href={`/dashboard?workspace=${workspace}`}
-          aria-label="Accueil Mindbase"
-          className="shrink-0 sm:hidden"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Image
-            src="/mindbase-iphone.png"
-            alt=""
-            width={36}
-            height={36}
-            priority
-            style={{ display: "block", objectFit: "contain" }}
-          />
-        </Link>
         {breadcrumb ?? (
           <div className="min-w-0">
             <h1
