@@ -20,7 +20,7 @@ import { TaskDetailLauncher } from "@/components/projects/task-detail-launcher";
 import type { Step, Task, ChecklistItem, ProjectPerson, ProjectStatusSettings, ProjectTeam, TaskStatus } from "@/lib/mock-data";
 import { PROJECT_PRIORITY_OPTIONS, priorityVisuals, type ProjectPriority } from "@/lib/project-taxonomy";
 import { useIsTouchDevice } from "@/lib/use-touch-device";
-import { DragGhost, type CardDragGhost } from "@/lib/use-card-drag";
+import { DragGhost, useLongPressDrag, type CardDragGhost } from "@/lib/use-card-drag";
 import {
   calculateProgressFromSteps,
   calculateStepIndicators,
@@ -539,20 +539,20 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
     });
   }
 
-  // Démarre un drag tactile (étape ou tâche) depuis une poignée. On suit le
-  // doigt avec un aperçu de la carte, on surligne la cible (avant/après via le
-  // milieu), et on réordonne au relâchement.
-  function startTouchReorder(
+  // Engage un drag tactile (étape ou tâche) APRÈS un appui long : la carte
+  // « décolle » (aperçu qui suit le doigt), la cible se surligne (avant/après
+  // via le milieu), et on réordonne au relâchement. Pas de poignée.
+  function engageTouchReorder(
     payload: { kind: "step"; stepId: string } | { kind: "task"; stepId: string; taskId: string },
-    event: React.PointerEvent,
+    startX: number,
+    startY: number,
+    element: HTMLElement,
   ) {
-    if (event.pointerType === "mouse") return;
-    event.preventDefault();
-    event.stopPropagation();
-
-    const cardEl = (event.currentTarget as Element | null)?.closest("[data-drag-card]") as HTMLElement | null;
+    const cardEl = element.closest("[data-drag-card]") as HTMLElement | null;
     touchReorderRef.current = payload;
     touchDropRef.current = null;
+    // Retour haptique : l'élément est « attrapé ».
+    navigator.vibrate?.(12);
     setDragState(
       payload.kind === "step"
         ? { type: "step", stepId: payload.stepId }
@@ -560,11 +560,15 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
     );
     setTouchGhost({
       label: "",
-      x: event.clientX,
-      y: event.clientY,
+      x: startX,
+      y: startY,
       html: cardEl?.outerHTML,
       width: cardEl?.getBoundingClientRect().width,
     });
+
+    // Bloque le scroll de la page pendant le drag (sinon iOS scrolle).
+    const preventScroll = (ev: TouchEvent) => ev.preventDefault();
+    window.addEventListener("touchmove", preventScroll, { passive: false });
 
     const onMove = (ev: PointerEvent) => {
       ev.preventDefault();
@@ -596,6 +600,17 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
       window.removeEventListener("pointercancel", onUp);
+      window.removeEventListener("touchmove", preventScroll);
+      // Supprime le clic synthétique qui suit le drag (sinon ouverture de la
+      // tâche au relâchement).
+      const suppressClick = (clickEvent: MouseEvent) => {
+        clickEvent.preventDefault();
+        clickEvent.stopPropagation();
+        document.removeEventListener("click", suppressClick, true);
+      };
+      document.addEventListener("click", suppressClick, true);
+      window.setTimeout(() => document.removeEventListener("click", suppressClick, true), 400);
+
       const drag = touchReorderRef.current;
       const drop = touchDropRef.current;
       touchReorderRef.current = null;
@@ -717,8 +732,8 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
               onTaskDragOver={(event, taskId) => handleTaskDragOver(event, step.id, taskId)}
               onTaskDrop={(event, taskId) => handleTaskDrop(event, step.id, taskId)}
               onTaskDragEnd={resetDragState}
-              onStepTouchReorderStart={(event) => startTouchReorder({ kind: "step", stepId: step.id }, event)}
-              onTaskTouchReorderStart={(taskId, event) => startTouchReorder({ kind: "task", stepId: step.id, taskId }, event)}
+              onStepReorderEngage={(x, y, element) => engageTouchReorder({ kind: "step", stepId: step.id }, x, y, element)}
+              onTaskReorderEngage={(taskId, x, y, element) => engageTouchReorder({ kind: "task", stepId: step.id, taskId }, x, y, element)}
               projectPeople={projectPeople}
               projectTeams={projectTeams}
               statusSettings={statusSettings}
@@ -846,8 +861,8 @@ function StepCard({
   onTaskDragOver,
   onTaskDrop,
   onTaskDragEnd,
-  onStepTouchReorderStart,
-  onTaskTouchReorderStart,
+  onStepReorderEngage,
+  onTaskReorderEngage,
   projectPeople,
   projectTeams,
   statusSettings,
@@ -874,8 +889,8 @@ function StepCard({
   onTaskDragOver: (event: DragEvent<HTMLElement>, taskId: string) => void;
   onTaskDrop: (event: DragEvent<HTMLElement>, taskId: string) => void;
   onTaskDragEnd: () => void;
-  onStepTouchReorderStart: (event: React.PointerEvent) => void;
-  onTaskTouchReorderStart: (taskId: string, event: React.PointerEvent) => void;
+  onStepReorderEngage: (x: number, y: number, element: HTMLElement) => void;
+  onTaskReorderEngage: (taskId: string, x: number, y: number, element: HTMLElement) => void;
   projectPeople: ProjectPerson[];
   projectTeams: ProjectTeam[];
   statusSettings?: ProjectStatusSettings;
@@ -900,6 +915,7 @@ function StepCard({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const displayTitle = getDisplayStepTitle(step.title);
   const isTouch = useIsTouchDevice();
+  const stepLongPress = useLongPressDrag(({ x, y, element }) => onStepReorderEngage(x, y, element));
 
   return (
     <div
@@ -910,9 +926,21 @@ function StepCard({
       onDragOver={onStepDragOver}
       onDrop={onStepDrop}
       onDragEnd={onDragEnd}
+      onPointerDown={(event) => {
+        // Appui long sur l'EN-TÊTE de l'étape pour la déplacer. On ignore les
+        // pressions sur une tâche ou un bouton (elles ont leur propre geste).
+        if ((event.target as Element).closest("[data-reorder-task], button, a, input, textarea, select, summary, [data-no-drag='true']")) return;
+        stepLongPress.onPointerDown(event);
+      }}
+      onPointerMove={stepLongPress.onPointerMove}
+      onPointerUp={stepLongPress.onPointerUp}
+      onPointerCancel={stepLongPress.onPointerCancel}
       className="mb-step-card"
       style={{
         position: "relative",
+        WebkitUserSelect: "none",
+        userSelect: "none",
+        WebkitTouchCallout: "none",
         cursor: isDragging ? "grabbing" : "grab",
         opacity: isDragging ? 0.72 : 1,
         boxShadow: dropPosition
@@ -931,28 +959,6 @@ function StepCard({
         }}
       >
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          {isTouch && (
-            <span
-              role="button"
-              aria-label="Déplacer l'étape"
-              data-no-drag="true"
-              onPointerDown={onStepTouchReorderStart}
-              onClick={(event) => event.stopPropagation()}
-              className="shrink-0 inline-flex items-center justify-center"
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: 7,
-                color: "#FFFFFF",
-                background: "rgba(255,255,255,0.18)",
-                border: "1px solid rgba(255,255,255,0.4)",
-                touchAction: "none",
-                cursor: "grab",
-              }}
-            >
-              <ReorderGripIcon />
-            </span>
-          )}
           <span
             aria-hidden
             className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
@@ -1102,7 +1108,7 @@ function StepCard({
                 onUpdate={(input) => onUpdateTask(task.id, input)}
                 onDelete={() => onDeleteTask(task.id)}
                 onChecklistMutated={(nextChecklist) => onTaskChecklistMutated(task.id, nextChecklist)}
-                onTouchReorderStart={(event) => onTaskTouchReorderStart(task.id, event)}
+                onReorderEngage={(x, y, element) => onTaskReorderEngage(task.id, x, y, element)}
               />
             ))}
           </>
@@ -1250,7 +1256,7 @@ function TaskCard({
   onUpdate,
   onDelete,
   onChecklistMutated,
-  onTouchReorderStart,
+  onReorderEngage,
 }: {
   projectId: string;
   workspace: Workspace;
@@ -1272,12 +1278,13 @@ function TaskCard({
   onUpdate: (input: TaskUpdateInput) => void;
   onDelete: () => void;
   onChecklistMutated: (nextChecklist: ChecklistItem[]) => void;
-  onTouchReorderStart: (event: React.PointerEvent) => void;
+  onReorderEngage: (x: number, y: number, element: HTMLElement) => void;
 }) {
   const [showCompletionBlocked, setShowCompletionBlocked] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [renameDraft, setRenameDraft] = useState(task.title);
   const isTouch = useIsTouchDevice();
+  const taskLongPress = useLongPressDrag(({ x, y, element }) => onReorderEngage(x, y, element));
   const taskStatus = deriveTaskStatus(task);
   // overdue/dueSoon dépendent de `new Date()` → pas calculés tant qu'on
   // n'a pas hydraté, sinon SSR vs client iPhone divergent.
@@ -1372,9 +1379,21 @@ function TaskCard({
       onDragOver={onDragOver}
       onDrop={onDrop}
       onDragEnd={onDragEnd}
+      onPointerDown={(event) => {
+        // Appui long sur la tâche pour la déplacer ; on ignore les boutons /
+        // champs (case à cocher, menu, pickers…) qui ont leur propre action.
+        if ((event.target as Element).closest("button, a, input, textarea, select, [role='button'], [data-no-task-expand='true'], [data-no-drag='true']")) return;
+        taskLongPress.onPointerDown(event);
+      }}
+      onPointerMove={taskLongPress.onPointerMove}
+      onPointerUp={taskLongPress.onPointerUp}
+      onPointerCancel={taskLongPress.onPointerCancel}
       className="mb-task-card"
       style={{
         position: "relative",
+        WebkitUserSelect: "none",
+        userSelect: "none",
+        WebkitTouchCallout: "none",
         background: overdue ? errorTokens.bg : surface.s1,
         border: `1px solid ${overdue ? errorTokens.border : surface.borderSubtle}`,
         borderRadius: 10,
@@ -1432,29 +1451,6 @@ function TaskCard({
         </button>
 
         <div className="min-w-0 flex items-center gap-2 overflow-hidden">
-          {isTouch && (
-            <span
-              role="button"
-              aria-label="Déplacer la tâche"
-              data-no-task-expand="true"
-              data-no-drag="true"
-              onPointerDown={onTouchReorderStart}
-              onClick={(event) => event.stopPropagation()}
-              className="shrink-0 inline-flex items-center justify-center"
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: 6,
-                color: text.muted,
-                background: surface.s2,
-                border: `1px solid ${surface.borderSubtle}`,
-                touchAction: "none",
-                cursor: "grab",
-              }}
-            >
-              <ReorderGripIcon />
-            </span>
-          )}
           <div className="min-w-0 flex-1 overflow-hidden">
             {renaming ? (
               <input
@@ -3353,19 +3349,4 @@ function drawerFieldStyle(): CSSProperties {
     padding: "0.7rem 0.8rem",
     outline: "none",
   };
-}
-
-// Poignée de réordonnancement (six points) — utilisée au tactile sur les
-// étapes et les tâches pour les glisser et changer leur position.
-function ReorderGripIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <circle cx="6" cy="4" r="1.25" />
-      <circle cx="10" cy="4" r="1.25" />
-      <circle cx="6" cy="8" r="1.25" />
-      <circle cx="10" cy="8" r="1.25" />
-      <circle cx="6" cy="12" r="1.25" />
-      <circle cx="10" cy="12" r="1.25" />
-    </svg>
-  );
 }

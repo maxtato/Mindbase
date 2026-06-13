@@ -9,6 +9,52 @@
 
 import { useCallback, useRef, useState } from "react";
 
+// Détection d'appui long (touch) pour « décoller » un élément et le glisser,
+// sans poignée. Un mouvement avant le délai = scroll → on annule. Au-delà du
+// délai immobile = on engage le drag via onEngage.
+export function useLongPressDrag(
+  onEngage: (info: { x: number; y: number; element: HTMLElement }) => void,
+  options?: { delay?: number; moveTolerance?: number },
+) {
+  const delay = options?.delay ?? 300;
+  const tolerance = options?.moveTolerance ?? 9;
+  const timerRef = useRef<number | null>(null);
+  const startRef = useRef<{ x: number; y: number; element: HTMLElement } | null>(null);
+
+  const cancel = useCallback(() => {
+    if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    startRef.current = null;
+  }, []);
+
+  const onPointerDown = useCallback(
+    (event: React.PointerEvent) => {
+      if (event.pointerType === "mouse") return;
+      const element = event.currentTarget as HTMLElement;
+      startRef.current = { x: event.clientX, y: event.clientY, element };
+      timerRef.current = window.setTimeout(() => {
+        const start = startRef.current;
+        timerRef.current = null;
+        if (start) onEngage(start);
+      }, delay);
+    },
+    [onEngage, delay],
+  );
+
+  const onPointerMove = useCallback(
+    (event: React.PointerEvent) => {
+      const start = startRef.current;
+      if (!start || timerRef.current === null) return;
+      if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > tolerance) cancel();
+    },
+    [cancel, tolerance],
+  );
+
+  return { onPointerDown, onPointerMove, onPointerUp: cancel, onPointerCancel: cancel };
+}
+
 export interface CardDragGhost {
   label: string;
   x: number;
