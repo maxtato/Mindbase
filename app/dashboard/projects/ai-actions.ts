@@ -24,6 +24,7 @@ import {
   addStepToProject,
   addTaskToStep,
   createProject,
+  deleteStepFromProject,
   deleteTaskFromStep,
   getProjectById,
   updateProject,
@@ -413,6 +414,7 @@ export async function applyProjectEvolutionAction(input: {
   }
 
   // 4) Suppression / annulation des tâches devenues caduques (en dernier).
+  const emptiedStepCandidates = new Set<string>();
   for (const op of operations) {
     if (op.type !== "remove_task" || !op.taskId) continue;
     const fresh = await getProjectById(projectId);
@@ -420,7 +422,20 @@ export async function applyProjectEvolutionAction(input: {
     const located = locateTask(fresh, op.taskId);
     if (!located) continue;
     await deleteTaskFromStep(projectId, located.stepId, op.taskId);
+    emptiedStepCandidates.add(located.stepId);
     applied += 1;
+  }
+
+  // 5) Nettoyage : une étape vidée de toutes ses tâches par les annulations
+  //    n'a plus d'intérêt → on la supprime aussi.
+  if (emptiedStepCandidates.size > 0) {
+    const fresh = await getProjectById(projectId);
+    for (const stepId of emptiedStepCandidates) {
+      const step = fresh?.steps?.find((candidate) => candidate.id === stepId);
+      if (step && step.tasks.length === 0) {
+        await deleteStepFromProject(projectId, stepId);
+      }
+    }
   }
 
   revalidatePath(`/dashboard/projects/${projectId}`);
