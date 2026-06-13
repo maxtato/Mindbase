@@ -623,9 +623,11 @@ function CalendarTaskCard({
           onPointerDown={(event) => {
             if (!onLongPressEngage) return;
             const target = event.target as HTMLElement;
+            // NB : la carte a role="button" → on n'inclut PAS [role='button']
+            // ici (elle s'auto-exclurait et l'appui long ne démarrerait jamais).
             if (
               target.closest(
-                "button, a, input, textarea, select, [role='button'], [data-mobile-tap-ignore='true']",
+                "button, a, input, textarea, select, [data-mobile-tap-ignore='true']",
               )
             )
               return;

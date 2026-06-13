@@ -578,11 +578,16 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
     const pointerPos = { x: startX, y: startY };
     let rafId: number | null = null;
     const tick = () => {
-      const edge = 84;
       const speed = 18;
       if (scrollContainer) {
-        if (pointerPos.y < edge + 24) scrollContainer.scrollTop -= speed;
-        else if (pointerPos.y > window.innerHeight - edge - 24) scrollContainer.scrollTop += speed;
+        // Bords VISIBLES du conteneur (et non du viewport brut). Marge haute
+        // large → ça commence à défiler dès qu'on approche du panneau du haut
+        // (réglages / assistant), pas seulement tout en haut de l'écran.
+        const r = scrollContainer.getBoundingClientRect();
+        const topTrigger = Math.max(r.top, 0) + 120;
+        const bottomTrigger = Math.min(r.bottom, window.innerHeight) - 96;
+        if (pointerPos.y < topTrigger) scrollContainer.scrollTop -= speed;
+        else if (pointerPos.y > bottomTrigger) scrollContainer.scrollTop += speed;
       }
       rafId = requestAnimationFrame(tick);
     };
