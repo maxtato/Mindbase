@@ -587,10 +587,15 @@ function CalendarTaskCard({
           }}
           onTouchStart={(event) => {
             const touch = event.touches[0];
-            if (!touch) return;
-            touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+            if (touch) touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+            if (!onLongPressEngage) return;
+            if ((event.target as Element).closest("button, a, input, textarea, select, [data-mobile-tap-ignore='true']")) return;
+            longPress.onTouchStart(event);
           }}
+          onTouchMove={longPress.onTouchMove}
+          onTouchCancel={longPress.onTouchCancel}
           onTouchEnd={(event) => {
+            longPress.onTouchEnd();
             const touch = event.changedTouches[0];
             const start = touchStartRef.current;
             touchStartRef.current = null;
@@ -625,22 +630,6 @@ function CalendarTaskCard({
               dragStartedRef.current = false;
             }, 0);
           }}
-          onPointerDown={(event) => {
-            if (!onLongPressEngage) return;
-            const target = event.target as HTMLElement;
-            // NB : la carte a role="button" → on n'inclut PAS [role='button']
-            // ici (elle s'auto-exclurait et l'appui long ne démarrerait jamais).
-            if (
-              target.closest(
-                "button, a, input, textarea, select, [data-mobile-tap-ignore='true']",
-              )
-            )
-              return;
-            longPress.onPointerDown(event);
-          }}
-          onPointerMove={longPress.onPointerMove}
-          onPointerUp={longPress.onPointerUp}
-          onPointerCancel={longPress.onPointerCancel}
           className="mb-soft-shadow relative min-w-0 rounded-xl text-left"
           style={{
             background: surface.s1,
@@ -649,12 +638,6 @@ function CalendarTaskCard({
             userSelect: "none",
             WebkitUserSelect: "none",
             WebkitTouchCallout: "none",
-            // CLÉ sur iOS : sans touch-action:none, Safari « vole » le geste pour
-            // scroller (le calendrier est dans des conteneurs scrollables) et émet
-            // pointercancel → l'appui long est annulé avant les 300 ms. On
-            // neutralise le scroll natif SUR la carte ; l'auto-scroll au bord gère
-            // le déplacement, et on scrolle via les zones vides des cellules.
-            touchAction: isTouch ? "none" : undefined,
             padding: "0.65rem 0.7rem 0.6rem 0.65rem",
             overflow: "hidden",
             width: "100%",

@@ -566,10 +566,6 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
       width: cardEl?.getBoundingClientRect().width,
     });
 
-    // Bloque le scroll de la page pendant le drag (sinon iOS scrolle).
-    const preventScroll = (ev: TouchEvent) => ev.preventDefault();
-    window.addEventListener("touchmove", preventScroll, { passive: false });
-
     // Auto-scroll vertical de la PAGE : quand le doigt approche du haut/bas de
     // l'écran, on fait défiler le conteneur scrollable de la fiche projet
     // (`.mb-project-detail-frame` sur mobile) pour pouvoir déposer une
@@ -593,12 +589,16 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
     };
     rafId = requestAnimationFrame(tick);
 
-    const onMove = (ev: PointerEvent) => {
+    const onMove = (ev: TouchEvent) => {
+      const touch = ev.touches[0];
+      if (!touch) return;
       ev.preventDefault();
-      pointerPos.x = ev.clientX;
-      pointerPos.y = ev.clientY;
-      setTouchGhost((ghost) => (ghost ? { ...ghost, x: ev.clientX, y: ev.clientY } : ghost));
-      const el = document.elementFromPoint(ev.clientX, ev.clientY);
+      const x = touch.clientX;
+      const y = touch.clientY;
+      pointerPos.x = x;
+      pointerPos.y = y;
+      setTouchGhost((ghost) => (ghost ? { ...ghost, x, y } : ghost));
+      const el = document.elementFromPoint(x, y);
       if (!(el instanceof Element)) return;
 
       if (payload.kind === "step") {
@@ -606,7 +606,7 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
         const targetId = stepEl?.getAttribute("data-reorder-step");
         if (!stepEl || !targetId) return;
         const rect = stepEl.getBoundingClientRect();
-        const position: DropPosition = ev.clientY > rect.top + rect.height / 2 ? "after" : "before";
+        const position: DropPosition = y > rect.top + rect.height / 2 ? "after" : "before";
         touchDropRef.current = { targetId, position };
         setStepDropTarget({ stepId: targetId, position });
       } else {
@@ -615,17 +615,16 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
         const targetStepId = taskEl?.getAttribute("data-reorder-step-id");
         if (!taskEl || !targetId || targetStepId !== payload.stepId) return;
         const rect = taskEl.getBoundingClientRect();
-        const position: DropPosition = ev.clientY > rect.top + rect.height / 2 ? "after" : "before";
+        const position: DropPosition = y > rect.top + rect.height / 2 ? "after" : "before";
         touchDropRef.current = { targetId, position };
         setTaskDropTarget({ stepId: payload.stepId, taskId: targetId, position });
       }
     };
 
     const onUp = () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onUp);
-      window.removeEventListener("touchmove", preventScroll);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend", onUp);
+      window.removeEventListener("touchcancel", onUp);
       if (rafId !== null) cancelAnimationFrame(rafId);
       // Supprime le clic synthétique qui suit le drag (sinon ouverture de la
       // tâche au relâchement).
@@ -649,9 +648,9 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
       resetDragState();
     };
 
-    window.addEventListener("pointermove", onMove, { passive: false });
-    window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onUp);
+    window.addEventListener("touchmove", onMove, { passive: false });
+    window.addEventListener("touchend", onUp);
+    window.addEventListener("touchcancel", onUp);
   }
 
   useEffect(() => {
@@ -952,15 +951,15 @@ function StepCard({
       onDragOver={onStepDragOver}
       onDrop={onStepDrop}
       onDragEnd={onDragEnd}
-      onPointerDown={(event) => {
+      onTouchStart={(event) => {
         // Appui long sur l'EN-TÊTE de l'étape pour la déplacer. On ignore les
         // pressions sur une tâche ou un bouton (elles ont leur propre geste).
         if ((event.target as Element).closest("[data-reorder-task], button, a, input, textarea, select, summary, [data-no-drag='true']")) return;
-        stepLongPress.onPointerDown(event);
+        stepLongPress.onTouchStart(event);
       }}
-      onPointerMove={stepLongPress.onPointerMove}
-      onPointerUp={stepLongPress.onPointerUp}
-      onPointerCancel={stepLongPress.onPointerCancel}
+      onTouchMove={stepLongPress.onTouchMove}
+      onTouchEnd={stepLongPress.onTouchEnd}
+      onTouchCancel={stepLongPress.onTouchCancel}
       className="mb-step-card"
       style={{
         position: "relative",
@@ -1405,15 +1404,15 @@ function TaskCard({
       onDragOver={onDragOver}
       onDrop={onDrop}
       onDragEnd={onDragEnd}
-      onPointerDown={(event) => {
+      onTouchStart={(event) => {
         // Appui long sur la tâche pour la déplacer ; on ignore les boutons /
         // champs (case à cocher, menu, pickers…) qui ont leur propre action.
         if ((event.target as Element).closest("button, a, input, textarea, select, [role='button'], [data-no-task-expand='true'], [data-no-drag='true']")) return;
-        taskLongPress.onPointerDown(event);
+        taskLongPress.onTouchStart(event);
       }}
-      onPointerMove={taskLongPress.onPointerMove}
-      onPointerUp={taskLongPress.onPointerUp}
-      onPointerCancel={taskLongPress.onPointerCancel}
+      onTouchMove={taskLongPress.onTouchMove}
+      onTouchEnd={taskLongPress.onTouchEnd}
+      onTouchCancel={taskLongPress.onTouchCancel}
       className="mb-task-card"
       style={{
         position: "relative",

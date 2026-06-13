@@ -49,7 +49,7 @@ export default async function KanbanPage({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <Topbar title="Kanban" workspace={workspace} subtitle="Vue transversale par statut" />
+      <Topbar title="Kanban" workspace={workspace} />
 
       <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-3 py-5 lg:px-4">
         <div className="flex w-full flex-col gap-4">

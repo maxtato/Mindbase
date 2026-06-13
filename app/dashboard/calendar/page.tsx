@@ -56,7 +56,7 @@ export default async function CalendarPage({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <Topbar title="Calendrier" workspace={workspace} subtitle="Vue transversale par échéance" />
+      <Topbar title="Calendrier" workspace={workspace} />
 
       <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-3 py-4 lg:px-4 xl:overflow-hidden">
         <div className="flex w-full flex-col gap-3 xl:h-full xl:min-h-0">

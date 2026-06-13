@@ -27,18 +27,30 @@ export function findScrollParent(start: HTMLElement | null): HTMLElement | null 
 }
 
 // Détection d'appui long (touch) pour « décoller » un élément et le glisser,
-// sans poignée. Un mouvement avant le délai = scroll → on annule. Au-delà du
-// délai immobile = on engage le drag via onEngage.
+// sans poignée.
+//
+// IMPORTANT : on s'appuie sur les TOUCH events (pas pointer). Sur iOS, le
+// navigateur ANNULE les pointer events dès qu'il soupçonne un scroll, ce qui
+// tuait le minuteur d'appui long dans les conteneurs scrollables (kanban,
+// calendrier). Avec les touch events :
+//   - un MOUVEMENT avant le délai = l'utilisateur scrolle → on annule l'appui
+//     long et on laisse le navigateur défiler nativement (fluide, sans
+//     preventDefault) ;
+//   - un appui IMMOBILE au-delà du délai = on engage le drag (le blocage du
+//     scroll est alors posé par le drag lui-même, cf. begin()).
+// Plus besoin de touch-action:none → le scroll au doigt sur les cartes reste
+// fluide tant qu'on n'a pas « décollé ».
 export function useLongPressDrag(
   onEngage: (info: { x: number; y: number; element: HTMLElement }) => void,
   options?: { delay?: number; moveTolerance?: number },
 ) {
-  const delay = options?.delay ?? 300;
-  const tolerance = options?.moveTolerance ?? 9;
+  const delay = options?.delay ?? 280;
+  const tolerance = options?.moveTolerance ?? 12;
   const timerRef = useRef<number | null>(null);
   const startRef = useRef<{ x: number; y: number; element: HTMLElement } | null>(null);
+  const engagedRef = useRef(false);
 
-  const cancel = useCallback(() => {
+  const clear = useCallback(() => {
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);
       timerRef.current = null;
@@ -46,30 +58,48 @@ export function useLongPressDrag(
     startRef.current = null;
   }, []);
 
-  const onPointerDown = useCallback(
-    (event: React.PointerEvent) => {
-      if (event.pointerType === "mouse") return;
+  const onTouchStart = useCallback(
+    (event: React.TouchEvent) => {
+      // Multi-touch (pinch/zoom) → ce n'est pas un appui long.
+      if (event.touches.length !== 1) {
+        clear();
+        return;
+      }
+      const touch = event.touches[0];
       const element = event.currentTarget as HTMLElement;
-      startRef.current = { x: event.clientX, y: event.clientY, element };
+      engagedRef.current = false;
+      startRef.current = { x: touch.clientX, y: touch.clientY, element };
       timerRef.current = window.setTimeout(() => {
         const start = startRef.current;
         timerRef.current = null;
-        if (start) onEngage(start);
+        if (start) {
+          engagedRef.current = true;
+          onEngage(start);
+        }
       }, delay);
     },
-    [onEngage, delay],
+    [onEngage, delay, clear],
   );
 
-  const onPointerMove = useCallback(
-    (event: React.PointerEvent) => {
+  const onTouchMove = useCallback(
+    (event: React.TouchEvent) => {
+      // Une fois engagé, c'est le drag (begin) qui pilote le mouvement.
+      if (engagedRef.current) return;
       const start = startRef.current;
-      if (!start || timerRef.current === null) return;
-      if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > tolerance) cancel();
+      const touch = event.touches[0];
+      if (!start || !touch || timerRef.current === null) return;
+      // On NE preventDefault PAS ici → le scroll natif reste fluide. Si le doigt
+      // bouge avant le délai, c'est un scroll : on annule l'appui long.
+      if (Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > tolerance) clear();
     },
-    [cancel, tolerance],
+    [clear, tolerance],
   );
 
-  return { onPointerDown, onPointerMove, onPointerUp: cancel, onPointerCancel: cancel };
+  const onTouchEnd = useCallback(() => {
+    if (!engagedRef.current) clear();
+  }, [clear]);
+
+  return { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel: onTouchEnd };
 }
 
 export interface CardDragGhost {
@@ -118,10 +148,6 @@ export function useCardDrag(options: UseCardDragOptions) {
       setGhost({ label, x: startX, y: startY, html, width });
       navigator.vibrate?.(12);
 
-      // Bloque le scroll de la page pendant le drag (sinon iOS scrolle).
-      const preventScroll = (touchEvent: TouchEvent) => touchEvent.preventDefault();
-      window.addEventListener("touchmove", preventScroll, { passive: false });
-
       // Conteneurs scrollables résolus une seule fois (getComputedStyle est
       // coûteux → on ne le refait pas à chaque frame).
       const h = options.horizontalScroll?.() ?? options.scrollContainer?.() ?? null;
@@ -152,22 +178,27 @@ export function useCardDrag(options: UseCardDragOptions) {
       };
       rafRef.current = requestAnimationFrame(tick);
 
-      const move = (ev: PointerEvent) => {
+      // Drag piloté par les TOUCH events : on preventDefault le touchmove (le
+      // drag est engagé → on bloque le scroll natif) et on suit le doigt.
+      const move = (ev: TouchEvent) => {
+        const touch = ev.touches[0];
+        if (!touch) return;
         ev.preventDefault();
-        posRef.current = { x: ev.clientX, y: ev.clientY };
-        const el = document.elementFromPoint(ev.clientX, ev.clientY);
+        const x = touch.clientX;
+        const y = touch.clientY;
+        posRef.current = { x, y };
+        const el = document.elementFromPoint(x, y);
         const targetEl = el instanceof Element ? el.closest(`[${options.dropAttr}]`) : null;
         const target = targetEl?.getAttribute(options.dropAttr) ?? null;
         if (dataRef.current) dataRef.current.target = target;
         options.onOverTarget?.(target);
-        setGhost((current) => (current ? { ...current, x: ev.clientX, y: ev.clientY } : current));
+        setGhost((current) => (current ? { ...current, x, y } : current));
       };
 
       const end = () => {
-        window.removeEventListener("pointermove", move);
-        window.removeEventListener("pointerup", end);
-        window.removeEventListener("pointercancel", end);
-        window.removeEventListener("touchmove", preventScroll);
+        window.removeEventListener("touchmove", move);
+        window.removeEventListener("touchend", end);
+        window.removeEventListener("touchcancel", end);
         if (rafRef.current !== null) {
           cancelAnimationFrame(rafRef.current);
           rafRef.current = null;
@@ -189,9 +220,9 @@ export function useCardDrag(options: UseCardDragOptions) {
         if (drag && drag.target) options.onDrop(drag.key, drag.target);
       };
 
-      window.addEventListener("pointermove", move, { passive: false });
-      window.addEventListener("pointerup", end);
-      window.addEventListener("pointercancel", end);
+      window.addEventListener("touchmove", move, { passive: false });
+      window.addEventListener("touchend", end);
+      window.addEventListener("touchcancel", end);
     },
     [options],
   );
