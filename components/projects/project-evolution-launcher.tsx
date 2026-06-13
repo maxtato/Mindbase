@@ -133,10 +133,10 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
           boxShadow: `0 8px 20px -8px ${accentColor}`,
           whiteSpace: "nowrap",
         }}
-        title="Discuter avec l'IA pour faire évoluer le projet"
+        title="Discuter avec Léa pour faire évoluer le projet"
       >
         <SparkleIcon />
-        Assistant IA
+        Léa
       </button>
 
       {open && (
@@ -157,7 +157,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="Assistant IA — faire évoluer le projet"
+            aria-label="Léa — faire évoluer le projet"
             className="mb-modal-surface"
             onClick={(event) => event.stopPropagation()}
             style={{
@@ -177,11 +177,11 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
               <div className="min-w-0">
                 <p className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: text.primary }}>
                   <span style={{ color: accentColor }}><SparkleIcon /></span>
-                  Assistant IA
+                  Léa
                 </p>
                 <p className="mt-0.5 text-[11px]" style={{ color: text.muted }}>
-                  Décris l&apos;avancement ou ton intention. L&apos;IA pose des questions si besoin,
-                  puis propose une évolution du projet.
+                  Demande-lui des idées, une liste d&apos;options, ou décris ton avancement.
+                  Léa dialogue avec toi puis propose une évolution du projet à valider.
                 </p>
               </div>
               <button
@@ -199,9 +199,9 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
             <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 py-4" style={{ background: surface.s2 }}>
               {!started && (
                 <p className="text-[12px] leading-relaxed" style={{ color: text.muted }}>
-                  Ex. : « RDV client OK, la maquette est validée. Paul prend le dev du paiement.
-                  Le volet juridique est bloqué. » — l&apos;IA te posera des questions si quelque
-                  chose manque, puis proposera les changements.
+                  Ex. : « Liste-moi les parcs nationaux de l&apos;Ouest américain » ou « On a validé
+                  la maquette, Paul prend le paiement ». Léa te répond, te demande lesquels retenir
+                  / des précisions, puis propose les étapes et tâches à appliquer.
                 </p>
               )}
 
@@ -225,7 +225,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
                     className="max-w-[88%] rounded-2xl px-3 py-2 text-[12px] italic"
                     style={{ alignSelf: "flex-start", background: surface.s1, color: text.muted, border: `1px solid ${surface.borderSubtle}` }}
                   >
-                    L&apos;assistant réfléchit…
+                    Léa réfléchit…
                   </div>
                 )}
               </div>
@@ -316,7 +316,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
                     value={draft}
                     onChange={(event) => setDraft(event.target.value)}
                     onKeyDown={onInputKeyDown}
-                    placeholder={lastIsQuestion ? "Ta réponse…" : "Décris l'avancement / ton intention…"}
+                    placeholder={lastIsQuestion ? "Ta réponse à Léa…" : "Demande à Léa : une idée, une liste, un avancement…"}
                     rows={lastIsQuestion ? 2 : 3}
                     className="mb-input min-w-0 flex-1 rounded-xl px-3 py-2.5 text-sm outline-none"
                     style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}`, resize: "none" }}
