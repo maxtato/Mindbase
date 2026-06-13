@@ -147,6 +147,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
           style={{
             position: "fixed",
             inset: 0,
+            height: "100dvh",
             zIndex: 80,
             display: "flex",
             alignItems: "center",

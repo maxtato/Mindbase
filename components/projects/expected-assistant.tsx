@@ -78,6 +78,7 @@ export function ExpectedAssistant({
       style={{
         position: "fixed",
         inset: 0,
+        height: "100dvh",
         zIndex: 90,
         display: "flex",
         alignItems: "center",
