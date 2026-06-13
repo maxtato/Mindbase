@@ -55,8 +55,10 @@ export function TaskExpandedPreview({
   onChecklistMutated,
   className = "",
 }: TaskExpandedPreviewProps) {
-  // Couleur des boutons IA = couleur de l'environnement (workspace), pas la couleur projet.
-  const aiAccent = workspace ? workspaceTheme[workspace].accent : accentColor;
+  // Couleur des boutons / accents IA = couleur du THÈME projet (pictogramme),
+  // pas l'accent de l'environnement Pro/Perso. On retombe sur l'accent du
+  // workspace seulement si la couleur projet est absente.
+  const aiAccent = accentColor || (workspace ? workspaceTheme[workspace].accent : accentColor);
   const linkedTeams = projectTeams.filter((team) => task.teamIds?.includes(team.id));
 
   return (
