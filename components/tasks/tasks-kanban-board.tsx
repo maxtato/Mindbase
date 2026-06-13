@@ -344,10 +344,15 @@ function KanbanTaskCard({
           }}
           onTouchStart={(event) => {
             const touch = event.touches[0];
-            if (!touch) return;
-            touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+            if (touch) touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+            // On n'arme l'appui long que hors contrôle interactif imbriqué.
+            if ((event.target as Element).closest("button, a, input, textarea, select, [data-mobile-tap-ignore='true']")) return;
+            longPress.onTouchStart(event);
           }}
+          onTouchMove={longPress.onTouchMove}
+          onTouchCancel={longPress.onTouchCancel}
           onTouchEnd={(event) => {
+            longPress.onTouchEnd();
             const touch = event.changedTouches[0];
             const start = touchStartRef.current;
             touchStartRef.current = null;
@@ -380,17 +385,6 @@ function KanbanTaskCard({
               dragStartedRef.current = false;
             }, 0);
           }}
-          onPointerDown={(event) => {
-            // NB : la carte elle-même a role="button" → on ne met PAS
-            // [role='button'] dans ce filtre, sinon il s'auto-exclurait et
-            // l'appui long ne démarrerait jamais. On n'ignore que les vrais
-            // contrôles imbriqués (il n'y en a pas ici, mais par sécurité).
-            if ((event.target as Element).closest("button, a, input, textarea, select, [data-mobile-tap-ignore='true']")) return;
-            longPress.onPointerDown(event);
-          }}
-          onPointerMove={longPress.onPointerMove}
-          onPointerUp={longPress.onPointerUp}
-          onPointerCancel={longPress.onPointerCancel}
           className="relative min-w-0 rounded-[18px]"
           style={{
             background: overdue ? errorTokens.bg : surface.s1,
@@ -401,12 +395,6 @@ function KanbanTaskCard({
             userSelect: "none",
             WebkitUserSelect: "none",
             WebkitTouchCallout: "none",
-            // CLÉ sur iOS : sans touch-action:none, Safari « vole » le geste pour
-            // scroller (la grille kanban est dans des conteneurs scrollables) et
-            // émet pointercancel → l'appui long est annulé avant les 300 ms. On
-            // neutralise le scroll natif SUR la carte ; on scrolle via les espaces
-            // entre cartes / en-têtes, et l'auto-scroll au bord gère le drag.
-            touchAction: isTouch ? "none" : undefined,
             padding: "0.625rem 0.625rem 0.625rem 0.875rem",
             overflow: "hidden",
           }}
