@@ -34,8 +34,13 @@ export async function AppShell({ children }: AppShellProps) {
           déjà vers le bon workspace, sans dépendre de l'hydratation. */}
       <Sidebar stats={sidebarStats} initialWorkspace={initialWorkspace} />
 
-      {/* Main area */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+      {/* Main area — on réserve la safe-area haute de l'iPhone (horloge /
+          batterie / Dynamic Island) UNE seule fois ici, pour toutes les pages
+          de l'app : aucun contenu ne démarre sous le bandeau d'état iOS. */}
+      <div
+        className="flex flex-col flex-1 min-w-0 overflow-hidden"
+        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+      >
         {children}
       </div>
 
