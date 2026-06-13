@@ -2042,11 +2042,23 @@ textarea::placeholder {
 
   .mb-project-rail-toggle {
     position: static;
-    margin: 0 auto 0.5rem;
+    margin: 0 auto 0.4rem;
     width: 100%;
     max-width: 220px;
     border-radius: 999px;
     padding: 0.35rem 0.75rem;
+  }
+
+  /* iPhone : la synthèse se replie verticalement (elle est SOUS ce bouton) →
+     la flèche pointe de haut en bas, pas de gauche à droite. Ouverte = flèche
+     vers le HAUT (replier), repliée = flèche vers le BAS (déplier). On réutilise
+     le chevron horizontal en le tournant de 90°. */
+  .mb-project-rail-toggle svg {
+    transform: rotate(-90deg);
+  }
+
+  .mb-project-rail-shell:not([open]) .mb-project-rail-toggle svg {
+    transform: rotate(90deg);
   }
 
   /* iPhone : la grille reste en 1 colonne même quand la synthèse est repliée.
@@ -2087,6 +2099,10 @@ textarea::placeholder {
   .mb-project-main-scroll {
     overflow: visible;
     padding-right: 0;
+    /* Sinon le 100% du desktop étire la colonne et pousse la synthèse loin
+       sous les étapes (gros vide avant la flèche de repli). */
+    height: auto;
+    max-height: none;
   }
 
   .mb-filter-pill-menu {
@@ -2154,7 +2170,7 @@ textarea::placeholder {
   }
 
   .mb-project-command-grid {
-    gap: 0.65rem;
+    gap: 0.3rem;
   }
 
   .mb-project-brief-grid {

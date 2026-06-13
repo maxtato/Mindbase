@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { surface, text } from "@/lib/design-tokens";
@@ -39,6 +40,17 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
         }}
       />
       <div className="flex items-center gap-2 min-w-0 sm:gap-3">
+        {/* iPhone uniquement : logo Mindbase devant le titre du menu. Sur
+            desktop la sidebar porte déjà le logo → on le masque (sm:hidden). */}
+        <Image
+          src="/mindbase-iphone.png"
+          alt="Mindbase"
+          width={32}
+          height={32}
+          priority
+          className="shrink-0 sm:hidden"
+          style={{ display: "block", objectFit: "contain", borderRadius: 8 }}
+        />
         {breadcrumb ?? (
           <div className="min-w-0">
             <h1
