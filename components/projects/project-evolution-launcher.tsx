@@ -164,7 +164,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
             onClick={(event) => event.stopPropagation()}
             style={{
               width: "min(600px, 100%)",
-              maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 32px)",
+              maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 96px)",
               display: "flex",
               flexDirection: "column",
               borderRadius: "20px",
