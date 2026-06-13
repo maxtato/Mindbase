@@ -46,9 +46,19 @@ export interface EvolutionOperation {
 }
 
 export interface EvolutionPlan {
-  /** Résumé en 1-2 phrases de ce que dit le texte fourni. */
+  /** "question" : l'IA a besoin de précisions → dialogue. "plan" : prête à proposer. */
+  mode: "question" | "plan";
+  /** Question de clarification quand mode="question" (sinon null). */
+  question: string | null;
+  /** Résumé en 1-2 phrases de la compréhension actuelle. */
   summary: string;
   operations: EvolutionOperation[];
+}
+
+/** Un tour de dialogue avec l'assistant d'évolution. */
+export interface EvolutionMessage {
+  role: "user" | "assistant";
+  content: string;
 }
 
 const STATUS_LABEL_FR: Record<string, string> = {
@@ -115,11 +125,17 @@ function buildSnapshotWithIds(project: Project): string {
 }
 
 function buildSystemPrompt(today: string): string {
-  return `Tu es l'assistant d'un outil de gestion de projet. À partir d'un TEXTE LIBRE fourni par l'utilisateur (compte-rendu, note d'avancement, mail…), tu fais ÉVOLUER le projet existant.
+  return `Tu es l'assistant d'un outil de gestion de projet. À partir d'un TEXTE LIBRE fourni par l'utilisateur (compte-rendu, note d'avancement, mail…) et d'un éventuel DIALOGUE avec lui, tu fais ÉVOLUER le projet existant.
 
 Tu reçois l'état actuel du projet avec les identifiants (stepId, taskId) de chaque étape et tâche.
 
-Tu réponds UNIQUEMENT en JSON strict, en français. Tu produis une liste d'opérations parmi :
+Tu réponds UNIQUEMENT en JSON strict, en français, selon DEUX MODES possibles :
+
+• mode="question" — quand le texte/les échanges ne te suffisent PAS pour proposer une évolution pertinente et précise. Tu poses alors UNE seule question de clarification, concrète et ciblée, dans le champ "question" (operations = liste vide). Le but : comprendre l'intention réelle, lever une ambiguïté, obtenir une date/un responsable/un périmètre manquant. Mène le dialogue tour par tour jusqu'à avoir assez d'infos.
+
+• mode="plan" — dès que tu as assez d'éléments. Tu mets "question" à null et tu proposes les opérations (champ "operations"). Ne pose pas de question inutile : si le texte est déjà clair et actionnable, passe directement en mode="plan".
+
+En mode="plan", chaque opération est l'une de :
 
 1. "add_step" — créer une nouvelle étape. Renseigne stepTitle (court) et stepDescription. Laisse les autres champs à null.
 2. "add_task" — créer une nouvelle tâche. Renseigne taskTitle et taskExpected (livrable concret). Pour la rattacher :
@@ -147,6 +163,8 @@ Règles importantes :
 const OPERATION_SCHEMA = {
   type: "object",
   properties: {
+    mode: { type: "string", enum: ["question", "plan"] },
+    question: { type: ["string", "null"] },
     summary: { type: "string" },
     operations: {
       type: "array",
@@ -191,16 +209,16 @@ const OPERATION_SCHEMA = {
       },
     },
   },
-  required: ["summary", "operations"],
+  required: ["mode", "question", "summary", "operations"],
   additionalProperties: false,
 } as const;
 
 export async function analyzeProjectEvolution(
   project: Project,
-  text: string,
+  messages: EvolutionMessage[],
 ): Promise<EvolutionPlan> {
-  const cleaned = text.trim();
-  if (!cleaned) throw new Error("Le texte à analyser est vide.");
+  const dialogue = (messages ?? []).filter((message) => message.content.trim());
+  if (dialogue.length === 0) throw new Error("Le texte à analyser est vide.");
 
   const today = new Date().toISOString().slice(0, 10);
   const client = getOpenAIClient();
@@ -218,8 +236,9 @@ export async function analyzeProjectEvolution(
       { role: "system", content: buildSystemPrompt(today) },
       {
         role: "user",
-        content: `État actuel du projet :\n\n${buildSnapshotWithIds(project)}\n\n---\n\nTEXTE À ANALYSER :\n\n${cleaned}\n\n---\n\nProduis le plan d'évolution (résumé + opérations).`,
+        content: `État actuel du projet :\n\n${buildSnapshotWithIds(project)}\n\n---\n\nCi-dessous, la note initiale de l'utilisateur puis votre dialogue. Si tu as assez d'éléments, produis le plan (mode="plan") ; sinon pose UNE question (mode="question").`,
       },
+      ...dialogue.map((message) => ({ role: message.role, content: message.content })),
     ],
   });
 
@@ -229,6 +248,9 @@ export async function analyzeProjectEvolution(
   try {
     const parsed = JSON.parse(content) as EvolutionPlan;
     parsed.operations = Array.isArray(parsed.operations) ? parsed.operations : [];
+    parsed.mode = parsed.mode === "question" ? "question" : "plan";
+    if (parsed.mode === "question") parsed.operations = [];
+    else parsed.question = null;
     return parsed;
   } catch {
     throw new Error("L'IA n'a pas renvoyé de JSON valide.");
