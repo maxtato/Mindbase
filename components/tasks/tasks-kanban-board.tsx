@@ -12,7 +12,7 @@ import {
   updateTaskBoardStatusAction,
 } from "@/app/dashboard/projects/[id]/actions";
 import { statusColor, surface, text, error as errorTokens } from "@/lib/design-tokens";
-import { useCardDrag, DragGhost, useLongPressDrag } from "@/lib/use-card-drag";
+import { useCardDrag, DragGhost, useLongPressDrag, findScrollParent } from "@/lib/use-card-drag";
 import type { Project, TaskStatus } from "@/lib/mock-data";
 import { formatDueLabel, isTaskOverdue, type FlattenedProjectTask } from "@/lib/project-insights";
 import { deriveTaskDisplayPriority, deriveTaskStatus, taskStatusLabels } from "@/lib/project-plan";
@@ -82,6 +82,9 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
   const { ghost, draggingKey: touchDraggingKey, begin } = useCardDrag({
     dropAttr: "data-kanban-status",
     scrollContainer: () => gridRef.current,
+    // Sur mobile les colonnes sont empilées verticalement → pour déposer une
+    // carte dans une colonne plus bas (ou plus haut) on fait défiler la page.
+    verticalScroll: () => findScrollParent(gridRef.current),
     onOverTarget: (target) => setDragOverStatus(target as TaskStatus | null),
     onDrop: (key, target) => {
       const item = visibleTasks.find((candidate) => getTaskKey(candidate) === key);

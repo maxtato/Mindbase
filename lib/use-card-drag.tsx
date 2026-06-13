@@ -9,6 +9,23 @@
 
 import { useCallback, useRef, useState } from "react";
 
+// Trouve l'ancêtre RÉELLEMENT scrollable verticalement (overflow auto/scroll +
+// contenu qui déborde). Selon la page, ce n'est pas le même élément : sur la
+// fiche projet c'est `.mb-project-detail-frame`, sur kanban/calendrier c'est le
+// `<main>`. On le détecte dynamiquement plutôt que de coder un nom de classe.
+export function findScrollParent(start: HTMLElement | null): HTMLElement | null {
+  let el: HTMLElement | null = start;
+  while (el && el !== document.body) {
+    const style = window.getComputedStyle(el);
+    const overflowY = style.overflowY;
+    if ((overflowY === "auto" || overflowY === "scroll") && el.scrollHeight > el.clientHeight + 1) {
+      return el;
+    }
+    el = el.parentElement;
+  }
+  return (document.scrollingElement as HTMLElement | null) ?? null;
+}
+
 // Détection d'appui long (touch) pour « décoller » un élément et le glisser,
 // sans poignée. Un mouvement avant le délai = scroll → on annule. Au-delà du
 // délai immobile = on engage le drag via onEngage.
@@ -105,23 +122,26 @@ export function useCardDrag(options: UseCardDragOptions) {
       const preventScroll = (touchEvent: TouchEvent) => touchEvent.preventDefault();
       window.addEventListener("touchmove", preventScroll, { passive: false });
 
+      // Conteneurs scrollables résolus une seule fois (getComputedStyle est
+      // coûteux → on ne le refait pas à chaque frame).
+      const h = options.horizontalScroll?.() ?? options.scrollContainer?.() ?? null;
+      const v = options.verticalScroll?.() ?? null;
+
       const tick = () => {
         const { x, y } = posRef.current;
-        const edge = 72;
-        const speed = 16;
+        const edge = 84;
+        const speed = 18;
         // Horizontal : on scrolle le conteneur (grille kanban / mois calendrier)
         // quand le doigt approche du bord gauche/droit de l'ÉCRAN.
-        const h = options.horizontalScroll?.() ?? options.scrollContainer?.() ?? null;
         if (h) {
           if (x > window.innerWidth - edge) h.scrollLeft += speed;
           else if (x < edge) h.scrollLeft -= speed;
         }
         // Vertical : on scrolle la PAGE quand le doigt approche du haut/bas de
         // l'écran (décalages pour la topbar en haut et la bottom nav en bas).
-        const v = options.verticalScroll?.() ?? null;
         if (v) {
           if (y < edge + 24) v.scrollTop -= speed;
-          else if (y > window.innerHeight - edge - 80) v.scrollTop += speed;
+          else if (y > window.innerHeight - edge - 24) v.scrollTop += speed;
         }
         rafRef.current = requestAnimationFrame(tick);
       };

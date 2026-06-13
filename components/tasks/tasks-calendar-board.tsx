@@ -14,7 +14,7 @@ import type { FlattenedProjectTask } from "@/lib/project-insights";
 import { deriveTaskDisplayPriority, deriveTaskStatus } from "@/lib/project-plan";
 import { priorityVisuals, type ProjectPriority } from "@/lib/project-taxonomy";
 import { useIsTouchDevice } from "@/lib/use-touch-device";
-import { useCardDrag, DragGhost, useLongPressDrag } from "@/lib/use-card-drag";
+import { useCardDrag, DragGhost, useLongPressDrag, findScrollParent } from "@/lib/use-card-drag";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
 
 type TaskSort = "due" | "priority";
@@ -108,7 +108,7 @@ export function TasksCalendarBoard({
     // Horizontal : la grille du mois (scroll latéral sur iPhone) ; vertical :
     // la page elle-même (pour remonter/descendre vers la bonne semaine).
     horizontalScroll: () => monthPaneRef.current,
-    verticalScroll: () => (monthPaneRef.current?.closest(".mb-mobile-scroll") as HTMLElement | null) ?? null,
+    verticalScroll: () => findScrollParent(monthPaneRef.current),
     onOverTarget: (target) => setDragOverDate(target),
     onDrop: (key, target) => {
       const item = visibleTasks.find((candidate) => getTaskKey(candidate) === key);

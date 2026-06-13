@@ -20,7 +20,7 @@ import { TaskDetailLauncher } from "@/components/projects/task-detail-launcher";
 import type { Step, Task, ChecklistItem, ProjectPerson, ProjectStatusSettings, ProjectTeam, TaskStatus } from "@/lib/mock-data";
 import { PROJECT_PRIORITY_OPTIONS, priorityVisuals, type ProjectPriority } from "@/lib/project-taxonomy";
 import { useIsTouchDevice } from "@/lib/use-touch-device";
-import { DragGhost, useLongPressDrag, type CardDragGhost } from "@/lib/use-card-drag";
+import { DragGhost, useLongPressDrag, findScrollParent, type CardDragGhost } from "@/lib/use-card-drag";
 import {
   calculateProgressFromSteps,
   calculateStepIndicators,
@@ -571,17 +571,18 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
     window.addEventListener("touchmove", preventScroll, { passive: false });
 
     // Auto-scroll vertical de la PAGE : quand le doigt approche du haut/bas de
-    // l'écran, on fait défiler le conteneur de la page projet pour pouvoir
-    // déposer une étape/tâche plus haut ou plus bas que la zone visible.
-    const scrollContainer = cardEl?.closest<HTMLElement>(".mb-mobile-scroll") ?? null;
+    // l'écran, on fait défiler le conteneur scrollable de la fiche projet
+    // (`.mb-project-detail-frame` sur mobile) pour pouvoir déposer une
+    // étape/tâche plus haut ou plus bas que la zone visible.
+    const scrollContainer = findScrollParent(cardEl);
     const pointerPos = { x: startX, y: startY };
     let rafId: number | null = null;
     const tick = () => {
-      const edge = 88;
-      const speed = 16;
+      const edge = 84;
+      const speed = 18;
       if (scrollContainer) {
-        if (pointerPos.y < edge) scrollContainer.scrollTop -= speed;
-        else if (pointerPos.y > window.innerHeight - edge) scrollContainer.scrollTop += speed;
+        if (pointerPos.y < edge + 24) scrollContainer.scrollTop -= speed;
+        else if (pointerPos.y > window.innerHeight - edge - 24) scrollContainer.scrollTop += speed;
       }
       rafId = requestAnimationFrame(tick);
     };
