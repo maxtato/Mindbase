@@ -295,13 +295,18 @@ function KanbanTaskCard({
   const isTouch = useIsTouchDevice();
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const suppressNextClickRef = useRef(false);
-  const longPress = useLongPressDrag(({ x, y, element }) => {
-    dragStartedRef.current = true;
-    onLongPressEngage(x, y, element);
-    window.setTimeout(() => {
-      dragStartedRef.current = false;
-    }, 700);
-  });
+  const longPress = useLongPressDrag(
+    ({ x, y, element }) => {
+      dragStartedRef.current = true;
+      onLongPressEngage(x, y, element);
+      window.setTimeout(() => {
+        dragStartedRef.current = false;
+      }, 700);
+    },
+    // touch-action:none neutralise le scroll sur la carte → on peut tolérer une
+    // petite dérive du doigt pendant l'appui sans annuler le « décollage ».
+    { moveTolerance: 16 },
+  );
   // overdue + displayedPriority dépendent de `new Date()` → divergent SSR/client
   // sur Safari iOS et cassent l'hydratation. On les calcule après mount.
   const [hydrated, setHydrated] = useState(false);
@@ -396,6 +401,12 @@ function KanbanTaskCard({
             userSelect: "none",
             WebkitUserSelect: "none",
             WebkitTouchCallout: "none",
+            // CLÉ sur iOS : sans touch-action:none, Safari « vole » le geste pour
+            // scroller (la grille kanban est dans des conteneurs scrollables) et
+            // émet pointercancel → l'appui long est annulé avant les 300 ms. On
+            // neutralise le scroll natif SUR la carte ; on scrolle via les espaces
+            // entre cartes / en-têtes, et l'auto-scroll au bord gère le drag.
+            touchAction: isTouch ? "none" : undefined,
             padding: "0.625rem 0.625rem 0.625rem 0.875rem",
             overflow: "hidden",
           }}
