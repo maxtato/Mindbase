@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Badge, statusLabels } from "@/components/ui/badge";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { ProjectIdentityEditor } from "@/components/projects/project-identity-editor";
-import { resolveProjectSubcategoryDisplay } from "@/lib/project-taxonomy";
 import { surface, text, error, statusColor } from "@/lib/design-tokens";
 import type { Project } from "@/lib/mock-data";
 import { calculateProjectIndicators, deriveTaskStatus } from "@/lib/project-plan";
@@ -32,7 +31,6 @@ export function ProjectsList({ projects, qs }: ProjectsListProps) {
           ? allTasks.filter((t) => deriveTaskStatus(t) !== "done").length
           : project.actions.filter((a) => !a.done).length;
         const openProjectBlockers = project.blockers.filter((b) => b.status === "open");
-        const subcategoryDisplay = resolveProjectSubcategoryDisplay(project);
         const indicators = calculateProjectIndicators(project);
 
         return (
@@ -41,10 +39,10 @@ export function ProjectsList({ projects, qs }: ProjectsListProps) {
               className="mb-card-premium mb-card-hover overflow-hidden"
               style={{ background: surface.s1, border: `1px solid ${surface.border}`, borderRadius: 24 }}
             >
-              {/* Colored header band */}
+              {/* En-tête noir minimaliste (couleur uniquement dans le picto) */}
               <div
                 className="px-5 py-4"
-                style={{ background: subcategoryDisplay.color, borderBottom: `1px solid ${surface.borderSubtle}` }}
+                style={{ background: "#111114", borderBottom: `1px solid ${surface.borderSubtle}` }}
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
@@ -77,9 +75,9 @@ export function ProjectsList({ projects, qs }: ProjectsListProps) {
                 {/* Objective */}
                 <div
                   className="mb-3"
-                  style={{ paddingLeft: "0.75rem", borderLeft: `3px solid ${project.subcategoryColor}` }}
+                  style={{ paddingLeft: "0.75rem", borderLeft: `3px solid ${surface.border}` }}
                 >
-                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: project.subcategoryColor }}>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: text.muted }}>
                     Objectif
                   </p>
                   <p className="text-sm line-clamp-3" style={{ color: text.primary, fontWeight: 500, lineHeight: 1.55 }}>
@@ -89,8 +87,8 @@ export function ProjectsList({ projects, qs }: ProjectsListProps) {
 
                 {/* Progress */}
                 <div className="flex items-center gap-3 mb-3">
-                  <ProgressBar value={project.progress} color={project.subcategoryColor} />
-                  <span className="text-xs shrink-0 tabular-nums font-semibold" style={{ color: project.subcategoryColor }}>
+                  <ProgressBar value={project.progress} color={text.primary} />
+                  <span className="text-xs shrink-0 tabular-nums font-semibold" style={{ color: text.secondary }}>
                     {project.progress}%
                   </span>
                 </div>

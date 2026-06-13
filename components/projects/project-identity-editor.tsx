@@ -125,15 +125,15 @@ export function ProjectIdentityEditor({
           width: dimension,
           height: dimension,
           // Sur fond neutre : plate solide en couleur projet, icône blanche → identité forte.
-          // Sur un bandeau déjà coloré (`onColor`) : plate blanche, icône en couleur projet
-          // → on garde le même picto mais le contraste reste lisible.
-          background: onColor ? "#FFFFFF" : display.color,
+          // Sur un bandeau noir (`onColor`) : plate sombre discrète, picto en
+          // couleur projet → minimaliste, seul le picto porte la couleur.
+          background: onColor ? "rgba(255,255,255,0.08)" : display.color,
           color: onColor ? display.color : "#FFFFFF",
           borderRadius: size === "lg" ? 14 : size === "sm" ? 10 : 12,
-          border: onColor ? `1px solid rgba(255,255,255,0.4)` : "none",
+          border: onColor ? `1px solid rgba(255,255,255,0.16)` : "none",
           cursor: "pointer",
           boxShadow: onColor
-            ? "0 4px 10px -4px rgba(0,0,0,0.18)"
+            ? "none"
             : `0 6px 16px -8px ${display.color}, inset 0 1px 0 rgba(255,255,255,0.2)`,
           transition: "background-color 180ms var(--mb-ease), box-shadow 180ms var(--mb-ease), transform 120ms var(--mb-ease)",
         }}

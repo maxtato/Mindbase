@@ -6,7 +6,7 @@ import Link from "next/link";
 import type { Project } from "@/lib/mock-data";
 import { computeProjectHealth, getHealthVisual } from "@/lib/project-health";
 import { surface, text, statusColor, error as errorTokens } from "@/lib/design-tokens";
-import { resolveProjectSubcategoryDisplay, priorityVisuals } from "@/lib/project-taxonomy";
+import { priorityVisuals } from "@/lib/project-taxonomy";
 
 interface ActiveProjectCardProps {
   project: Project;
@@ -34,7 +34,6 @@ const STATUS_TONES: Record<Project["status"], string> = {
 export function ActiveProjectCard({ project, workspace }: ActiveProjectCardProps) {
   const health = computeProjectHealth(project);
   const healthVisual = getHealthVisual(health.level);
-  const display = resolveProjectSubcategoryDisplay(project);
   const priority = priorityVisuals[project.priority];
   const projectHref = `/dashboard/projects/${project.id}?workspace=${workspace}`;
   const statusLabel = STATUS_LABELS[project.status];
@@ -50,7 +49,7 @@ export function ActiveProjectCard({ project, workspace }: ActiveProjectCardProps
       }}
     >
       {/* Bande horizontale en haut, couleur projet */}
-      <span aria-hidden style={{ display: "block", height: 3, background: display.color }} />
+      <span aria-hidden style={{ display: "block", height: 3, background: "#111114" }} />
 
       <div className="flex flex-col gap-3 p-4">
         {/* Header : nom + santé */}
@@ -122,7 +121,7 @@ export function ActiveProjectCard({ project, workspace }: ActiveProjectCardProps
                 display: "block",
                 height: "100%",
                 width: `${Math.min(100, Math.max(0, project.progress))}%`,
-                background: display.color,
+                background: text.primary,
                 borderRadius: 999,
               }}
             />
@@ -145,7 +144,7 @@ export function ActiveProjectCard({ project, workspace }: ActiveProjectCardProps
           <Link
             href={health.nextAction.href ?? projectHref}
             className="shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-semibold"
-            style={{ background: display.color, color: "#FFFFFF", border: "none" }}
+            style={{ background: "#111114", color: "#FFFFFF", border: "none" }}
           >
             Ouvrir
           </Link>

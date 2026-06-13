@@ -12,7 +12,6 @@ import {
   ProjectMetaRow,
 } from "@/components/projects/project-taxonomy-ui";
 import { ProjectIdentityEditor } from "@/components/projects/project-identity-editor";
-import { resolveProjectSubcategoryDisplay } from "@/lib/project-taxonomy";
 import { isProjectInactive, projectHasBlockedTask, projectHasOverdueTask, projectPendingTaskCount } from "@/lib/project-insights";
 import { calculateProjectIndicators } from "@/lib/project-plan";
 import {
@@ -150,7 +149,6 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
             const pendingActions = projectPendingTaskCount(project);
             const openBlockers = project.blockers.filter((blocker) => blocker.status === "open");
             const pendingDecisions = project.decisions.filter((decision) => decision.status === "pending");
-            const subcategoryDisplay = resolveProjectSubcategoryDisplay(project);
             const inactive = isProjectInactive(project);
             const overdue = projectHasOverdueTask(project);
             const blocked = projectHasBlockedTask(project) || openBlockers.length > 0;
@@ -165,13 +163,12 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
                     border: `1px solid ${surface.border}`,
                   }}
                 >
-                  {/* Solid colored header band — paddings réduits en mobile
-                      pour laisser plus de place au contenu et que les cartes
-                      tiennent confortablement dans l'écran iPhone. */}
+                  {/* En-tête noir minimaliste, identique pour tous les projets.
+                      Seul le pictogramme porte la couleur du projet. */}
                   <div
                     className="p-3.5 sm:p-5"
                     style={{
-                      background: subcategoryDisplay.color,
+                      background: "#111114",
                       borderBottom: `1px solid ${surface.borderSubtle}`,
                     }}
                   >
@@ -216,10 +213,10 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
                       className="mb-3"
                       style={{
                         paddingLeft: "0.75rem",
-                        borderLeft: `3px solid ${project.subcategoryColor}`,
+                        borderLeft: `3px solid ${surface.border}`,
                       }}
                     >
-                      <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: project.subcategoryColor }}>
+                      <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: text.muted }}>
                         Objectif
                       </p>
                       <p className="text-sm line-clamp-3" style={{ color: text.primary, fontWeight: 500, lineHeight: 1.55 }}>
@@ -228,8 +225,8 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
                     </div>
 
                     <div className="flex items-center gap-3 mb-3">
-                      <ProgressBar value={project.progress} color={project.subcategoryColor} />
-                      <span className="text-xs shrink-0 tabular-nums font-semibold" style={{ color: project.subcategoryColor }}>
+                      <ProgressBar value={project.progress} color={text.primary} />
+                      <span className="text-xs shrink-0 tabular-nums font-semibold" style={{ color: text.secondary }}>
                         {project.progress}%
                       </span>
                     </div>

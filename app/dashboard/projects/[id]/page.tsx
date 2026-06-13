@@ -176,7 +176,8 @@ function ProjectPilotHeader({
         position: "relative",
       }}
     >
-      {/* Filet d'accent fin = signature visuelle du projet sans agressivité */}
+      {/* Filet fin neutre (minimaliste) — la couleur projet ne vit plus que
+          dans le pictogramme. */}
       <span
         aria-hidden="true"
         style={{
@@ -184,7 +185,7 @@ function ProjectPilotHeader({
           insetInline: 0,
           top: 0,
           height: 3,
-          background: projectAccent,
+          background: "#111114",
         }}
       />
       <div className="mb-project-pilotbar-inner" style={{ padding: "16px 20px" }}>
@@ -257,7 +258,7 @@ function ProjectPilotHeader({
             <div style={{ width: 90, flexShrink: 0 }}>
               <ProgressBar
                 value={project.progress}
-                color={projectAccent}
+                color={text.primary}
                 height={6}
                 trackColor={surface.s2}
                 borderColor={surface.borderSubtle}
