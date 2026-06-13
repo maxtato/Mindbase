@@ -1913,6 +1913,7 @@ function PersonEditor({
 }) {
   const [value, setValue] = useState(task.owner ?? "");
   const dirty = value.trim() !== (task.owner?.trim() ?? "");
+  const hasOwner = (task.owner?.trim() ?? "") !== "";
 
   return (
     <div
@@ -1937,7 +1938,8 @@ function PersonEditor({
               <button
                 key={person.id}
                 type="button"
-                onClick={() => setValue(person.name)}
+                // Reclic sur la personne déjà sélectionnée = on la retire.
+                onClick={() => setValue(selected ? "" : person.name)}
                 className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
                 style={{
                   background: selected ? accentColor : surface.s2,
@@ -1970,6 +1972,11 @@ function PersonEditor({
         >
           Enregistrer
         </Button>
+        {hasOwner && (
+          <Button variant="ghost" size="sm" onClick={() => onSave("")}>
+            Retirer
+          </Button>
+        )}
         <Button variant="ghost" size="sm" onClick={onCancel}>
           Annuler
         </Button>

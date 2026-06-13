@@ -396,7 +396,15 @@ export function TasksCalendarBoard({
                                           item={item}
                                           workspace={workspace}
                                           isDragging={draggingKey === getTaskKey(item) || touchDraggingKey === getTaskKey(item)}
-                                          onLongPressEngage={(x, y, element) => begin(getTaskKey(item), item.entry.task.title, x, y, element)}
+                                          // On décolle la carte ET on ferme la modal « liste du
+                                          // jour » : sinon l'overlay reste au-dessus du calendrier
+                                          // et bloque le drop (elementFromPoint tombe sur la modal,
+                                          // pas sur la cellule de date dessous). begin() a déjà
+                                          // cloné la carte pour l'aperçu → le drag survit.
+                                          onLongPressEngage={(x, y, element) => {
+                                            setExpandedDate(null);
+                                            begin(getTaskKey(item), item.entry.task.title, x, y, element);
+                                          }}
                                           onDragStart={() => setDraggingKey(getTaskKey(item))}
                                           onDragEnd={() => {
                                             setDraggingKey(null);
