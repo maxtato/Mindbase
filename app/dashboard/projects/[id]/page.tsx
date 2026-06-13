@@ -174,9 +174,6 @@ function ProjectPilotHeader({
         borderBottom: `1px solid ${surface.borderSubtle}`,
         color: text.primary,
         position: "relative",
-        // Safe-area haute iPhone (plein écran) : évite que l'identité du projet
-        // passe sous l'horloge / la batterie.
-        paddingTop: "env(safe-area-inset-top, 0px)",
       }}
     >
       {/* Filet d'accent fin = signature visuelle du projet sans agressivité */}
@@ -185,7 +182,7 @@ function ProjectPilotHeader({
         style={{
           position: "absolute",
           insetInline: 0,
-          top: "env(safe-area-inset-top, 0px)",
+          top: 0,
           height: 3,
           background: projectAccent,
         }}
