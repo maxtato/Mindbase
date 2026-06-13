@@ -15,10 +15,9 @@ interface CategoryIconProps {
 }
 
 export function ProjectCategoryIcon({ icon, color = "currentColor", size = 14 }: CategoryIconProps) {
-  // Le trait s'adapte à la taille : fin sur les petits pictos (sinon le dessin
-  // devient illisible, le trait « bouche » l'icône) et un peu plus marqué sur
-  // les grands. `non-scaling-stroke` → la valeur est en pixels écran.
-  const strokeWidth = Math.max(0.9, Math.min(2, size * 0.09));
+  // Trait fin et régulier, adapté à la taille (`non-scaling-stroke` → valeur en
+  // pixels écran). Plafonné bas pour rester délicat même sur les grands pictos.
+  const strokeWidth = Math.max(0.85, Math.min(1.5, size * 0.072));
   const common = {
     stroke: color,
     strokeWidth,
@@ -34,7 +33,7 @@ export function ProjectCategoryIcon({ icon, color = "currentColor", size = 14 }:
         <>
           <circle cx="12" cy="12" r="8" {...common} />
           <circle cx="12" cy="12" r="4.5" {...common} />
-          <circle cx="12" cy="12" r="1.5" fill={color} />
+          <circle cx="12" cy="12" r="1.2" fill={color} />
         </>
       )}
       {icon === "briefcase" && (
@@ -55,9 +54,9 @@ export function ProjectCategoryIcon({ icon, color = "currentColor", size = 14 }:
       {icon === "settings" && (
         <>
           <path d="M4.5 7h15M4.5 12h15M4.5 17h15" {...common} />
-          <circle cx="8.5" cy="7" r="1.9" fill={color} stroke="none" />
-          <circle cx="15.5" cy="12" r="1.9" fill={color} stroke="none" />
-          <circle cx="10.5" cy="17" r="1.9" fill={color} stroke="none" />
+          <circle cx="8.5" cy="7" r="1.5" fill={color} stroke="none" />
+          <circle cx="15.5" cy="12" r="1.5" fill={color} stroke="none" />
+          <circle cx="10.5" cy="17" r="1.5" fill={color} stroke="none" />
         </>
       )}
       {icon === "wallet" && (
@@ -65,7 +64,7 @@ export function ProjectCategoryIcon({ icon, color = "currentColor", size = 14 }:
           <path d="M3.5 8.4A2.4 2.4 0 0 1 5.9 6h12A1.1 1.1 0 0 1 19 7.1v1.3" {...common} />
           <rect x="3.5" y="8.4" width="17" height="11.1" rx="2.2" {...common} />
           <path d="M20.5 13.2H17a1.6 1.6 0 0 0 0 3.2h3.5" {...common} />
-          <circle cx="17.4" cy="14.8" r="0.9" fill={color} stroke="none" />
+          <circle cx="17.4" cy="14.8" r="0.8" fill={color} stroke="none" />
         </>
       )}
       {icon === "layers" && (
@@ -102,15 +101,15 @@ export function ProjectCategoryIcon({ icon, color = "currentColor", size = 14 }:
       {icon === "spark" && (
         <>
           <path d="M12 3.5v3.8M12 16.7v3.8M3.5 12h3.8M16.7 12h3.8M5.6 5.6l2.7 2.7M15.7 15.7l2.7 2.7M5.6 18.4l2.7-2.7M15.7 8.3l2.7-2.7" {...common} />
-          <circle cx="12" cy="12" r="3" fill={color} stroke="none" />
+          <circle cx="12" cy="12" r="2.3" fill={color} stroke="none" />
         </>
       )}
       {icon === "car" && (
         <>
           <path d="m4.5 12.5 1.7-4.6A1.5 1.5 0 0 1 7.6 7h8.8a1.5 1.5 0 0 1 1.4 0.9l1.7 4.6" {...common} />
           <path d="M3.5 12.5h17v4.5a1 1 0 0 1-1 1H18v1.5a.5.5 0 0 1-.5.5h-1.5a.5.5 0 0 1-.5-.5v-1.5H8.5v1.5a.5.5 0 0 1-.5.5H6.5a.5.5 0 0 1-.5-.5v-1.5H4.5a1 1 0 0 1-1-1Z" {...common} />
-          <circle cx="7.5" cy="14.8" r="1" fill={color} stroke="none" />
-          <circle cx="16.5" cy="14.8" r="1" fill={color} stroke="none" />
+          <circle cx="7.5" cy="14.8" r="0.85" fill={color} stroke="none" />
+          <circle cx="16.5" cy="14.8" r="0.85" fill={color} stroke="none" />
         </>
       )}
       {icon === "music" && (
@@ -142,10 +141,10 @@ export function ProjectCategoryIcon({ icon, color = "currentColor", size = 14 }:
       {icon === "palette" && (
         <>
           <path d="M12 3.5a8.5 8.5 0 0 0 0 17c1 0 1.7-0.6 1.9-1.5 0.2-0.7-0.1-1.2-0.1-1.7 0-0.8 0.6-1.4 1.4-1.4h1.5A4 4 0 0 0 20.5 11.7 8 8 0 0 0 12 3.5Z" {...common} />
-          <circle cx="8" cy="11" r="1.1" fill={color} stroke="none" />
-          <circle cx="11" cy="7.8" r="1.1" fill={color} stroke="none" />
-          <circle cx="15.2" cy="8.5" r="1.1" fill={color} stroke="none" />
-          <circle cx="17.2" cy="12.4" r="1.1" fill={color} stroke="none" />
+          <circle cx="8" cy="11" r="0.95" fill={color} stroke="none" />
+          <circle cx="11" cy="7.8" r="0.95" fill={color} stroke="none" />
+          <circle cx="15.2" cy="8.5" r="0.95" fill={color} stroke="none" />
+          <circle cx="17.2" cy="12.4" r="0.95" fill={color} stroke="none" />
         </>
       )}
       {icon === "asterisk" && (
