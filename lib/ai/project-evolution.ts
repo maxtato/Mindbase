@@ -9,7 +9,7 @@
 import { getOpenAIClient, AI_MODEL } from "./client";
 import type { Project, Task } from "@/lib/mock-data";
 
-export type EvolutionOpType = "add_step" | "add_task" | "update_task";
+export type EvolutionOpType = "add_step" | "add_task" | "update_task" | "remove_task";
 export type EvolutionTaskStatus = "todo" | "in_progress" | "waiting" | "blocked" | "done";
 export type EvolutionPriority = "low" | "medium" | "high";
 
@@ -150,11 +150,15 @@ En mode="plan", chaque opération est l'une de :
    - owner si une personne est désignée
    - priority si l'urgence change
    - note : ce qui a été réalisé / l'info d'avancement tirée du texte (sinon null)
+   Pour CLÔTURER une tâche déjà traitée ou qui n'a plus à être faite mais qu'on veut garder dans l'historique, utilise newStatus="done" (avec une note expliquant pourquoi).
+4. "remove_task" — SUPPRIMER / ANNULER une tâche qui n'a plus lieu d'être (ex: le projet change d'orientation et certaines tâches deviennent caduques). Renseigne taskId (exact) ; les autres champs restent null. Utilise-la pour nettoyer les tâches obsolètes plutôt que de les laisser traîner.
 
 Règles importantes :
 - N'invente RIEN qui ne soit pas étayé par le texte. Si le texte ne justifie aucun changement, renvoie une liste vide.
 - Pour faire avancer une tâche déjà existante, utilise update_task avec son taskId — NE crée PAS de doublon.
 - En revanche, si le texte évoque un travail, une action ou un livrable PERTINENT qui ne correspond à AUCUNE tâche existante, NE L'IGNORE PAS : crée une nouvelle tâche (add_task). Rattache-la à l'étape existante la plus pertinente (targetStepId), ou crée une nouvelle étape (add_step) si aucune ne convient et range-la dedans (newStepTitle). Le fait qu'un point ne fasse pas avancer une tâche actuelle n'est pas une raison de l'écarter.
+- CHANGEMENT D'ORIENTATION : quand la direction du projet change, ne te contente pas d'ajouter. Regarde les tâches existantes devenues caduques et propose de les ANNULER (remove_task) ou de les CLÔTURER (update_task newStatus="done") avec une note. L'objectif est que le plan reste cohérent, pas qu'il accumule des tâches sans objet.
+- Ne supprime/ne clôture une tâche que si le texte ou le dialogue le justifie clairement (orientation changée, doublon, abandon explicite). Dans le doute, demande en mode="question".
 - Ne repasse pas une tâche à un statut antérieur sans raison explicite dans le texte.
 - Les dates sont au format AAAA-MM-JJ. La date du jour est ${today}. Convertis les dates relatives ("vendredi prochain", "dans deux semaines") en dates absolues.
 - Pour owner, réutilise les noms de personnes déjà connus du projet quand c'est la même personne.
@@ -173,7 +177,7 @@ const OPERATION_SCHEMA = {
       items: {
         type: "object",
         properties: {
-          type: { type: "string", enum: ["add_step", "add_task", "update_task"] },
+          type: { type: "string", enum: ["add_step", "add_task", "update_task", "remove_task"] },
           stepTitle: { type: ["string", "null"] },
           stepDescription: { type: ["string", "null"] },
           targetStepId: { type: ["string", "null"] },
@@ -296,6 +300,14 @@ export function describeOperation(
     return {
       title: `Nouvelle tâche : ${op.taskTitle ?? "(sans titre)"}`,
       detail: [where, ...bits].filter(Boolean).join(" · ") || op.reason,
+    };
+  }
+
+  if (op.type === "remove_task") {
+    const removed = op.taskId ? findTask(op.taskId) : null;
+    return {
+      title: removed ? `Annuler : ${removed.task.title}` : "Annuler une tâche",
+      detail: op.reason,
     };
   }
 

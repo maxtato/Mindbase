@@ -19,6 +19,7 @@ import {
   addStepToProject,
   addTaskToStep,
   createProject,
+  deleteTaskFromStep,
   getProjectById,
   updateProject,
   updateTaskInStep,
@@ -384,6 +385,17 @@ export async function applyProjectEvolutionAction(input: {
     if (Object.keys(update).length === 0) continue;
 
     await updateTaskInStep(projectId, located.stepId, op.taskId, update);
+    applied += 1;
+  }
+
+  // 4) Suppression / annulation des tâches devenues caduques (en dernier).
+  for (const op of operations) {
+    if (op.type !== "remove_task" || !op.taskId) continue;
+    const fresh = await getProjectById(projectId);
+    if (!fresh) break;
+    const located = locateTask(fresh, op.taskId);
+    if (!located) continue;
+    await deleteTaskFromStep(projectId, located.stepId, op.taskId);
     applied += 1;
   }
 

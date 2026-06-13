@@ -19,6 +19,7 @@ const KIND_BADGE: Record<string, { label: string; bg: string; fg: string }> = {
   add_step: { label: "Étape", bg: "var(--mb-status-blue-bg)", fg: "var(--mb-status-blue-text)" },
   add_task: { label: "Tâche", bg: "var(--mb-status-green-bg)", fg: "var(--mb-status-green-text)" },
   update_task: { label: "Maj", bg: "var(--mb-status-yellow-bg)", fg: "var(--mb-status-yellow-text)" },
+  remove_task: { label: "Annuler", bg: "var(--mb-status-red-bg)", fg: "var(--mb-status-red-text)" },
 };
 
 export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvolutionLauncherProps) {
