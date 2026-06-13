@@ -12,6 +12,7 @@ import {
   updateTaskBoardStatusAction,
 } from "@/app/dashboard/projects/[id]/actions";
 import { statusColor, surface, text, error as errorTokens } from "@/lib/design-tokens";
+import { useCardDrag, DragGhost } from "@/lib/use-card-drag";
 import type { Project, TaskStatus } from "@/lib/mock-data";
 import { formatDueLabel, isTaskOverdue, type FlattenedProjectTask } from "@/lib/project-insights";
 import { deriveTaskDisplayPriority, deriveTaskStatus, taskStatusLabels } from "@/lib/project-plan";
@@ -42,9 +43,6 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
   const [blockedDoneAlert, setBlockedDoneAlert] = useState<string | null>(null);
   // Drag tactile (iPhone) : HTML5 DnD ne marche pas au doigt → drag custom.
   const gridRef = useRef<HTMLElement>(null);
-  const touchDragRef = useRef<{ key: string; status: TaskStatus } | null>(null);
-  const autoScrollRef = useRef<number | null>(null);
-  const [touchGhost, setTouchGhost] = useState<{ title: string; x: number; y: number } | null>(null);
 
   const visibleTasks = tasks.map((item) => ({
     ...item,
@@ -79,71 +77,17 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
     if (item) moveTaskToStatus(item, targetStatus);
   }
 
-  // Démarre un drag tactile depuis la poignée d'une carte : on suit le doigt
-  // (pointer events), on surligne la colonne survolée, on auto-scrolle la
-  // grille près des bords (colonnes plus larges que l'écran sur iPhone), et on
-  // dépose au relâchement.
-  function beginTouchDrag(item: VisibleTaskItem, event: React.PointerEvent) {
-    if (event.pointerType === "mouse") return;
-    event.preventDefault();
-
-    const key = getTaskKey(item);
-    touchDragRef.current = { key, status: item.status };
-    let pointerX = event.clientX;
-    setDraggingId(key);
-    setDragOverStatus(item.status);
-    setTouchGhost({ title: item.entry.task.title, x: event.clientX, y: event.clientY });
-
-    const stopAutoScroll = () => {
-      if (autoScrollRef.current !== null) {
-        cancelAnimationFrame(autoScrollRef.current);
-        autoScrollRef.current = null;
-      }
-    };
-    const tickAutoScroll = () => {
-      const grid = gridRef.current;
-      if (grid) {
-        const rect = grid.getBoundingClientRect();
-        const edge = 56;
-        if (pointerX > rect.right - edge) grid.scrollLeft += 14;
-        else if (pointerX < rect.left + edge) grid.scrollLeft -= 14;
-      }
-      autoScrollRef.current = requestAnimationFrame(tickAutoScroll);
-    };
-    autoScrollRef.current = requestAnimationFrame(tickAutoScroll);
-
-    const onMove = (ev: PointerEvent) => {
-      ev.preventDefault();
-      pointerX = ev.clientX;
-      const el = document.elementFromPoint(ev.clientX, ev.clientY);
-      const col = el instanceof Element ? el.closest("[data-kanban-status]") : null;
-      const status = (col?.getAttribute("data-kanban-status") as TaskStatus | null) ?? null;
-      if (status) {
-        setDragOverStatus(status);
-        if (touchDragRef.current) touchDragRef.current.status = status;
-      }
-      setTouchGhost((ghost) => (ghost ? { ...ghost, x: ev.clientX, y: ev.clientY } : ghost));
-    };
-    const onUp = () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onUp);
-      stopAutoScroll();
-      const drag = touchDragRef.current;
-      touchDragRef.current = null;
-      setTouchGhost(null);
-      setDraggingId(null);
-      setDragOverStatus(null);
-      if (drag) {
-        const dropItem = visibleTasks.find((candidate) => getTaskKey(candidate) === drag.key);
-        if (dropItem) moveTaskToStatus(dropItem, drag.status);
-      }
-    };
-
-    window.addEventListener("pointermove", onMove, { passive: false });
-    window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onUp);
-  }
+  // Drag tactile (poignée) : aperçu flottant qui suit le doigt + surlignage de
+  // la colonne + auto-scroll horizontal. Le drag souris reste natif (desktop).
+  const { ghost, draggingKey: touchDraggingKey, begin } = useCardDrag({
+    dropAttr: "data-kanban-status",
+    scrollContainer: () => gridRef.current,
+    onOverTarget: (target) => setDragOverStatus(target as TaskStatus | null),
+    onDrop: (key, target) => {
+      const item = visibleTasks.find((candidate) => getTaskKey(candidate) === key);
+      if (item) moveTaskToStatus(item, target as TaskStatus);
+    },
+  });
 
   function handleStatusChangeConfirm(details: string) {
     if (!pendingStatusChange) return;
@@ -292,13 +236,13 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
                       item={item}
                       workspace={workspace}
                       status={item.status}
-                      isDragging={draggingId === getTaskKey(item)}
+                      isDragging={draggingId === getTaskKey(item) || touchDraggingKey === getTaskKey(item)}
                       onDragStart={() => setDraggingId(getTaskKey(item))}
                       onDragEnd={() => {
                         setDraggingId(null);
                         setDragOverStatus(null);
                       }}
-                      onTouchDragStart={(event) => beginTouchDrag(item, event)}
+                      onTouchDragStart={(event) => begin(getTaskKey(item), item.entry.task.title, event)}
                     />
                   ))
                 ) : (
@@ -319,33 +263,7 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
         })}
       </section>
 
-      {touchGhost && (
-        <div
-          aria-hidden
-          style={{
-            position: "fixed",
-            left: touchGhost.x,
-            top: touchGhost.y,
-            transform: "translate(-50%, -130%)",
-            zIndex: 9999,
-            pointerEvents: "none",
-            maxWidth: 220,
-            padding: "8px 12px",
-            borderRadius: 12,
-            background: surface.s1,
-            border: `1px solid ${surface.border}`,
-            boxShadow: "var(--mb-shadow-lg)",
-            color: text.primary,
-            fontSize: 12,
-            fontWeight: 600,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {touchGhost.title}
-        </div>
-      )}
+      <DragGhost ghost={ghost} />
     </>
   );
 }

@@ -302,7 +302,11 @@ export async function updateTaskAction(projectId: string, stepId: string, taskId
     await maybeAutoTransitionToInProgress(projectId, stepId, taskId);
   }
 
-  await finalizeProjectMutation(projectId, `tâche ${taskId} modifiée manuellement.`);
+  // PAS de finalizeProjectMutation (revalidatePath + refresh) ici : ça
+  // re-render la page et démonte le drawer / la fenêtre ouverte (l'utilisateur
+  // perd sa place en enregistrant une date ou une checklist). Les appelants
+  // gèrent la mise à jour côté client de façon optimiste (steps-panel, drawer)
+  // ou rafraîchissent eux-mêmes quand c'est voulu (calendrier → router.refresh).
 }
 
 export async function addTaskChecklistItemAction(
