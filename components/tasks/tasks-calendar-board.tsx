@@ -14,6 +14,7 @@ import type { FlattenedProjectTask } from "@/lib/project-insights";
 import { deriveTaskDisplayPriority, deriveTaskStatus } from "@/lib/project-plan";
 import { priorityVisuals, type ProjectPriority } from "@/lib/project-taxonomy";
 import { useIsTouchDevice } from "@/lib/use-touch-device";
+import { useCardDrag, DragGhost } from "@/lib/use-card-drag";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
 
 type TaskSort = "due" | "priority";
@@ -89,6 +90,8 @@ export function TasksCalendarBoard({
     .filter((item) => !item.dueDate)
     .sort(sortUnplannedTasks);
 
+  const monthPaneRef = useRef<HTMLDivElement>(null);
+
   function handleDrop(targetDate: string) {
     if (!draggingKey) return;
     const item = visibleTasks.find((candidate) => getTaskKey(candidate) === draggingKey);
@@ -97,6 +100,18 @@ export function TasksCalendarBoard({
     if (!item || item.dueDate === targetDate) return;
     setPendingDateChange({ item, date: targetDate });
   }
+
+  // Drag tactile (poignée) : aperçu flottant qui suit le doigt + surlignage du
+  // jour survolé + auto-scroll de la grille. Le drag souris reste natif (desktop).
+  const { ghost, draggingKey: touchDraggingKey, begin } = useCardDrag({
+    dropAttr: "data-calendar-date",
+    scrollContainer: () => monthPaneRef.current,
+    onOverTarget: (target) => setDragOverDate(target),
+    onDrop: (key, target) => {
+      const item = visibleTasks.find((candidate) => getTaskKey(candidate) === key);
+      if (item && item.dueDate !== target) setPendingDateChange({ item, date: target });
+    },
+  });
 
   function handleDateChangeConfirm(details: string) {
     if (!pendingDateChange) return;
@@ -156,7 +171,7 @@ export function TasksCalendarBoard({
         </div>
 
         <div className="grid min-w-0 gap-3 xl:min-h-0 xl:flex-1 xl:grid-cols-[minmax(0,1fr)_282px]">
-          <div className="mb-calendar-month-pane min-w-0 xl:flex xl:min-h-0 xl:flex-col">
+          <div ref={monthPaneRef} className="mb-calendar-month-pane min-w-0 xl:flex xl:min-h-0 xl:flex-col">
             <div className="mb-calendar-weekdays grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-[0.12em] xl:shrink-0" style={{ color: text.muted }}>
               {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((day) => (
                 <span key={day} className="py-1.5">
@@ -173,6 +188,7 @@ export function TasksCalendarBoard({
                 return (
                   <div
                     key={key}
+                    data-calendar-date={key}
                     className="mb-soft-shadow min-h-[92px] min-w-0 rounded-[16px] px-0.5 pt-0 pb-1 xl:min-h-0 xl:overflow-hidden"
                     style={{
                       background: isOver
@@ -215,7 +231,8 @@ export function TasksCalendarBoard({
                             key={`${item.project.id}-${item.entry.id}`}
                             item={item}
                             workspace={workspace}
-                            isDragging={draggingKey === getTaskKey(item)}
+                            isDragging={draggingKey === getTaskKey(item) || touchDraggingKey === getTaskKey(item)}
+                            onTouchDragStart={(event) => begin(getTaskKey(item), item.entry.task.title, event)}
                             onDragStart={() => setDraggingKey(getTaskKey(item))}
                             onDragEnd={() => {
                               setDraggingKey(null);
@@ -375,7 +392,8 @@ export function TasksCalendarBoard({
                                           key={`${item.project.id}-${item.entry.id}`}
                                           item={item}
                                           workspace={workspace}
-                                          isDragging={draggingKey === getTaskKey(item)}
+                                          isDragging={draggingKey === getTaskKey(item) || touchDraggingKey === getTaskKey(item)}
+                                          onTouchDragStart={(event) => begin(getTaskKey(item), item.entry.task.title, event)}
                                           onDragStart={() => setDraggingKey(getTaskKey(item))}
                                           onDragEnd={() => {
                                             setDraggingKey(null);
@@ -433,7 +451,8 @@ export function TasksCalendarBoard({
                     key={getTaskKey(item)}
                     item={item}
                     workspace={workspace}
-                    isDragging={draggingKey === getTaskKey(item)}
+                    isDragging={draggingKey === getTaskKey(item) || touchDraggingKey === getTaskKey(item)}
+                    onTouchDragStart={(event) => begin(getTaskKey(item), item.entry.task.title, event)}
                     onDragStart={() => setDraggingKey(getTaskKey(item))}
                     onDragEnd={() => {
                       setDraggingKey(null);
@@ -478,6 +497,8 @@ export function TasksCalendarBoard({
           trigger={() => null}
         />
       )}
+
+      <DragGhost ghost={ghost} />
     </>
   );
 }
@@ -489,12 +510,14 @@ function CalendarTaskCard({
   onDragStart,
   onDragEnd,
   onClickOverride,
+  onTouchDragStart,
 }: {
   item: TaskItem;
   workspace: Workspace;
   isDragging: boolean;
   onDragStart: () => void;
   onDragEnd: () => void;
+  onTouchDragStart?: (event: React.PointerEvent) => void;
   /** Si fourni, remplace l'ouverture de la modal par ce handler. Utilisé
    *  pour la vue "preview" d'une journée à plusieurs tâches : un tap sur la
    *  carte aperçu doit éclater la pile, pas ouvrir directement la première.
@@ -613,7 +636,46 @@ function CalendarTaskCard({
               }}
             />
           )}
-          <p className="mb-board-task-title line-clamp-2 text-[11px] font-semibold leading-snug" style={{ color: text.primary }}>
+          {isTouch && onTouchDragStart && (
+            <span
+              role="button"
+              aria-label="Déplacer la tâche"
+              data-mobile-tap-ignore="true"
+              onPointerDown={onTouchDragStart}
+              onTouchStart={(event) => event.stopPropagation()}
+              onClick={(event) => event.stopPropagation()}
+              style={{
+                position: "absolute",
+                top: 3,
+                right: 3,
+                zIndex: 3,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 22,
+                height: 22,
+                borderRadius: 7,
+                color: text.muted,
+                background: surface.s2,
+                border: `1px solid ${surface.borderSubtle}`,
+                touchAction: "none",
+                cursor: "grab",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <circle cx="6" cy="4" r="1.2" />
+                <circle cx="10" cy="4" r="1.2" />
+                <circle cx="6" cy="8" r="1.2" />
+                <circle cx="10" cy="8" r="1.2" />
+                <circle cx="6" cy="12" r="1.2" />
+                <circle cx="10" cy="12" r="1.2" />
+              </svg>
+            </span>
+          )}
+          <p
+            className="mb-board-task-title line-clamp-2 text-[11px] font-semibold leading-snug"
+            style={{ color: text.primary, paddingRight: isTouch ? 22 : undefined }}
+          >
             {entry.task.title}
           </p>
           <p className="mt-1 truncate text-[10px]" style={{ color: text.muted }}>
