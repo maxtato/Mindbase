@@ -12,7 +12,7 @@ import {
   updateTaskBoardStatusAction,
 } from "@/app/dashboard/projects/[id]/actions";
 import { statusColor, surface, text, error as errorTokens } from "@/lib/design-tokens";
-import { useCardDrag, DragGhost } from "@/lib/use-card-drag";
+import { useCardDrag, DragGhost, useLongPressDrag } from "@/lib/use-card-drag";
 import type { Project, TaskStatus } from "@/lib/mock-data";
 import { formatDueLabel, isTaskOverdue, type FlattenedProjectTask } from "@/lib/project-insights";
 import { deriveTaskDisplayPriority, deriveTaskStatus, taskStatusLabels } from "@/lib/project-plan";
@@ -242,7 +242,7 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
                         setDraggingId(null);
                         setDragOverStatus(null);
                       }}
-                      onTouchDragStart={(event) => begin(getTaskKey(item), item.entry.task.title, event)}
+                      onLongPressEngage={(x, y, element) => begin(getTaskKey(item), item.entry.task.title, x, y, element)}
                     />
                   ))
                 ) : (
@@ -275,7 +275,7 @@ function KanbanTaskCard({
   isDragging,
   onDragStart,
   onDragEnd,
-  onTouchDragStart,
+  onLongPressEngage,
 }: {
   item: TaskItem;
   workspace: Workspace;
@@ -283,7 +283,7 @@ function KanbanTaskCard({
   isDragging: boolean;
   onDragStart: () => void;
   onDragEnd: () => void;
-  onTouchDragStart: (event: React.PointerEvent) => void;
+  onLongPressEngage: (x: number, y: number, element: HTMLElement) => void;
 }) {
   const { project, entry } = item;
   const task = entry.task;
@@ -292,6 +292,13 @@ function KanbanTaskCard({
   const isTouch = useIsTouchDevice();
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const suppressNextClickRef = useRef(false);
+  const longPress = useLongPressDrag(({ x, y, element }) => {
+    dragStartedRef.current = true;
+    onLongPressEngage(x, y, element);
+    window.setTimeout(() => {
+      dragStartedRef.current = false;
+    }, 700);
+  });
   // overdue + displayedPriority dépendent de `new Date()` → divergent SSR/client
   // sur Safari iOS et cassent l'hydratation. On les calcule après mount.
   const [hydrated, setHydrated] = useState(false);
@@ -336,6 +343,7 @@ function KanbanTaskCard({
             const touch = event.changedTouches[0];
             const start = touchStartRef.current;
             touchStartRef.current = null;
+            if (dragStartedRef.current) return;
             if (!touch || !start) return;
 
             const moved = Math.hypot(touch.clientX - start.x, touch.clientY - start.y);
@@ -364,6 +372,13 @@ function KanbanTaskCard({
               dragStartedRef.current = false;
             }, 0);
           }}
+          onPointerDown={(event) => {
+            if ((event.target as Element).closest("button, a, input, textarea, select, [role='button'], [data-mobile-tap-ignore='true']")) return;
+            longPress.onPointerDown(event);
+          }}
+          onPointerMove={longPress.onPointerMove}
+          onPointerUp={longPress.onPointerUp}
+          onPointerCancel={longPress.onPointerCancel}
           className="relative min-w-0 rounded-[18px]"
           style={{
             background: overdue ? errorTokens.bg : surface.s1,
@@ -372,10 +387,12 @@ function KanbanTaskCard({
             cursor: isDragging ? "grabbing" : "pointer",
             opacity: isDragging ? 0.72 : 1,
             userSelect: "none",
+            WebkitUserSelect: "none",
+            WebkitTouchCallout: "none",
             padding: "0.625rem 0.625rem 0.625rem 0.875rem",
             overflow: "hidden",
           }}
-          title="Cliquer pour ouvrir, glisser pour déplacer"
+          title="Cliquer pour ouvrir, appui long pour déplacer"
         >
           {!isDone && (
             <span
@@ -392,36 +409,7 @@ function KanbanTaskCard({
               }}
             />
           )}
-          {isTouch && (
-            <span
-              role="button"
-              aria-label="Déplacer la tâche"
-              data-mobile-tap-ignore="true"
-              onPointerDown={onTouchDragStart}
-              onTouchStart={(event) => event.stopPropagation()}
-              onClick={(event) => event.stopPropagation()}
-              style={{
-                position: "absolute",
-                top: 5,
-                right: 5,
-                zIndex: 2,
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 28,
-                height: 28,
-                borderRadius: 8,
-                color: text.muted,
-                background: surface.s2,
-                border: `1px solid ${surface.borderSubtle}`,
-                touchAction: "none",
-                cursor: "grab",
-              }}
-            >
-              <GripIcon />
-            </span>
-          )}
-          <div className="min-w-0" style={{ paddingRight: isTouch ? 38 : 16 }}>
+          <div className="min-w-0" style={{ paddingRight: 16 }}>
             <p className="mb-board-task-title line-clamp-2 text-[11px] font-semibold leading-snug" style={{ color: text.primary }}>
               {task.title}
             </p>
@@ -449,15 +437,3 @@ function getTaskStatusLabel(project: Project, status: TaskStatus) {
   return project.statusSettings?.task?.[status]?.label ?? taskStatusLabels[status];
 }
 
-function GripIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <circle cx="6" cy="4" r="1.3" />
-      <circle cx="10" cy="4" r="1.3" />
-      <circle cx="6" cy="8" r="1.3" />
-      <circle cx="10" cy="8" r="1.3" />
-      <circle cx="6" cy="12" r="1.3" />
-      <circle cx="10" cy="12" r="1.3" />
-    </svg>
-  );
-}

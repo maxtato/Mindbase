@@ -88,21 +88,22 @@ export function useCardDrag(options: UseCardDragOptions) {
   const rafRef = useRef<number | null>(null);
 
   const begin = useCallback(
-    (key: string, label: string, event: React.PointerEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-
+    (key: string, label: string, startX: number, startY: number, element: HTMLElement) => {
       // Clone de la carte source (marquée data-drag-card) → l'aperçu montre la
       // carte ENTIÈRE qui suit le doigt, pas juste un libellé.
-      const cardEl =
-        (event.currentTarget as Element | null)?.closest("[data-drag-card]") as HTMLElement | null;
+      const cardEl = element.closest("[data-drag-card]") as HTMLElement | null;
       const html = cardEl?.outerHTML;
       const width = cardEl?.getBoundingClientRect().width;
 
       dataRef.current = { key, target: null };
-      posRef.current = { x: event.clientX, y: event.clientY };
+      posRef.current = { x: startX, y: startY };
       setDraggingKey(key);
-      setGhost({ label, x: event.clientX, y: event.clientY, html, width });
+      setGhost({ label, x: startX, y: startY, html, width });
+      navigator.vibrate?.(12);
+
+      // Bloque le scroll de la page pendant le drag (sinon iOS scrolle).
+      const preventScroll = (touchEvent: TouchEvent) => touchEvent.preventDefault();
+      window.addEventListener("touchmove", preventScroll, { passive: false });
 
       const tick = () => {
         const { x, y } = posRef.current;
@@ -141,10 +142,20 @@ export function useCardDrag(options: UseCardDragOptions) {
         window.removeEventListener("pointermove", move);
         window.removeEventListener("pointerup", end);
         window.removeEventListener("pointercancel", end);
+        window.removeEventListener("touchmove", preventScroll);
         if (rafRef.current !== null) {
           cancelAnimationFrame(rafRef.current);
           rafRef.current = null;
         }
+        // Supprime le clic synthétique post-drag (sinon ouverture de la carte).
+        const suppressClick = (clickEvent: MouseEvent) => {
+          clickEvent.preventDefault();
+          clickEvent.stopPropagation();
+          document.removeEventListener("click", suppressClick, true);
+        };
+        document.addEventListener("click", suppressClick, true);
+        window.setTimeout(() => document.removeEventListener("click", suppressClick, true), 400);
+
         const drag = dataRef.current;
         dataRef.current = null;
         setGhost(null);
