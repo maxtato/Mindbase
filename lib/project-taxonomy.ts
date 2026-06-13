@@ -76,7 +76,7 @@ export const subcategoriesByWorkspace = {
     { key: "finance", label: "Finance", color: "#F59E0B", icon: "wallet" },
     { key: "produit", label: "Produit", color: "#6366F1", icon: "layers" },
     { key: "rh", label: "RH", color: "#EC4899", icon: "users" },
-    { key: "administratif", label: "Administratif", color: "#9CA3AF", icon: "document" },
+    { key: "administratif", label: "Administratif", color: "#0D9488", icon: "document" },
     { key: "other", label: "Autre", color: CUSTOM_SUBCATEGORY_DEFAULT_COLOR, icon: "asterisk" },
   ],
   personal: [
@@ -88,7 +88,7 @@ export const subcategoriesByWorkspace = {
     { key: "voyage", label: "Voyage", color: "#0EA5E9", icon: "plane" },
     { key: "vehicules", label: "Véhicules", color: "#3B82F6", icon: "car" },
     { key: "creatif", label: "Créatif", color: "#C084FC", icon: "palette" },
-    { key: "administratif", label: "Administratif", color: "#9CA3AF", icon: "document" },
+    { key: "administratif", label: "Administratif", color: "#0D9488", icon: "document" },
     { key: "other", label: "Autre", color: CUSTOM_SUBCATEGORY_DEFAULT_COLOR, icon: "asterisk" },
   ],
 } as const satisfies Record<Workspace, readonly ProjectSubcategoryOption[]>;
