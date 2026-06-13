@@ -36,7 +36,7 @@ export default function SignupPage() {
             >
               Flow
             </p>
-            <p className="mt-3 text-sm leading-7 text-white/90">
+            <p className="mt-3 text-sm leading-7" style={textStyles.muted}>
               Think. Structure. Create. Un même flux, deux environnements,
               zéro friction visuelle.
             </p>
@@ -50,7 +50,7 @@ export default function SignupPage() {
           >
             Inscription
           </p>
-          <h1 className="mt-4 text-4xl font-semibold tracking-tight text-white">
+          <h1 className="mt-4 text-4xl font-semibold tracking-tight" style={textStyles.strong}>
             Créer un compte Mindbase
           </h1>
           <p className="mt-4 text-base leading-7" style={textStyles.muted}>
@@ -97,7 +97,7 @@ export default function SignupPage() {
             Tu as déjà un compte ?{" "}
             <Link
               href="/auth/login"
-              className="text-white underline underline-offset-4"
+              className="underline underline-offset-4" style={{ color: "#7c3aed" }}
             >
               Se connecter
             </Link>

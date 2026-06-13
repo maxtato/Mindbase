@@ -3,12 +3,12 @@
 @theme inline {
   --color-background: var(--bg);
   --color-foreground: var(--fg);
-  --font-sans: "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-sans: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", "Quicksand", "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono", monospace;
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
   /* ─── Design system foundations ─────────────────────────────────────── */
 
@@ -24,13 +24,13 @@
   --mb-space-12: 48px;
   --mb-space-16: 64px;
 
-  /* Radius scale */
-  --mb-radius-xs: 4px;
-  --mb-radius-sm: 6px;
-  --mb-radius-md: 10px;
-  --mb-radius-lg: 14px;
-  --mb-radius-xl: 20px;
-  --mb-radius-2xl: 28px;
+  /* Radius scale — arrondi modéré, friendly */
+  --mb-radius-xs: 6px;
+  --mb-radius-sm: 8px;
+  --mb-radius-md: 12px;
+  --mb-radius-lg: 16px;
+  --mb-radius-xl: 22px;
+  --mb-radius-2xl: 30px;
   --mb-radius-pill: 999px;
 
   /* Type scale */
@@ -57,210 +57,207 @@
   --mb-font-semibold: 600;
   --mb-font-bold: 700;
 
-  /* Shadow scale (3 levels max, subtils) */
-  --mb-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.18);
-  --mb-shadow-sm: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 2px 6px rgba(0, 0, 0, 0.22);
-  --mb-shadow-md: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 6px 16px rgba(0, 0, 0, 0.30);
-  --mb-shadow-lg: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 16px 36px rgba(0, 0, 0, 0.40);
+  /* Shadow scale (3 levels max) — douces, teintées lavande, friendly */
+  --mb-shadow-xs: 0 1px 2px rgba(60, 45, 95, 0.05);
+  --mb-shadow-sm: 0 2px 8px rgba(60, 45, 95, 0.07), 0 1px 2px rgba(60, 45, 95, 0.04);
+  --mb-shadow-md: 0 8px 24px rgba(60, 45, 95, 0.09), 0 2px 6px rgba(60, 45, 95, 0.05);
+  --mb-shadow-lg: 0 20px 50px rgba(60, 45, 95, 0.14), 0 4px 12px rgba(60, 45, 95, 0.06);
 
-  /* Motion */
-  --mb-duration-fast: 120ms;
-  --mb-duration-base: 180ms;
-  --mb-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  /* Motion — léger rebond friendly */
+  --mb-duration-fast: 130ms;
+  --mb-duration-base: 200ms;
+  --mb-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  --bg: #080808;
-  --fg: #f8f9fb;
+  /* ─── Thème CLAIR par défaut : crème + pastels, accent lavande ──────────
+     Fond crème chaleureux, cartes blanches qui « pop », champs légèrement
+     teintés. Hiérarchie : bg(crème) > s4(creux) … s1(blanc pur). */
+  --bg: #f4efe6;
+  --fg: #2c2622;
 
-  /* Surfaces — hiérarchie minimaliste : steps de ~+5-7L entre niveaux.
-     bg < s4 < s1 < s2 < s3 (s3 = surface la plus claire pour les zones de saisie) */
-  --mb-bg: #050507;
-  --mb-s4: #020203;
-  --mb-s1: #1a1a20;
-  --mb-s2: #232329;
-  --mb-s3: #2c2c33;
-  --mb-sidebar: #08080b;
-  --mb-sidebar-panel: #17171c;
-  --mb-sidebar-panel-active: #25252c;
-  --mb-sidebar-border: #31313a;
-  --mb-sidebar-text: #ffffff;
-  --mb-sidebar-text-muted: #e4e4e7;
-  --mb-sidebar-text-dim: #9a9aa3;
-  --mb-logo-plate: #08080b;
-  --mb-logo-plate-border: #31313a;
-  --mb-on-color: #ffffff;
-  --mb-on-color-dim: #eef4ff;
-  --mb-metric-icon-bg: #eeeeee;
-  --mb-metric-icon-border: #cfcfcf;
-  --mb-metric-icon-color: #303030;
-  --mb-border: #2c2c34;
-  --mb-border-subtle: #20202a;
-  --mb-border-hover: #44444c;
-  --mb-top-highlight: #202020;
-  --mb-card-highlight: #282828;
-  --mb-card-shadow: rgba(0, 0, 0, 0.38);
-  --mb-page-inset: #111111;
-  --mb-shadow-soft: 0 0 26px rgba(0, 0, 0, 0.22);
-  --mb-shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 0 10px rgba(0, 0, 0, 0.24);
-  --mb-shadow-menu: 0 0 0 1px rgba(255, 255, 255, 0.035), 0 16px 36px rgba(0, 0, 0, 0.36);
-  --mb-shadow-float: 0 26px 70px rgba(0, 0, 0, 0.42);
-  --mb-accent-soft: #5b21b6;
-
-  --mb-text-primary: #f4f4f5;
-  --mb-text-secondary: #d4d4d8;
-  --mb-text-muted: #b4b4bb;
-  --mb-text-dim: #8e8e96;
-  --mb-text-ghost: #6c6c74;
-
-  /* Status colors — dark mode : bg en sourdine, text saturé pour lisibilité */
-  --mb-status-green-bg: rgba(34, 197, 94, 0.14);
-  --mb-status-green-text: #4ade80;
-  --mb-status-yellow-bg: rgba(234, 179, 8, 0.14);
-  --mb-status-yellow-text: #facc15;
-  --mb-status-orange-bg: rgba(249, 115, 22, 0.14);
-  --mb-status-orange-text: #fb923c;
-  --mb-status-red-bg: rgba(239, 68, 68, 0.14);
-  --mb-status-red-text: #f87171;
-  --mb-status-blue-bg: rgba(59, 130, 246, 0.14);
-  --mb-status-blue-text: #60a5fa;
-  --mb-status-gray-bg: rgba(160, 160, 170, 0.10);
-  --mb-status-gray-text: #a1a1aa;
-
-  --mb-error-bg: #1f0d0d;
-  --mb-error-border: #4a1f1f;
-  --mb-error-text: #f87171;
-  --mb-delete-bg: #2a1717;
-  --mb-delete-border: #8f4f4f;
-  --mb-delete-text: #c76a6a;
-  --mb-delete-solid: #b85f5f;
-
-  --mb-mauve: #c4b5fd;
-  --mb-mauve-bg: #1e1530;
-  --mb-mauve-text: #d8b4fe;
-  --mb-mauve-on: #120d20;
-
-  --mb-personal-accent: #9333ea;
-  --mb-personal-accent-hover: #7e22ce;
-  --mb-personal-accent-bg: #1e1030;
-  --mb-personal-accent-text: #d8b4fe;
-  --mb-personal-accent-soft: #160d25;
-  --mb-personal-accent-border: #5b21b6;
-  --mb-personal-solid-dark: #1a0d2e;
-  --mb-personal-solid-mid: #2d1852;
-  --mb-personal-gradient: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
-
-  --mb-professional-accent: #2563eb;
-  --mb-professional-accent-hover: #1d4ed8;
-  --mb-professional-accent-bg: #0f1e35;
-  --mb-professional-accent-text: #93c5fd;
-  --mb-professional-accent-soft: #0c1628;
-  --mb-professional-accent-border: #1d4ed8;
-  --mb-professional-solid-dark: #0d1a2e;
-  --mb-professional-solid-mid: #122540;
-  --mb-professional-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 56%, #1e40af 100%);
-
-  --font-geist-sans: "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --font-geist-mono: "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono", monospace;
-}
-
-[data-theme="light"] {
-  color-scheme: light;
-
-  /* Light mode : shadows plus présentes pour donner du relief */
-  --mb-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.05);
-  --mb-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
-  --mb-shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04);
-  --mb-shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.06);
-
-  /* Surfaces — hiérarchie inversée : page assez sourde pour faire ressortir les
-     cartes blanches, cards en blanc pur, fields recessés.
-     bg > s4 > s3 > s2 > s1 (s1 = blanc pur qui pop, s3 = champ recessé) */
-  --bg: #e9e9e5;
-  --fg: #0f172a;
-
-  --mb-bg: #e9e9e5;
+  --mb-bg: #f4efe6;
   --mb-s1: #ffffff;
-  --mb-s2: #f3f3ef;
-  --mb-s3: #f9f9f6;
-  --mb-s4: #d8d8d3;
-  --mb-sidebar: #0a0a0a;
-  --mb-sidebar-panel: #141414;
-  --mb-sidebar-panel-active: #1e1e1e;
-  --mb-sidebar-border: #272727;
-  --mb-sidebar-text: #ffffff;
-  --mb-sidebar-text-muted: #f3f3f3;
-  --mb-sidebar-text-dim: #d2d2d2;
-  --mb-logo-plate: #0a0a0a;
-  --mb-logo-plate-border: #272727;
+  --mb-s2: #fbf7f0;
+  --mb-s3: #fffdf8;
+  --mb-s4: #e9e1d4;
+  --mb-sidebar: #fbf7f1;
+  --mb-sidebar-panel: #f1eafe;
+  --mb-sidebar-panel-active: #e7dcff;
+  --mb-sidebar-border: #ece3d4;
+  --mb-sidebar-text: #2c2622;
+  --mb-sidebar-text-muted: #574c40;
+  --mb-sidebar-text-dim: #9a8c7c;
+  --mb-logo-plate: #8b5cf6;
+  --mb-logo-plate-border: #7c4ddb;
   --mb-on-color: #ffffff;
-  --mb-on-color-dim: #eef4ff;
-  --mb-metric-icon-bg: #ffffff;
-  --mb-metric-icon-border: #d6d6d6;
-  --mb-metric-icon-color: #303030;
-  --mb-border: #c8c8c4;
-  --mb-border-subtle: #d8d8d4;
-  --mb-border-hover: #9b9b96;
+  --mb-on-color-dim: #f3ecff;
+  --mb-metric-icon-bg: #f3ecff;
+  --mb-metric-icon-border: #e3d6fb;
+  --mb-metric-icon-color: #7c3aed;
+  --mb-border: #e6dccd;
+  --mb-border-subtle: #efe7da;
+  --mb-border-hover: #cbbba4;
   --mb-top-highlight: #ffffff;
   --mb-card-highlight: #ffffff;
-  --mb-card-shadow: rgba(20, 20, 20, 0.10);
-  --mb-page-inset: #e0e0dc;
-  --mb-shadow-soft: 0 0 20px rgba(28, 39, 64, 0.055);
-  --mb-shadow-card: 0 0 0 1px rgba(20, 20, 20, 0.035), 0 0 8px rgba(20, 20, 20, 0.052);
-  --mb-shadow-menu: 0 0 0 1px rgba(28, 39, 64, 0.035), 0 14px 30px rgba(28, 39, 64, 0.12);
-  --mb-shadow-float: 0 26px 68px rgba(28, 39, 64, 0.18);
-  --mb-accent-soft: #7c3aed;
+  --mb-card-shadow: rgba(60, 45, 95, 0.10);
+  --mb-page-inset: #ece4d6;
+  --mb-shadow-soft: 0 2px 20px rgba(60, 45, 95, 0.06);
+  --mb-shadow-card: 0 1px 2px rgba(60, 45, 95, 0.04), 0 2px 10px rgba(60, 45, 95, 0.05);
+  --mb-shadow-menu: 0 12px 32px rgba(60, 45, 95, 0.14);
+  --mb-shadow-float: 0 24px 60px rgba(60, 45, 95, 0.18);
+  --mb-accent-soft: #8b5cf6;
 
-  --mb-text-primary: #0f172a;
-  --mb-text-secondary: #334155;
-  --mb-text-muted: #475569;
-  --mb-text-dim: #6b7280;
-  --mb-text-ghost: #94a3b8;
+  --mb-text-primary: #2c2622;
+  --mb-text-secondary: #4a4036;
+  --mb-text-muted: #6b5f52;
+  --mb-text-dim: #978876;
+  --mb-text-ghost: #b8ab98;
 
-  /* Status colors — light mode : bg pastel léger, text saturé contrasté */
-  --mb-status-green-bg: rgba(34, 197, 94, 0.10);
+  /* Status colors — clair : bg pastel léger, text saturé contrasté */
+  --mb-status-green-bg: rgba(34, 197, 94, 0.12);
   --mb-status-green-text: #15803d;
-  --mb-status-yellow-bg: rgba(217, 119, 6, 0.10);
-  --mb-status-yellow-text: #ca8a04;
-  --mb-status-orange-bg: rgba(234, 88, 12, 0.10);
+  --mb-status-yellow-bg: rgba(217, 119, 6, 0.12);
+  --mb-status-yellow-text: #b45309;
+  --mb-status-orange-bg: rgba(234, 88, 12, 0.12);
   --mb-status-orange-text: #c2410c;
-  --mb-status-red-bg: rgba(239, 68, 68, 0.10);
-  --mb-status-red-text: #b91c1c;
-  --mb-status-blue-bg: rgba(37, 99, 235, 0.10);
-  --mb-status-blue-text: #1d4ed8;
-  --mb-status-gray-bg: rgba(100, 116, 139, 0.10);
-  --mb-status-gray-text: #475569;
+  --mb-status-red-bg: rgba(239, 68, 68, 0.12);
+  --mb-status-red-text: #be123c;
+  --mb-status-blue-bg: rgba(99, 102, 241, 0.12);
+  --mb-status-blue-text: #4f46e5;
+  --mb-status-gray-bg: rgba(120, 110, 95, 0.10);
+  --mb-status-gray-text: #6b5f52;
 
-  --mb-error-bg: #fff1f2;
-  --mb-error-border: #fecdd3;
+  --mb-error-bg: #fdeef0;
+  --mb-error-border: #f6cdd4;
   --mb-error-text: #be123c;
-  --mb-delete-bg: #fff2f2;
-  --mb-delete-border: #d79b9b;
-  --mb-delete-text: #b25e5e;
-  --mb-delete-solid: #a85555;
+  --mb-delete-bg: #fdeef0;
+  --mb-delete-border: #e6b0b8;
+  --mb-delete-text: #b03b4d;
+  --mb-delete-solid: #c2536a;
 
-  --mb-mauve: #7c3aed;
+  --mb-mauve: #8b5cf6;
   --mb-mauve-bg: #f1eafe;
   --mb-mauve-text: #6d28d9;
   --mb-mauve-on: #ffffff;
 
-  --mb-personal-accent: #7c3aed;
-  --mb-personal-accent-hover: #6d28d9;
-  --mb-personal-accent-bg: #eee6ff;
-  --mb-personal-accent-text: #5b21b6;
-  --mb-personal-accent-soft: #f5f0ff;
-  --mb-personal-accent-border: #b794f6;
-  --mb-personal-solid-dark: #eee6ff;
-  --mb-personal-solid-mid: #c4b5fd;
-  --mb-personal-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 56%, #5b21b6 100%);
+  --mb-personal-accent: #8b5cf6;
+  --mb-personal-accent-hover: #7c3aed;
+  --mb-personal-accent-bg: #f0e9ff;
+  --mb-personal-accent-text: #6d28d9;
+  --mb-personal-accent-soft: #f7f3ff;
+  --mb-personal-accent-border: #cbb6f7;
+  --mb-personal-solid-dark: #f0e9ff;
+  --mb-personal-solid-mid: #d6c6fb;
+  --mb-personal-gradient: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 56%, #7c3aed 100%);
 
-  --mb-professional-accent: #2563eb;
-  --mb-professional-accent-hover: #1d4ed8;
-  --mb-professional-accent-bg: #e1ecff;
+  --mb-professional-accent: #3b82f6;
+  --mb-professional-accent-hover: #2563eb;
+  --mb-professional-accent-bg: #e6f0ff;
   --mb-professional-accent-text: #1d4ed8;
   --mb-professional-accent-soft: #f0f6ff;
-  --mb-professional-accent-border: #93c5fd;
-  --mb-professional-solid-dark: #e1ecff;
-  --mb-professional-solid-mid: #93c5fd;
-  --mb-professional-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 56%, #1e40af 100%);
+  --mb-professional-accent-border: #aacbf8;
+  --mb-professional-solid-dark: #e6f0ff;
+  --mb-professional-solid-mid: #9cc2f7;
+  --mb-professional-gradient: linear-gradient(135deg, #60a5fa 0%, #3b82f6 56%, #2563eb 100%);
+
+  --font-geist-sans: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", "Quicksand", "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-geist-mono: "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono", monospace;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Dark mode — minuit lavande chaleureux (secondaire) */
+  --mb-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.30);
+  --mb-shadow-sm: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 2px 8px rgba(0, 0, 0, 0.30);
+  --mb-shadow-md: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 8px 24px rgba(0, 0, 0, 0.40);
+  --mb-shadow-lg: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 20px 50px rgba(0, 0, 0, 0.50);
+
+  --bg: #161320;
+  --fg: #f4f1fa;
+
+  --mb-bg: #141019;
+  --mb-s1: #211c2e;
+  --mb-s2: #2a2438;
+  --mb-s3: #332b43;
+  --mb-s4: #0f0c16;
+  --mb-sidebar: #120f1a;
+  --mb-sidebar-panel: #221c30;
+  --mb-sidebar-panel-active: #2f2742;
+  --mb-sidebar-border: #322a44;
+  --mb-sidebar-text: #f4f1fa;
+  --mb-sidebar-text-muted: #d8d0e8;
+  --mb-sidebar-text-dim: #9f93b5;
+  --mb-logo-plate: #8b5cf6;
+  --mb-logo-plate-border: #6d28d9;
+  --mb-on-color: #ffffff;
+  --mb-on-color-dim: #f3ecff;
+  --mb-metric-icon-bg: #2a2438;
+  --mb-metric-icon-border: #3a3150;
+  --mb-metric-icon-color: #c4b5fd;
+  --mb-border: #342c46;
+  --mb-border-subtle: #2a2338;
+  --mb-border-hover: #4a4060;
+  --mb-top-highlight: #2a2438;
+  --mb-card-highlight: #2f2742;
+  --mb-card-shadow: rgba(0, 0, 0, 0.40);
+  --mb-page-inset: #1a1524;
+  --mb-shadow-soft: 0 0 26px rgba(0, 0, 0, 0.30);
+  --mb-shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 2px 10px rgba(0, 0, 0, 0.30);
+  --mb-shadow-menu: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 16px 36px rgba(0, 0, 0, 0.45);
+  --mb-shadow-float: 0 26px 70px rgba(0, 0, 0, 0.50);
+  --mb-accent-soft: #8b5cf6;
+
+  --mb-text-primary: #f4f1fa;
+  --mb-text-secondary: #d4cce4;
+  --mb-text-muted: #b3a8c8;
+  --mb-text-dim: #8b8099;
+  --mb-text-ghost: #6c6379;
+
+  --mb-status-green-bg: rgba(34, 197, 94, 0.16);
+  --mb-status-green-text: #4ade80;
+  --mb-status-yellow-bg: rgba(234, 179, 8, 0.16);
+  --mb-status-yellow-text: #facc15;
+  --mb-status-orange-bg: rgba(249, 115, 22, 0.16);
+  --mb-status-orange-text: #fb923c;
+  --mb-status-red-bg: rgba(239, 68, 68, 0.16);
+  --mb-status-red-text: #f87171;
+  --mb-status-blue-bg: rgba(129, 140, 248, 0.16);
+  --mb-status-blue-text: #a5b4fc;
+  --mb-status-gray-bg: rgba(160, 150, 180, 0.12);
+  --mb-status-gray-text: #b3a8c8;
+
+  --mb-error-bg: #2a1520;
+  --mb-error-border: #5a2438;
+  --mb-error-text: #fca5b8;
+  --mb-delete-bg: #2a1720;
+  --mb-delete-border: #7a4050;
+  --mb-delete-text: #f0a0b0;
+  --mb-delete-solid: #c2536a;
+
+  --mb-mauve: #c4b5fd;
+  --mb-mauve-bg: #2a1f44;
+  --mb-mauve-text: #d8c7ff;
+  --mb-mauve-on: #1a1228;
+
+  --mb-personal-accent: #8b5cf6;
+  --mb-personal-accent-hover: #7c3aed;
+  --mb-personal-accent-bg: #2a1f44;
+  --mb-personal-accent-text: #d8c7ff;
+  --mb-personal-accent-soft: #1f1733;
+  --mb-personal-accent-border: #6d28d9;
+  --mb-personal-solid-dark: #221a38;
+  --mb-personal-solid-mid: #3a2a63;
+  --mb-personal-gradient: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 56%, #7c3aed 100%);
+
+  --mb-professional-accent: #3b82f6;
+  --mb-professional-accent-hover: #2563eb;
+  --mb-professional-accent-bg: #14223d;
+  --mb-professional-accent-text: #93c5fd;
+  --mb-professional-accent-soft: #101a2e;
+  --mb-professional-accent-border: #1d4ed8;
+  --mb-professional-solid-dark: #122140;
+  --mb-professional-solid-mid: #1c3666;
+  --mb-professional-gradient: linear-gradient(135deg, #60a5fa 0%, #3b82f6 56%, #2563eb 100%);
 }
 
 * {
@@ -1212,6 +1209,18 @@ summary {
   opacity: 1;
   backdrop-filter: none;
   box-shadow: var(--mb-shadow-float);
+}
+
+/* Panneau latéral pleine hauteur (ex. « Créer une tâche ») : en PWA iOS
+   (status bar black-translucent + viewportFit cover), le contenu passe sous
+   la Dynamic Island en haut et sous le home indicator + bottom nav en bas.
+   On réserve les safe-areas pour que l'en-tête et le pied restent visibles. */
+@media (max-width: 768px) {
+  .mb-edge-drawer {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
+    box-sizing: border-box;
+  }
 }
 
 /* Task detail drawer — responsive sizing.

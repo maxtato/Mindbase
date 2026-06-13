@@ -2746,7 +2746,7 @@ function CreateTaskDrawer({
         role="dialog"
         aria-modal="true"
         aria-label="Créer une tâche"
-        className="mb-modal-surface"
+        className="mb-modal-surface mb-edge-drawer"
         style={{
           position: "fixed",
           top: 0,

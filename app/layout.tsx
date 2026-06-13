@@ -30,8 +30,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f4f4f3" },
-    { media: "(prefers-color-scheme: dark)", color: "#08080a" },
+    { media: "(prefers-color-scheme: light)", color: "#f4efe6" },
+    { media: "(prefers-color-scheme: dark)", color: "#141019" },
   ],
 };
 
@@ -49,18 +49,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const cookieStore = await cookies();
   const cookieMode = cookieStore.get("mindbase-theme-mode")?.value;
   const cookieResolved = cookieStore.get("mindbase-theme-resolved")?.value;
-  const initialMode: InitialThemeMode = isInitialThemeMode(cookieMode) ? cookieMode : "system";
+  const initialMode: InitialThemeMode = isInitialThemeMode(cookieMode) ? cookieMode : "light";
   // Priorité : cookie résolu (rempli par le client à chaque changement)
   // → permet au SSR de rendre directement avec light/dark sans flash. À
   // défaut, si l'utilisateur a un mode explicite (light/dark) on l'utilise,
-  // sinon fallback sur dark (mode "system" sans info navigateur).
+  // sinon fallback sur clair (nouvelle DA crème + pastels par défaut).
   const initialTheme = isResolvedTheme(cookieResolved)
     ? cookieResolved
-    : initialMode === "light"
-      ? "light"
-      : initialMode === "dark"
-        ? "dark"
-        : "dark";
+    : initialMode === "dark"
+      ? "dark"
+      : "light";
 
   return (
     <html lang="fr" className="h-full" data-theme={initialTheme} data-theme-mode={initialMode} suppressHydrationWarning>
