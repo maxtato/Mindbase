@@ -560,6 +560,7 @@ function CalendarTaskCard({
       statusSettings={project.statusSettings}
       trigger={({ open }) => (
         <div
+          data-drag-card
           draggable={!isTouch}
           role="button"
           tabIndex={0}
