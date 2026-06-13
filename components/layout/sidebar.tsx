@@ -254,6 +254,7 @@ export function Sidebar({ stats, initialWorkspace }: SidebarProps) {
                 <Link
                   key={item}
                   href={makeWorkspaceHref(item)}
+                  onClick={() => setWorkspaceParam(item)}
                   className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold"
                   style={{
                     background: active ? itemTheme.gradient : surface.sidebarPanel,
@@ -280,6 +281,7 @@ export function Sidebar({ stats, initialWorkspace }: SidebarProps) {
                 <Link
                   key={item}
                   href={makeWorkspaceHref(item)}
+                  onClick={() => setWorkspaceParam(item)}
                   className="h-10 rounded-xl flex items-center gap-2 px-2.5 text-[11px] font-semibold"
                   style={{
                     background: active ? itemTheme.gradient : surface.sidebarPanel,

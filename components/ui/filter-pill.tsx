@@ -53,12 +53,22 @@ export function FilterPill<T extends string>({
   const menuRef = useRef<HTMLDivElement>(null);
   const [menuPosition, setMenuPosition] = useState<{ top: number; left: number; width: number; flipped: boolean } | null>(null);
   const [mounted, setMounted] = useState(false);
-  const selected = options.find((option) => option.value === value);
+  // Valeur optimiste : reflète immédiatement la sélection (avant que la valeur
+  // pilotée par le parent — navigation/state serveur — ne soit propagée), pour
+  // que le clic « sélectionne » visuellement sans délai.
+  const [optimisticValue, setOptimisticValue] = useState<T | null>(null);
+  const currentValue = optimisticValue ?? value;
+  const selected = options.find((option) => option.value === currentValue);
   const accent = accentColor ?? "var(--mb-mauve)";
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Quand la valeur « officielle » rattrape la sélection, on lâche l'optimiste.
+  useEffect(() => {
+    setOptimisticValue(null);
+  }, [value]);
 
   // Calcule la position du menu portail relativement au bouton. Recalculé
   // sur scroll/resize pour suivre le bouton si la page bouge.
@@ -132,6 +142,7 @@ export function FilterPill<T extends string>({
   }, [open]);
 
   function handleSelect(nextValue: T) {
+    setOptimisticValue(nextValue);
     onChange(nextValue);
     setOpen(false);
   }
@@ -221,7 +232,7 @@ export function FilterPill<T extends string>({
             } as React.CSSProperties}
           >
           {options.map((option) => {
-            const isSelected = option.value === value;
+            const isSelected = option.value === currentValue;
             return (
               <button
                 key={option.value}
