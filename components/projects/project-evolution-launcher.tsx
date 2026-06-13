@@ -93,17 +93,19 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold"
+        className="inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-bold"
         style={{
-          background: surface.s2,
-          color: text.secondary,
-          border: `1px solid ${surface.border}`,
+          background: accentColor,
+          color: "#FFFFFF",
+          border: "none",
           cursor: "pointer",
+          boxShadow: `0 8px 20px -8px ${accentColor}`,
+          whiteSpace: "nowrap",
         }}
         title="Coller une note / un compte-rendu pour faire évoluer le projet avec l'IA"
       >
-        <NoteIcon />
-        Note → IA
+        <SparkleIcon />
+        Assistant IA
       </button>
 
       {open && (
@@ -323,16 +325,14 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
   );
 }
 
-function NoteIcon() {
+function SparkleIcon() {
   return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path
-        d="M9.5 2H4.5A1.5 1.5 0 003 3.5v9A1.5 1.5 0 004.5 14h7a1.5 1.5 0 001.5-1.5V5.5L9.5 2z"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
+        d="M8 1.5l1.4 3.6L13 6.5l-3.6 1.4L8 11.5 6.6 7.9 3 6.5l3.6-1.4L8 1.5z"
+        fill="currentColor"
       />
-      <path d="M9 2v3.5h4M5.5 8.5h5M5.5 11h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12.5 10.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7.7-1.8z" fill="currentColor" opacity="0.85" />
     </svg>
   );
 }
