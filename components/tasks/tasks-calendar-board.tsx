@@ -105,7 +105,10 @@ export function TasksCalendarBoard({
   // jour survolé + auto-scroll de la grille. Le drag souris reste natif (desktop).
   const { ghost, draggingKey: touchDraggingKey, begin } = useCardDrag({
     dropAttr: "data-calendar-date",
-    scrollContainer: () => monthPaneRef.current,
+    // Horizontal : la grille du mois (scroll latéral sur iPhone) ; vertical :
+    // la page elle-même (pour remonter/descendre vers la bonne semaine).
+    horizontalScroll: () => monthPaneRef.current,
+    verticalScroll: () => (monthPaneRef.current?.closest(".mb-mobile-scroll") as HTMLElement | null) ?? null,
     onOverTarget: (target) => setDragOverDate(target),
     onDrop: (key, target) => {
       const item = visibleTasks.find((candidate) => getTaskKey(candidate) === key);
@@ -192,14 +195,14 @@ export function TasksCalendarBoard({
                     className="mb-soft-shadow min-h-[92px] min-w-0 rounded-[16px] px-0.5 pt-0 pb-1 xl:min-h-0 xl:overflow-hidden"
                     style={{
                       background: isOver
-                        ? "color-mix(in srgb, var(--mb-accent) 13%, var(--mb-s2) 87%)"
+                        ? surface.s4
                         : isToday
                           ? `color-mix(in srgb, ${workspaceAccent} 14%, ${cell.inMonth ? surface.s2 : surface.s1} 86%)`
                           : cell.inMonth
                             ? surface.s2
                             : surface.s1,
                       color: cell.inMonth ? text.primary : text.ghost,
-                      outline: isOver ? "1px solid var(--mb-accent)" : isToday ? `1px solid ${workspaceAccent}` : "none",
+                      outline: isOver ? `2px solid ${workspaceAccent}` : isToday ? `1px solid ${workspaceAccent}` : "none",
                       outlineOffset: -1,
                       position: "relative",
                     }}

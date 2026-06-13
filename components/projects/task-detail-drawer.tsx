@@ -207,7 +207,10 @@ function TaskDetailDrawerInner({
       onUpdate(pendingUpdate);
       if (pendingUpdate.checklist) onChecklistMutated(pendingUpdate.checklist);
     }
-    onClose();
+    // On NE ferme PAS la fenêtre après enregistrement : l'utilisateur peut
+    // enchaîner plusieurs modifications sur la même tâche et ne fermer qu'à la
+    // fin (croix, Échap ou « Annuler »). La sauvegarde est optimiste/silencieuse
+    // donc le drawer reste exactement où il était.
   }
 
   function commitSchedule() {

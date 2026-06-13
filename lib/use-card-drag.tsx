@@ -20,8 +20,12 @@ interface UseCardDragOptions {
   dropAttr: string;
   /** Dépôt confirmé : (clé de la carte, valeur de la zone). */
   onDrop: (key: string, target: string) => void;
-  /** Conteneur à auto-scroller quand on approche des bords. */
+  /** Conteneur à auto-scroller horizontalement près des bords gauche/droit. */
   scrollContainer?: () => HTMLElement | null;
+  /** Idem que scrollContainer (alias explicite pour l'axe horizontal). */
+  horizontalScroll?: () => HTMLElement | null;
+  /** Conteneur à auto-scroller verticalement près du haut/bas de l'écran. */
+  verticalScroll?: () => HTMLElement | null;
   /** Notifie la zone actuellement survolée (pour la surligner), ou null. */
   onOverTarget?: (target: string | null) => void;
 }
@@ -44,15 +48,22 @@ export function useCardDrag(options: UseCardDragOptions) {
       setGhost({ label, x: event.clientX, y: event.clientY });
 
       const tick = () => {
-        const sc = options.scrollContainer?.();
-        if (sc) {
-          const rect = sc.getBoundingClientRect();
-          const edge = 56;
-          const { x, y } = posRef.current;
-          if (x > rect.right - edge) sc.scrollLeft += 14;
-          else if (x < rect.left + edge) sc.scrollLeft -= 14;
-          if (y > rect.bottom - edge) sc.scrollTop += 12;
-          else if (y < rect.top + edge) sc.scrollTop -= 12;
+        const { x, y } = posRef.current;
+        const edge = 72;
+        const speed = 16;
+        // Horizontal : on scrolle le conteneur (grille kanban / mois calendrier)
+        // quand le doigt approche du bord gauche/droit de l'ÉCRAN.
+        const h = options.horizontalScroll?.() ?? options.scrollContainer?.() ?? null;
+        if (h) {
+          if (x > window.innerWidth - edge) h.scrollLeft += speed;
+          else if (x < edge) h.scrollLeft -= speed;
+        }
+        // Vertical : on scrolle la PAGE quand le doigt approche du haut/bas de
+        // l'écran (décalages pour la topbar en haut et la bottom nav en bas).
+        const v = options.verticalScroll?.() ?? null;
+        if (v) {
+          if (y < edge + 24) v.scrollTop -= speed;
+          else if (y > window.innerHeight - edge - 80) v.scrollTop += speed;
         }
         rafRef.current = requestAnimationFrame(tick);
       };
