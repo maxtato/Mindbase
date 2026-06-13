@@ -570,8 +570,27 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
     const preventScroll = (ev: TouchEvent) => ev.preventDefault();
     window.addEventListener("touchmove", preventScroll, { passive: false });
 
+    // Auto-scroll vertical de la PAGE : quand le doigt approche du haut/bas de
+    // l'écran, on fait défiler le conteneur de la page projet pour pouvoir
+    // déposer une étape/tâche plus haut ou plus bas que la zone visible.
+    const scrollContainer = cardEl?.closest<HTMLElement>(".mb-mobile-scroll") ?? null;
+    const pointerPos = { x: startX, y: startY };
+    let rafId: number | null = null;
+    const tick = () => {
+      const edge = 88;
+      const speed = 16;
+      if (scrollContainer) {
+        if (pointerPos.y < edge) scrollContainer.scrollTop -= speed;
+        else if (pointerPos.y > window.innerHeight - edge) scrollContainer.scrollTop += speed;
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+
     const onMove = (ev: PointerEvent) => {
       ev.preventDefault();
+      pointerPos.x = ev.clientX;
+      pointerPos.y = ev.clientY;
       setTouchGhost((ghost) => (ghost ? { ...ghost, x: ev.clientX, y: ev.clientY } : ghost));
       const el = document.elementFromPoint(ev.clientX, ev.clientY);
       if (!(el instanceof Element)) return;
@@ -601,6 +620,7 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
       window.removeEventListener("pointerup", onUp);
       window.removeEventListener("pointercancel", onUp);
       window.removeEventListener("touchmove", preventScroll);
+      if (rafId !== null) cancelAnimationFrame(rafId);
       // Supprime le clic synthétique qui suit le drag (sinon ouverture de la
       // tâche au relâchement).
       const suppressClick = (clickEvent: MouseEvent) => {
