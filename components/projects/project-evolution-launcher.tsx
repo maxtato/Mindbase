@@ -133,10 +133,10 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
           boxShadow: `0 8px 20px -8px ${accentColor}`,
           whiteSpace: "nowrap",
         }}
-        title="Discuter avec Léa pour faire évoluer le projet"
+        title="Discuter avec l'IA pour faire évoluer le projet"
       >
         <SparkleIcon />
-        Léa
+        Assistant IA
       </button>
 
       {open && (
@@ -157,7 +157,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="Léa — faire évoluer le projet"
+            aria-label="Assistant IA — faire évoluer le projet"
             className="mb-modal-surface"
             onClick={(event) => event.stopPropagation()}
             style={{
@@ -177,11 +177,11 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
               <div className="min-w-0">
                 <p className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: text.primary }}>
                   <span style={{ color: accentColor }}><SparkleIcon /></span>
-                  Léa
+                  Assistant IA
                 </p>
                 <p className="mt-0.5 text-[11px]" style={{ color: text.muted }}>
                   Demande-lui des idées, une liste d&apos;options, ou décris ton avancement.
-                  Léa dialogue avec toi puis propose une évolution du projet à valider.
+                  L&apos;IA dialogue avec toi puis propose une évolution du projet à valider.
                 </p>
               </div>
               <button
@@ -200,7 +200,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
               {!started && (
                 <p className="text-[12px] leading-relaxed" style={{ color: text.muted }}>
                   Ex. : « Liste-moi les parcs nationaux de l&apos;Ouest américain » ou « On a validé
-                  la maquette, Paul prend le paiement ». Léa te répond, te demande lesquels retenir
+                  la maquette, Paul prend le paiement ». L&apos;IA te répond, te demande lesquels retenir
                   / des précisions, puis propose les étapes et tâches à appliquer.
                 </p>
               )}
@@ -225,7 +225,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
                     className="max-w-[88%] rounded-2xl px-3 py-2 text-[12px] italic"
                     style={{ alignSelf: "flex-start", background: surface.s1, color: text.muted, border: `1px solid ${surface.borderSubtle}` }}
                   >
-                    Léa réfléchit…
+                    L'assistant réfléchit…
                   </div>
                 )}
               </div>
@@ -316,7 +316,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
                     value={draft}
                     onChange={(event) => setDraft(event.target.value)}
                     onKeyDown={onInputKeyDown}
-                    placeholder={lastIsQuestion ? "Ta réponse à Léa…" : "Demande à Léa : une idée, une liste, un avancement…"}
+                    placeholder={lastIsQuestion ? "Ta réponse…" : "Demande à l'IA : une idée, une liste, un avancement…"}
                     rows={lastIsQuestion ? 2 : 3}
                     className="mb-input min-w-0 flex-1 rounded-xl px-3 py-2.5 text-sm outline-none"
                     style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}`, resize: "none" }}
