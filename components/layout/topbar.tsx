@@ -20,8 +20,8 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
       className="mb-topbar flex items-center justify-between gap-4 shrink-0"
       style={{
         position: "relative",
-        minHeight: "clamp(56px, 6vw, 64px)",
-        padding: "0 clamp(12px, 3vw, 24px)",
+        minHeight: "clamp(64px, 7vw, 70px)",
+        padding: "12px clamp(12px, 3vw, 24px)",
         background: surface.s1,
         borderBottom: `1px solid ${surface.borderSubtle}`,
       }}

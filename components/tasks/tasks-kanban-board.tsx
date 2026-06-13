@@ -19,6 +19,7 @@ import { getDisplayStepTitle } from "@/lib/project-display";
 import type { Workspace } from "@/lib/workspace";
 
 type TaskItem = { project: Project; entry: FlattenedProjectTask };
+type VisibleTaskItem = TaskItem & { status: TaskStatus };
 
 const kanbanColumns: TaskStatus[] = ["todo", "in_progress", "waiting", "blocked", "done"];
 
@@ -39,20 +40,19 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
   const [pendingCompletion, setPendingCompletion] = useState<TaskItem | null>(null);
   const [pendingStatusChange, setPendingStatusChange] = useState<{ item: TaskItem; status: TaskStatus } | null>(null);
   const [blockedDoneAlert, setBlockedDoneAlert] = useState<string | null>(null);
+  // Drag tactile (iPhone) : HTML5 DnD ne marche pas au doigt → drag custom.
+  const gridRef = useRef<HTMLElement>(null);
+  const touchDragRef = useRef<{ key: string; status: TaskStatus } | null>(null);
+  const autoScrollRef = useRef<number | null>(null);
+  const [touchGhost, setTouchGhost] = useState<{ title: string; x: number; y: number } | null>(null);
 
   const visibleTasks = tasks.map((item) => ({
     ...item,
     status: statusOverrides[getTaskKey(item)] ?? deriveTaskStatus(item.entry.task),
   }));
 
-  function handleDrop(targetStatus: TaskStatus) {
-    if (!draggingId) return;
-
-    const item = visibleTasks.find((candidate) => getTaskKey(candidate) === draggingId);
-    setDraggingId(null);
-    setDragOverStatus(null);
-
-    if (!item || item.status === targetStatus) return;
+  function moveTaskToStatus(item: VisibleTaskItem, targetStatus: TaskStatus) {
+    if (item.status === targetStatus) return;
 
     if (targetStatus === "done") {
       // Garde-fou : checklist incomplète bloque le passage en terminée.
@@ -67,6 +67,82 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
     }
 
     setPendingStatusChange({ item, status: targetStatus });
+  }
+
+  function handleDrop(targetStatus: TaskStatus) {
+    if (!draggingId) return;
+
+    const item = visibleTasks.find((candidate) => getTaskKey(candidate) === draggingId);
+    setDraggingId(null);
+    setDragOverStatus(null);
+
+    if (item) moveTaskToStatus(item, targetStatus);
+  }
+
+  // Démarre un drag tactile depuis la poignée d'une carte : on suit le doigt
+  // (pointer events), on surligne la colonne survolée, on auto-scrolle la
+  // grille près des bords (colonnes plus larges que l'écran sur iPhone), et on
+  // dépose au relâchement.
+  function beginTouchDrag(item: VisibleTaskItem, event: React.PointerEvent) {
+    if (event.pointerType === "mouse") return;
+    event.preventDefault();
+
+    const key = getTaskKey(item);
+    touchDragRef.current = { key, status: item.status };
+    let pointerX = event.clientX;
+    setDraggingId(key);
+    setDragOverStatus(item.status);
+    setTouchGhost({ title: item.entry.task.title, x: event.clientX, y: event.clientY });
+
+    const stopAutoScroll = () => {
+      if (autoScrollRef.current !== null) {
+        cancelAnimationFrame(autoScrollRef.current);
+        autoScrollRef.current = null;
+      }
+    };
+    const tickAutoScroll = () => {
+      const grid = gridRef.current;
+      if (grid) {
+        const rect = grid.getBoundingClientRect();
+        const edge = 56;
+        if (pointerX > rect.right - edge) grid.scrollLeft += 14;
+        else if (pointerX < rect.left + edge) grid.scrollLeft -= 14;
+      }
+      autoScrollRef.current = requestAnimationFrame(tickAutoScroll);
+    };
+    autoScrollRef.current = requestAnimationFrame(tickAutoScroll);
+
+    const onMove = (ev: PointerEvent) => {
+      ev.preventDefault();
+      pointerX = ev.clientX;
+      const el = document.elementFromPoint(ev.clientX, ev.clientY);
+      const col = el instanceof Element ? el.closest("[data-kanban-status]") : null;
+      const status = (col?.getAttribute("data-kanban-status") as TaskStatus | null) ?? null;
+      if (status) {
+        setDragOverStatus(status);
+        if (touchDragRef.current) touchDragRef.current.status = status;
+      }
+      setTouchGhost((ghost) => (ghost ? { ...ghost, x: ev.clientX, y: ev.clientY } : ghost));
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      stopAutoScroll();
+      const drag = touchDragRef.current;
+      touchDragRef.current = null;
+      setTouchGhost(null);
+      setDraggingId(null);
+      setDragOverStatus(null);
+      if (drag) {
+        const dropItem = visibleTasks.find((candidate) => getTaskKey(candidate) === drag.key);
+        if (dropItem) moveTaskToStatus(dropItem, drag.status);
+      }
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: false });
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
   }
 
   function handleStatusChangeConfirm(details: string) {
@@ -167,7 +243,7 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
         </div>
       )}
 
-      <section className="mb-kanban-grid min-w-0">
+      <section ref={gridRef} className="mb-kanban-grid min-w-0">
         {kanbanColumns.map((status) => {
           const columnTasks = visibleTasks.filter((item) => item.status === status);
           const statusTone = defaultStatusColor[status];
@@ -176,6 +252,7 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
           return (
             <div
               key={status}
+              data-kanban-status={status}
               className="min-w-0 rounded-[22px] p-2.5"
               style={{
                 background: isOver ? statusTone.bg : surface.s3,
@@ -221,6 +298,7 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
                         setDraggingId(null);
                         setDragOverStatus(null);
                       }}
+                      onTouchDragStart={(event) => beginTouchDrag(item, event)}
                     />
                   ))
                 ) : (
@@ -240,6 +318,34 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
           );
         })}
       </section>
+
+      {touchGhost && (
+        <div
+          aria-hidden
+          style={{
+            position: "fixed",
+            left: touchGhost.x,
+            top: touchGhost.y,
+            transform: "translate(-50%, -130%)",
+            zIndex: 9999,
+            pointerEvents: "none",
+            maxWidth: 220,
+            padding: "8px 12px",
+            borderRadius: 12,
+            background: surface.s1,
+            border: `1px solid ${surface.border}`,
+            boxShadow: "var(--mb-shadow-lg)",
+            color: text.primary,
+            fontSize: 12,
+            fontWeight: 600,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {touchGhost.title}
+        </div>
+      )}
     </>
   );
 }
@@ -251,6 +357,7 @@ function KanbanTaskCard({
   isDragging,
   onDragStart,
   onDragEnd,
+  onTouchDragStart,
 }: {
   item: TaskItem;
   workspace: Workspace;
@@ -258,6 +365,7 @@ function KanbanTaskCard({
   isDragging: boolean;
   onDragStart: () => void;
   onDragEnd: () => void;
+  onTouchDragStart: (event: React.PointerEvent) => void;
 }) {
   const { project, entry } = item;
   const task = entry.task;
@@ -365,7 +473,36 @@ function KanbanTaskCard({
               }}
             />
           )}
-          <div className="min-w-0 pr-4">
+          {isTouch && (
+            <span
+              role="button"
+              aria-label="Déplacer la tâche"
+              data-mobile-tap-ignore="true"
+              onPointerDown={onTouchDragStart}
+              onTouchStart={(event) => event.stopPropagation()}
+              onClick={(event) => event.stopPropagation()}
+              style={{
+                position: "absolute",
+                top: 5,
+                right: 5,
+                zIndex: 2,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 28,
+                height: 28,
+                borderRadius: 8,
+                color: text.muted,
+                background: surface.s2,
+                border: `1px solid ${surface.borderSubtle}`,
+                touchAction: "none",
+                cursor: "grab",
+              }}
+            >
+              <GripIcon />
+            </span>
+          )}
+          <div className="min-w-0" style={{ paddingRight: isTouch ? 38 : 16 }}>
             <p className="mb-board-task-title line-clamp-2 text-[11px] font-semibold leading-snug" style={{ color: text.primary }}>
               {task.title}
             </p>
@@ -391,4 +528,17 @@ function getTaskKey(item: TaskItem) {
 
 function getTaskStatusLabel(project: Project, status: TaskStatus) {
   return project.statusSettings?.task?.[status]?.label ?? taskStatusLabels[status];
+}
+
+function GripIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <circle cx="6" cy="4" r="1.3" />
+      <circle cx="10" cy="4" r="1.3" />
+      <circle cx="6" cy="8" r="1.3" />
+      <circle cx="10" cy="8" r="1.3" />
+      <circle cx="6" cy="12" r="1.3" />
+      <circle cx="10" cy="12" r="1.3" />
+    </svg>
+  );
 }
