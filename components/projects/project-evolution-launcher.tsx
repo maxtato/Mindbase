@@ -164,7 +164,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
             onClick={(event) => event.stopPropagation()}
             style={{
               width: "min(600px, 100%)",
-              maxHeight: "100%",
+              maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 32px)",
               display: "flex",
               flexDirection: "column",
               borderRadius: "20px",
@@ -198,7 +198,11 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
             </div>
 
             {/* Conversation + plan */}
-            <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 py-4" style={{ background: surface.s2 }}>
+            <div
+              ref={scrollRef}
+              className="min-h-0 flex-1 overflow-y-auto px-5 py-4"
+              style={{ background: surface.s2, WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}
+            >
               {!started && (
                 <p className="text-[12px] leading-relaxed" style={{ color: text.muted }}>
                   Ex. : « Liste-moi les parcs nationaux de l&apos;Ouest américain » ou « On a validé
