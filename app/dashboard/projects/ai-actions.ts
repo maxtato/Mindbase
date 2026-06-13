@@ -6,7 +6,12 @@
 import { refresh, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { generateProjectSuggestion, type AIProjectSuggestion } from "@/lib/ai/project-creation";
-import { improveTaskExpected } from "@/lib/ai/task-expected";
+import {
+  improveTaskExpected,
+  refineTaskExpected,
+  type ExpectedMessage,
+  type ExpectedRefineResult,
+} from "@/lib/ai/task-expected";
 import { generateTaskChecklist } from "@/lib/ai/task-checklist";
 import { generateProjectSynthesis, type AIProjectSynthesis } from "@/lib/ai/project-synthesis";
 import {
@@ -19,6 +24,7 @@ import {
   addStepToProject,
   addTaskToStep,
   createProject,
+  deleteTaskFromStep,
   getProjectById,
   updateProject,
   updateTaskInStep,
@@ -120,6 +126,25 @@ export async function suggestTaskExpectedAction(input: {
   const expected = await improveTaskExpected({ project, step: normalizedStep, task });
 
   return { expected };
+}
+
+// 2b) Assistant IA conversationnel pour le champ Attendu : l'utilisateur
+// dialogue avec l'IA qui pose des questions puis propose un attendu affiné.
+export async function refineTaskExpectedAction(input: {
+  projectId: string;
+  stepId: string;
+  taskId: string;
+  messages: ExpectedMessage[];
+}): Promise<ExpectedRefineResult> {
+  const project = await getProjectById(input.projectId);
+  if (!project) throw new Error("Projet introuvable.");
+  const step = (project.steps ?? []).find((s) => s.id === input.stepId);
+  if (!step) throw new Error("Étape introuvable.");
+  const task = step.tasks.find((t) => t.id === input.taskId);
+  if (!task) throw new Error("Tâche introuvable.");
+
+  const normalizedStep = { ...step, title: getDisplayStepTitle(step.title) };
+  return refineTaskExpected({ project, step: normalizedStep, task, messages: input.messages });
 }
 
 // 3) Génération de checklist pour une tâche
@@ -384,6 +409,17 @@ export async function applyProjectEvolutionAction(input: {
     if (Object.keys(update).length === 0) continue;
 
     await updateTaskInStep(projectId, located.stepId, op.taskId, update);
+    applied += 1;
+  }
+
+  // 4) Suppression / annulation des tâches devenues caduques (en dernier).
+  for (const op of operations) {
+    if (op.type !== "remove_task" || !op.taskId) continue;
+    const fresh = await getProjectById(projectId);
+    if (!fresh) break;
+    const located = locateTask(fresh, op.taskId);
+    if (!located) continue;
+    await deleteTaskFromStep(projectId, located.stepId, op.taskId);
     applied += 1;
   }
 
