@@ -25,7 +25,10 @@ export async function AppShell({ children }: AppShellProps) {
   const initialWorkspace = getWorkspace(cookieStore.get("mindbase-workspace")?.value);
 
   return (
-    <div className="flex h-full overflow-hidden" style={{ background: surface.bg }}>
+    <div
+      className="flex overflow-hidden"
+      style={{ background: surface.bg, height: "100dvh" }}
+    >
       {/* Sidebar — masquée < sm via Tailwind, plus de Suspense boundary.
           On lui passe initialWorkspace pour que les liens SSR pointent
           déjà vers le bon workspace, sans dépendre de l'hydratation. */}

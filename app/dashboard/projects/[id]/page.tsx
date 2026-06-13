@@ -86,10 +86,7 @@ export default async function ProjectDetailPage({
                 <div className="mb-project-rail-content flex flex-col gap-3">
                   <div className="flex items-center justify-between gap-2">
                     <p className="mb-project-rail-title">Synthèse</p>
-                    <div className="flex items-center gap-1.5">
-                      <ProjectEvolutionLauncher projectId={project.id} accentColor={theme.accent} />
-                      <AISynthesisButton projectId={project.id} accentColor={theme.accent} />
-                    </div>
+                    <AISynthesisButton projectId={project.id} accentColor={theme.accent} />
                   </div>
                   <ProjectRailCard title="Objectif" accentColor={project.subcategoryColor} icon="target">
                     <ExpandableText className="text-xs leading-relaxed" style={{ color: text.secondary }}>
@@ -177,6 +174,9 @@ function ProjectPilotHeader({
         borderBottom: `1px solid ${surface.borderSubtle}`,
         color: text.primary,
         position: "relative",
+        // Safe-area haute iPhone (plein écran) : évite que l'identité du projet
+        // passe sous l'horloge / la batterie.
+        paddingTop: "env(safe-area-inset-top, 0px)",
       }}
     >
       {/* Filet d'accent fin = signature visuelle du projet sans agressivité */}
@@ -185,7 +185,7 @@ function ProjectPilotHeader({
         style={{
           position: "absolute",
           insetInline: 0,
-          top: 0,
+          top: "env(safe-area-inset-top, 0px)",
           height: 3,
           background: projectAccent,
         }}
@@ -217,6 +217,7 @@ function ProjectPilotHeader({
         </div>
 
         <div className="mb-project-pilotbar-actions-secondary" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <ProjectEvolutionLauncher projectId={project.id} accentColor={projectAccent} />
           <ProjectCollaborationLauncher
             projectId={project.id}
             workspace={workspace}

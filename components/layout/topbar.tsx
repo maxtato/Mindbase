@@ -23,19 +23,24 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
       style={{
         position: "relative",
         minHeight: "clamp(56px, 6vw, 64px)",
-        padding: "0 clamp(12px, 3vw, 24px)",
+        // Respecte la safe-area haute de l'iPhone (Dynamic Island / horloge /
+        // batterie) en mode plein écran (PWA, viewport-fit cover) : sinon le
+        // titre passe sous le bandeau d'état iOS.
+        paddingTop: "env(safe-area-inset-top, 0px)",
+        paddingInline: "clamp(12px, 3vw, 24px)",
+        paddingBottom: 0,
         background: surface.s1,
         borderBottom: `1px solid ${surface.borderSubtle}`,
       }}
     >
-      {/* Filet de couleur thème en haut : seule signature visuelle du workspace.
-          Pas de picto / logo plate dans le topbar — la couleur suffit. */}
+      {/* Filet de couleur thème : signature visuelle du workspace. Placé juste
+          sous la safe-area pour rester visible au bord haut du contenu. */}
       <span
         aria-hidden
         style={{
           position: "absolute",
           insetInline: 0,
-          top: 0,
+          top: "env(safe-area-inset-top, 0px)",
           height: 2,
           background: theme.gradient,
           opacity: 0.9,
