@@ -95,7 +95,7 @@ export function ExpectedAssistant({
         onClick={(event) => event.stopPropagation()}
         style={{
           width: "min(560px, 100%)",
-          maxHeight: "100%",
+          maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 32px)",
           display: "flex",
           flexDirection: "column",
           borderRadius: 20,
@@ -124,7 +124,11 @@ export function ExpectedAssistant({
           </button>
         </div>
 
-        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 py-4" style={{ background: surface.s2 }}>
+        <div
+          ref={scrollRef}
+          className="min-h-0 flex-1 overflow-y-auto px-5 py-4"
+          style={{ background: surface.s2, WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}
+        >
           {transcript.length === 0 && (
             <p className="text-[12px] leading-relaxed" style={{ color: text.muted }}>
               {currentExpected
