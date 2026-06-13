@@ -5,7 +5,6 @@
 // tout le contenu de la page dans un <div hidden> et bloquer les taps).
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
@@ -175,43 +174,32 @@ export function Sidebar({ stats, initialWorkspace }: SidebarProps) {
           gap: 5,
         }}
       >
-        {/* Logo */}
+        {/* Logo + nom (vrai texte qui suit le thème, plus d'image sur plaque) */}
         <Link
           href={makeHref("/dashboard")}
-          className="flex items-center justify-center shrink-0"
+          className="flex items-center shrink-0"
           title="Mindbase"
-          style={{ width: brandWidth, height: brandHeight }}
+          style={{
+            width: brandWidth,
+            height: brandHeight,
+            gap: collapsed ? 0 : 10,
+            justifyContent: collapsed ? "center" : "flex-start",
+          }}
         >
-          <div
-            style={{
-              borderRadius: collapsed ? 18 : 20,
-              overflow: "hidden",
-              background: surface.logoPlate,
-              border: collapsed ? `1px solid ${surface.logoPlateBorder}` : "none",
-              padding: 0,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: brandWidth,
-              height: brandHeight,
-            }}
-          >
-            <Image
-              src={collapsed ? "/mindbase-sidebar-mark.jpeg" : "/mindbase-sidebar-full.jpeg"}
-              alt="Mindbase"
-              width={brandWidth}
-              height={brandHeight}
-              priority
-              unoptimized
-              className="shrink-0"
+          <MindbaseMark size={collapsed ? 32 : 30} />
+          {!collapsed && (
+            <span
               style={{
-                objectFit: "contain",
-                display: "block",
-                width: "100%",
-                height: "100%",
+                fontSize: 19,
+                fontWeight: 700,
+                letterSpacing: "-0.02em",
+                lineHeight: 1,
+                color: text.sidebar,
               }}
-            />
-          </div>
+            >
+              Mindbase
+            </span>
+          )}
         </Link>
 
         {/* Collapse toggle */}
@@ -423,5 +411,48 @@ export function Sidebar({ stats, initialWorkspace }: SidebarProps) {
         </div>
       </div>
     </aside>
+  );
+}
+
+// Mark Mindbase — glyphe en dégradé (violet → bleu), fond transparent, donc
+// lisible sur sidebar claire comme sombre. Le NOM est rendu en vrai texte à
+// côté (couleur pilotée par le thème), plus aucune image de texte sur plaque.
+function MindbaseMark({ size = 30 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 172 172"
+      fill="none"
+      aria-hidden="true"
+      className="shrink-0"
+    >
+      <defs>
+        <linearGradient id="mb-sidebar-mark-grad" x1="18" y1="18" x2="154" y2="154">
+          <stop offset="0%" stopColor="#A855F7" />
+          <stop offset="100%" stopColor="#59A8FF" />
+        </linearGradient>
+      </defs>
+      <g
+        fill="none"
+        stroke="url(#mb-sidebar-mark-grad)"
+        strokeWidth="10"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M76 23c-21 0-38 17-38 38c-14 2-25 14-25 29c0 10 4 19 10 25c-7 7-10 16-10 27c0 20 16 36 36 36c2 18 17 32 35 32" />
+        <path d="M76 23v133" />
+        <path d="M55 50c-9 4-15 14-15 24c0 15 11 27 25 27c7 0 13-2 18-6" />
+        <path d="M44 111c0 16 12 29 28 29c6 0 12-2 17-6" />
+        <path d="M58 68c7 0 13 6 13 13" />
+        <path d="M56 126c0 9 7 16 16 16" />
+      </g>
+      <path
+        fill="url(#mb-sidebar-mark-grad)"
+        d="M103 34c4-2 10-2 14 0l38 23c8 5 8 17 0 22l-38 23c-9 6-21-1-21-12V46c0-11 12-18 21-12Z"
+      />
+      <rect x="96" y="108" width="61" height="16" rx="8" fill="url(#mb-sidebar-mark-grad)" />
+      <rect x="96" y="133" width="61" height="16" rx="8" fill="url(#mb-sidebar-mark-grad)" />
+    </svg>
   );
 }

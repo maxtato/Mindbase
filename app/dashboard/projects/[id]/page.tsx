@@ -8,6 +8,7 @@ import { getWorkspace, workspaceTheme } from "@/lib/workspace";
 import { surface, text, severity } from "@/lib/design-tokens";
 import { ProjectIdentityEditor } from "@/components/projects/project-identity-editor";
 import { AISynthesisButton } from "@/components/projects/ai-synthesis-button";
+import { ProjectEvolutionLauncher } from "@/components/projects/project-evolution-launcher";
 import { ProjectCollaborationLauncher } from "@/components/projects/project-collaboration-launcher";
 import { ProjectControls, ProjectSettingsMenu } from "@/components/projects/project-controls";
 import { ProjectFilesLauncher } from "@/components/projects/project-files-launcher";
@@ -85,7 +86,10 @@ export default async function ProjectDetailPage({
                 <div className="mb-project-rail-content flex flex-col gap-3">
                   <div className="flex items-center justify-between gap-2">
                     <p className="mb-project-rail-title">Synthèse</p>
-                    <AISynthesisButton projectId={project.id} accentColor={theme.accent} />
+                    <div className="flex items-center gap-1.5">
+                      <ProjectEvolutionLauncher projectId={project.id} accentColor={theme.accent} />
+                      <AISynthesisButton projectId={project.id} accentColor={theme.accent} />
+                    </div>
                   </div>
                   <ProjectRailCard title="Objectif" accentColor={project.subcategoryColor} icon="target">
                     <ExpandableText className="text-xs leading-relaxed" style={{ color: text.secondary }}>

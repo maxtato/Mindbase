@@ -250,16 +250,16 @@ export function PillBadge({
   const toneStyle =
     tone === "accent"
       ? {
-          background: "#C084FC",
-          color: "#111118",
-          border: "1px solid #A869F0",
+          background: designTokens.colors.accentSoft,
+          color: "#ffffff",
+          border: `1px solid ${designTokens.colors.personalBorder}`,
         }
       : tone === "workspace"
         ? workspaceTheme.pillStyle
         : {
-            background: "#1C1C2A",
-            color: "#B7B7C9",
-            border: "1px solid #2A2A3E",
+            background: designTokens.colors.surfaceSecondary,
+            color: designTokens.colors.textMuted,
+            border: `1px solid ${designTokens.colors.borderSubtle}`,
           };
 
   return (
@@ -335,7 +335,7 @@ export function FieldLabel({
       style={mergeStyles(
         tone === "inverse"
           ? { color: "#302542" }
-          : { color: "#E6E6F0" },
+          : { color: designTokens.colors.textMuted },
         style
       )}
     />
@@ -414,8 +414,8 @@ export function InlineNotice({
       style={mergeStyles(
         tone === "error"
           ? {
-              background: "#3A1820",
-              color: "#FECACA",
+              background: designTokens.colors.dangerBg,
+              color: designTokens.colors.dangerText,
               border: `1px solid ${designTokens.colors.dangerBorder}`,
             }
           : {

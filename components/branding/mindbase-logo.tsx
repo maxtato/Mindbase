@@ -75,7 +75,7 @@ export function MindbaseLogo({
             compact ? "text-[2rem]" : "text-[3.2rem]"
           )}
         >
-          <span className="text-white">Mind</span>
+          <span style={textStyles.strong}>Mind</span>
           <span style={decorativeStyles.gradientText}>base</span>
         </div>
 

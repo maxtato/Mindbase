@@ -10,6 +10,11 @@ import { improveTaskExpected } from "@/lib/ai/task-expected";
 import { generateTaskChecklist } from "@/lib/ai/task-checklist";
 import { generateProjectSynthesis, type AIProjectSynthesis } from "@/lib/ai/project-synthesis";
 import {
+  analyzeProjectEvolution,
+  describeOperation,
+  type EvolutionOperation,
+} from "@/lib/ai/project-evolution";
+import {
   addStepToProject,
   addTaskToStep,
   createProject,
@@ -17,6 +22,7 @@ import {
   updateProject,
   updateTaskInStep,
 } from "@/lib/project-store";
+import type { Project, TaskStatus } from "@/lib/mock-data";
 import { getDisplayStepTitle } from "@/lib/project-display";
 import { getWorkspace, type Workspace } from "@/lib/workspace";
 import type { ProjectPriority } from "@/lib/project-taxonomy";
@@ -214,4 +220,171 @@ export async function applyAIChecklistAction(input: {
   // de l'utilisateur. La nouvelle checklist est retournée au client qui
   // va l'injecter dans son state local via onChecklistMutated.
   return { checklist: nextChecklist };
+}
+
+// ─── 5) Faire évoluer un projet à partir d'un texte ────────────────────────────
+// L'utilisateur colle une note / un compte-rendu. L'IA propose un plan
+// d'opérations (étapes/tâches à créer, tâches à faire avancer, dates, personnes).
+// Étape A : analyse (aucune mutation). On enrichit chaque opération d'un libellé
+// lisible pour la revue côté UI.
+
+export interface EvolutionPlanItem {
+  op: EvolutionOperation;
+  title: string;
+  detail: string;
+}
+
+export interface EvolutionPlanResult {
+  summary: string;
+  items: EvolutionPlanItem[];
+}
+
+export async function analyzeProjectEvolutionAction(input: {
+  projectId: string;
+  text: string;
+}): Promise<EvolutionPlanResult> {
+  const cleaned = input.text.trim();
+  if (!cleaned) throw new Error("Colle un texte à analyser avant de lancer l'IA.");
+
+  const project = await getProjectById(input.projectId);
+  if (!project) throw new Error("Projet introuvable.");
+
+  const plan = await analyzeProjectEvolution(project, cleaned);
+  const items: EvolutionPlanItem[] = plan.operations.map((op) => ({
+    op,
+    ...describeOperation(op, project),
+  }));
+
+  return { summary: plan.summary, items };
+}
+
+// Étape B : application des opérations sélectionnées par l'utilisateur.
+// Ordre : on crée d'abord les étapes, puis les tâches (rattachées aux étapes
+// existantes ou nouvellement créées), puis on met à jour les tâches existantes.
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function normTitle(value: string | null | undefined) {
+  return (value ?? "").trim().toLocaleLowerCase("fr-FR");
+}
+
+function statusUpdate(status: TaskStatus): { status: TaskStatus; done: boolean; blocked: boolean } {
+  if (status === "done") return { status, done: true, blocked: false };
+  if (status === "blocked") return { status, done: false, blocked: true };
+  return { status, done: false, blocked: false };
+}
+
+export async function applyProjectEvolutionAction(input: {
+  projectId: string;
+  operations: EvolutionOperation[];
+}): Promise<{ applied: number }> {
+  const { projectId } = input;
+  const operations = Array.isArray(input.operations) ? input.operations : [];
+  if (operations.length === 0) return { applied: 0 };
+
+  const project = await getProjectById(projectId);
+  if (!project) throw new Error("Projet introuvable.");
+
+  // Index titre d'étape (normalisé) → stepId, alimenté au fil des créations.
+  const stepIdByTitle = new Map<string, string>();
+  for (const step of project.steps ?? []) {
+    stepIdByTitle.set(normTitle(step.title), step.id);
+  }
+
+  let applied = 0;
+
+  const addStep = async (title: string, description: string | null) => {
+    const key = normTitle(title);
+    const existing = stepIdByTitle.get(key);
+    if (existing) return existing;
+    const updated = await addStepToProject(projectId, {
+      title: title.trim(),
+      description: description?.trim() || undefined,
+    });
+    const newStep = updated?.steps?.[updated.steps.length - 1];
+    if (newStep) {
+      stepIdByTitle.set(key, newStep.id);
+      return newStep.id;
+    }
+    return undefined;
+  };
+
+  // 1) Étapes
+  for (const op of operations) {
+    if (op.type !== "add_step" || !op.stepTitle?.trim()) continue;
+    const id = await addStep(op.stepTitle, op.stepDescription);
+    if (id) applied += 1;
+  }
+
+  // 2) Tâches à créer
+  for (const op of operations) {
+    if (op.type !== "add_task" || !op.taskTitle?.trim()) continue;
+
+    let stepId: string | undefined;
+    if (op.targetStepId && (project.steps ?? []).some((s) => s.id === op.targetStepId)) {
+      stepId = op.targetStepId;
+    } else if (op.newStepTitle?.trim()) {
+      stepId = stepIdByTitle.get(normTitle(op.newStepTitle)) ?? (await addStep(op.newStepTitle, null));
+    }
+    // Repli : aucune étape ciblée valide → on rattache à la dernière étape
+    // existante, ou on crée une étape « Nouvelles tâches ».
+    if (!stepId) {
+      const fresh = await getProjectById(projectId);
+      const last = fresh?.steps?.[fresh.steps.length - 1];
+      stepId = last?.id ?? (await addStep("Nouvelles tâches", null));
+    }
+    if (!stepId) continue;
+
+    await addTaskToStep(projectId, stepId, {
+      title: op.taskTitle.trim(),
+      description: op.taskExpected?.trim() || undefined,
+      expected: op.taskExpected?.trim() || undefined,
+      priority: op.priority ?? "medium",
+      owner: op.owner?.trim() || "",
+      assignees: op.owner?.trim() ? [op.owner.trim()] : [],
+      teamIds: [],
+      dueDate: op.dueDate && DATE_RE.test(op.dueDate) ? op.dueDate : undefined,
+      source: "ai",
+    });
+    applied += 1;
+  }
+
+  // 3) Mises à jour de tâches existantes
+  const locateTask = (proj: Project, taskId: string) => {
+    for (const step of proj.steps ?? []) {
+      const task = step.tasks.find((t) => t.id === taskId);
+      if (task) return { stepId: step.id, task };
+    }
+    return null;
+  };
+
+  for (const op of operations) {
+    if (op.type !== "update_task" || !op.taskId) continue;
+    const fresh = await getProjectById(projectId);
+    if (!fresh) break;
+    const located = locateTask(fresh, op.taskId);
+    if (!located) continue;
+
+    const update: Parameters<typeof updateTaskInStep>[3] = {};
+    if (op.newStatus) Object.assign(update, statusUpdate(op.newStatus));
+    if (op.dueDate && DATE_RE.test(op.dueDate)) update.dueDate = op.dueDate;
+    if (op.owner?.trim()) {
+      update.owner = op.owner.trim();
+      update.assignees = [op.owner.trim()];
+    }
+    if (op.priority) update.priority = op.priority;
+    if (op.note?.trim()) {
+      const previous = located.task.realization?.trim();
+      update.realization = previous ? `${previous}\n${op.note.trim()}` : op.note.trim();
+    }
+    if (Object.keys(update).length === 0) continue;
+
+    await updateTaskInStep(projectId, located.stepId, op.taskId, update);
+    applied += 1;
+  }
+
+  revalidatePath(`/dashboard/projects/${projectId}`);
+  refresh();
+
+  return { applied };
 }

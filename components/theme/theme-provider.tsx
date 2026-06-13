@@ -49,18 +49,19 @@ function writeCookieResolved(theme: ResolvedTheme) {
 }
 
 function getStoredMode(): ThemeMode {
-  if (typeof window === "undefined") return "system";
+  if (typeof window === "undefined") return "light";
 
   const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
   if (isThemeMode(stored)) return stored;
 
-  return getCookieMode() ?? "system";
+  // Nouvelle DA crème + pastels : clair par défaut quand rien n'est stocké.
+  return getCookieMode() ?? "light";
 }
 
 function getSystemTheme(): ResolvedTheme {
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") return "light";
 
-  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 function resolveTheme(mode: ThemeMode): ResolvedTheme {
@@ -110,8 +111,8 @@ function parseThemeSnapshot(snapshot: ThemeSnapshot): [ThemeMode, ResolvedTheme]
 
 export function ThemeProvider({
   children,
-  initialMode = "system",
-  initialTheme = "dark",
+  initialMode = "light",
+  initialTheme = "light",
 }: {
   children: React.ReactNode;
   initialMode?: ThemeMode;

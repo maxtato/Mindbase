@@ -37,7 +37,7 @@ export default function LoginPage() {
               >
                 Perso
               </p>
-              <p className="mt-3 text-sm leading-7 text-white/90">
+              <p className="mt-3 text-sm leading-7" style={textStyles.muted}>
                 Explore, clarifie, structure.
               </p>
             </div>
@@ -51,7 +51,7 @@ export default function LoginPage() {
               >
                 Pro
               </p>
-              <p className="mt-3 text-sm leading-7 text-white/90">
+              <p className="mt-3 text-sm leading-7" style={textStyles.muted}>
                 Cadre les décisions, le delivery et les priorités.
               </p>
             </div>
@@ -65,7 +65,7 @@ export default function LoginPage() {
           >
             Connexion
           </p>
-          <h1 className="mt-4 text-4xl font-semibold tracking-tight text-white">
+          <h1 className="mt-4 text-4xl font-semibold tracking-tight" style={textStyles.strong}>
             Accéder à Mindbase
           </h1>
           <p className="mt-4 text-base leading-7" style={textStyles.muted}>
@@ -111,7 +111,7 @@ export default function LoginPage() {
             Pas encore de compte ?{" "}
             <Link
               href="/auth/signup"
-              className="text-white underline underline-offset-4"
+              className="underline underline-offset-4" style={{ color: "#7c3aed" }}
             >
               Créer un compte
             </Link>
