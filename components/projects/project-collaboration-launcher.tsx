@@ -114,7 +114,9 @@ export function ProjectCollaborationLauncher({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="mb-project-top-action"
+        className="mb-project-top-action mb-project-icon-action"
+        aria-label="Collaborer"
+        title="Collaborer"
         style={{
           background: onColor ? "#FFFFFF" : accentColor,
           color: onColor ? accentColor : "#FFFFFF",
@@ -122,7 +124,6 @@ export function ProjectCollaborationLauncher({
         }}
       >
         <CollaborationIcon />
-        Collaborer
       </button>
 
       {isOpen && (
