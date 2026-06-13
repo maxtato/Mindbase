@@ -13,6 +13,10 @@ export interface CardDragGhost {
   label: string;
   x: number;
   y: number;
+  /** HTML cloné de la carte source → l'aperçu montre la carte ENTIÈRE. */
+  html?: string;
+  /** Largeur de la carte source (px) pour dimensionner l'aperçu. */
+  width?: number;
 }
 
 interface UseCardDragOptions {
@@ -42,10 +46,17 @@ export function useCardDrag(options: UseCardDragOptions) {
       event.preventDefault();
       event.stopPropagation();
 
+      // Clone de la carte source (marquée data-drag-card) → l'aperçu montre la
+      // carte ENTIÈRE qui suit le doigt, pas juste un libellé.
+      const cardEl =
+        (event.currentTarget as Element | null)?.closest("[data-drag-card]") as HTMLElement | null;
+      const html = cardEl?.outerHTML;
+      const width = cardEl?.getBoundingClientRect().width;
+
       dataRef.current = { key, target: null };
       posRef.current = { x: event.clientX, y: event.clientY };
       setDraggingKey(key);
-      setGhost({ label, x: event.clientX, y: event.clientY });
+      setGhost({ label, x: event.clientX, y: event.clientY, html, width });
 
       const tick = () => {
         const { x, y } = posRef.current;
@@ -110,6 +121,31 @@ export function useCardDrag(options: UseCardDragOptions) {
 // suit le doigt, placée juste au-dessus pour ne pas être masquée par le doigt.
 export function DragGhost({ ghost }: { ghost: CardDragGhost | null }) {
   if (!ghost) return null;
+
+  // Aperçu = la carte entière clonée qui suit le doigt (effet « carte soulevée »).
+  if (ghost.html) {
+    return (
+      <div
+        aria-hidden
+        style={{
+          position: "fixed",
+          left: ghost.x,
+          top: ghost.y,
+          width: ghost.width,
+          transform: "translate(-50%, -50%) rotate(-2deg)",
+          zIndex: 9999,
+          pointerEvents: "none",
+          borderRadius: 18,
+          overflow: "hidden",
+          boxShadow: "var(--mb-shadow-lg)",
+          opacity: 0.96,
+        }}
+        dangerouslySetInnerHTML={{ __html: ghost.html }}
+      />
+    );
+  }
+
+  // Repli : si on n'a pas pu cloner la carte, on affiche un petit libellé.
   return (
     <div
       aria-hidden

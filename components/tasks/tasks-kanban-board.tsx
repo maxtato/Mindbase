@@ -316,6 +316,7 @@ function KanbanTaskCard({
       statusSettings={project.statusSettings}
       trigger={({ open }) => (
         <article
+          data-drag-card
           draggable={!isTouch}
           role="button"
           tabIndex={0}
