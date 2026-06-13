@@ -53,3 +53,87 @@ export async function improveTaskExpected(input: ImproveTaskExpectedInput): Prom
   if (!content) throw new Error("Réponse IA vide.");
   return content;
 }
+
+// ─── Assistant conversationnel pour l'« Attendu » ──────────────────────────────
+// L'utilisateur dialogue avec l'assistant pour réécrire l'attendu d'une tâche :
+// l'assistant pose une question si besoin, sinon propose une formulation.
+
+export interface ExpectedMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface ExpectedRefineResult {
+  /** "question" : l'assistant a besoin d'une précision. "proposal" : il propose un attendu. */
+  mode: "question" | "proposal";
+  /** Message de l'assistant (sa question, ou un mot sur la proposition). */
+  reply: string;
+  /** Texte d'attendu proposé quand mode="proposal" (sinon null). */
+  expected: string | null;
+}
+
+const REFINE_SCHEMA = {
+  type: "object",
+  properties: {
+    mode: { type: "string", enum: ["question", "proposal"] },
+    reply: { type: "string" },
+    expected: { type: ["string", "null"] },
+  },
+  required: ["mode", "reply", "expected"],
+  additionalProperties: false,
+} as const;
+
+const REFINE_SYSTEM_PROMPT = `Tu es l'assistant IA de Mindbase. Tu aides l'utilisateur à rédiger / réécrire le champ "Attendu" d'une tâche (ce qu'il faut concrètement accomplir), en cohérence avec l'ensemble du projet, EN DIALOGUANT avec lui.
+
+Tu réponds UNIQUEMENT en JSON strict, en français, selon deux modes :
+• mode="question" — si tu as besoin d'une précision pour bien cerner l'attendu (objectif, livrable, périmètre, contrainte). Mets ta question dans "reply", expected=null.
+• mode="proposal" — quand tu peux proposer une formulation. Mets dans "expected" le texte de l'attendu (1 à 2 phrases, action concrète, livrable/résultat clair, sans "réfléchir à"/"voir si"), et dans "reply" une courte phrase d'accompagnement. L'utilisateur peut ensuite te demander d'ajuster : tu reproposes un "expected" affiné.
+
+Règles : reste cohérent avec le plan du projet, évite les doublons avec d'autres tâches, sois concret. Tiens compte de tout l'historique du dialogue.`;
+
+export async function refineTaskExpected(input: {
+  project: Project;
+  step: Step;
+  task: Task;
+  messages: ExpectedMessage[];
+}): Promise<ExpectedRefineResult> {
+  const client = getOpenAIClient();
+  const snapshot = buildProjectContextSnapshot(input.project, { highlightTaskId: input.task.id });
+  const currentExpected = input.task.expected?.trim() || input.task.description?.trim() || "";
+
+  const context = [
+    "Plan complet du projet (tâche ciblée marquée ★) :",
+    "",
+    snapshot,
+    "",
+    `Étape : ${input.step.title}`,
+    `Tâche ciblée : ${input.task.title}`,
+    currentExpected ? `Attendu actuel : ${currentExpected}` : "Pas encore d'attendu pour cette tâche.",
+  ].join("\n");
+
+  const dialogue = (input.messages ?? []).filter((message) => message.content.trim());
+
+  const response = await client.chat.completions.create({
+    model: AI_MODEL,
+    response_format: {
+      type: "json_schema",
+      json_schema: { name: "expected_refine", strict: true, schema: REFINE_SCHEMA },
+    },
+    messages: [
+      { role: "system", content: REFINE_SYSTEM_PROMPT },
+      { role: "user", content: context },
+      ...dialogue.map((message) => ({ role: message.role, content: message.content })),
+    ],
+  });
+
+  const content = response.choices[0]?.message?.content;
+  if (!content) throw new Error("Réponse IA vide.");
+  try {
+    const parsed = JSON.parse(content) as ExpectedRefineResult;
+    parsed.mode = parsed.mode === "proposal" ? "proposal" : "question";
+    if (parsed.mode === "question") parsed.expected = null;
+    return parsed;
+  } catch {
+    throw new Error("L'IA n'a pas renvoyé de JSON valide.");
+  }
+}

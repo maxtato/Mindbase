@@ -7,10 +7,10 @@ import { error as errorTokens, statusColor, surface, text } from "@/lib/design-t
 import type { ChecklistItem, ProjectStatusSettings, ProjectTeam, Task, TaskDiscussionMessage, TaskStatus } from "@/lib/mock-data";
 import { addTaskDiscussionMessageAction } from "@/app/dashboard/projects/[id]/actions";
 import {
-  suggestTaskExpectedAction,
   suggestTaskChecklistAction,
   applyAIChecklistAction,
 } from "@/app/dashboard/projects/ai-actions";
+import { ExpectedAssistant } from "@/components/projects/expected-assistant";
 import { Button } from "@/components/ui/button";
 import { formatTaskScheduleDate } from "@/lib/date-format";
 import { deriveTaskDisplayPriority, deriveTaskStatus, taskStatusLabels } from "@/lib/project-plan";
@@ -279,31 +279,12 @@ function ExpectedField({
 }) {
   const initial = task.expected ?? task.description ?? "";
   const [value, setValue] = useState(initial);
-  const [aiPending, setAiPending] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
+  const [assistantOpen, setAssistantOpen] = useState(false);
   useEffect(() => setValue(initial), [initial]);
 
   const dirty = value.trim() !== initial.trim();
   const editable = Boolean(onUpdate);
   const aiAvailable = Boolean(projectId && stepId);
-
-  async function handleAISuggest() {
-    if (!projectId || !stepId) return;
-    setAiError(null);
-    setAiPending(true);
-    try {
-      const { expected } = await suggestTaskExpectedAction({
-        projectId,
-        stepId,
-        taskId: task.id,
-      });
-      setValue(expected);
-    } catch (err) {
-      setAiError(err instanceof Error ? err.message : "Erreur IA.");
-    } finally {
-      setAiPending(false);
-    }
-  }
 
   return (
     <FieldShell
@@ -313,10 +294,10 @@ function ExpectedField({
       rightSlot={
         aiAvailable ? (
           <AIChip
-            label={aiPending ? "Suggestion…" : "Suggestion IA"}
+            label="Assistant IA"
             accentColor={aiAccent}
-            onClick={handleAISuggest}
-            disabled={aiPending || !editable}
+            onClick={() => setAssistantOpen(true)}
+            disabled={!editable}
           />
         ) : undefined
       }
@@ -330,15 +311,26 @@ function ExpectedField({
         readOnly={!editable}
         disabled={!editable}
       />
-      {aiError && (
-        <p style={{ fontSize: 10.5, color: "var(--mb-status-red-text)", margin: 0 }}>{aiError}</p>
-      )}
       <FieldActions
         dirty={dirty}
         onSave={() => onUpdate?.({ expected: value.trim() })}
         onCancel={() => setValue(initial)}
         accentColor={accentColor}
       />
+      {assistantOpen && projectId && stepId && (
+        <ExpectedAssistant
+          projectId={projectId}
+          stepId={stepId}
+          taskId={task.id}
+          currentExpected={value.trim()}
+          accentColor={aiAccent}
+          onApply={(textValue) => {
+            setValue(textValue);
+            setAssistantOpen(false);
+          }}
+          onClose={() => setAssistantOpen(false)}
+        />
+      )}
     </FieldShell>
   );
 }
