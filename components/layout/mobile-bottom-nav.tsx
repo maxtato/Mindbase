@@ -14,6 +14,7 @@ import { usePathname } from "next/navigation";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { surface, text } from "@/lib/design-tokens";
+import { WORKSPACE_EVENT } from "@/lib/workspace-client";
 
 const NAV_ITEMS = [
   {
@@ -105,9 +106,17 @@ export function MobileBottomNav({ initialWorkspace }: MobileBottomNavProps = {})
       // recolle, mais entre-temps on garde notre dernière valeur connue).
       if (value) setWorkspaceParam(value);
     };
+    const onWorkspace = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      if (detail) setWorkspaceParam(detail);
+    };
     update();
     window.addEventListener("popstate", update);
-    return () => window.removeEventListener("popstate", update);
+    window.addEventListener(WORKSPACE_EVENT, onWorkspace);
+    return () => {
+      window.removeEventListener("popstate", update);
+      window.removeEventListener(WORKSPACE_EVENT, onWorkspace);
+    };
   }, [pathname]);
   const workspace = getWorkspace(workspaceParam);
   const theme = workspaceTheme[workspace];

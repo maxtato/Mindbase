@@ -11,6 +11,7 @@ import { usePathname } from "next/navigation";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { error, surface, text } from "@/lib/design-tokens";
+import { broadcastWorkspace, WORKSPACE_EVENT } from "@/lib/workspace-client";
 
 const WIDE = 212;
 const COLLAPSED = 62;
@@ -42,9 +43,17 @@ export function Sidebar({ stats, initialWorkspace }: SidebarProps) {
       // le recolle), on garde la dernière valeur connue.
       if (value) setWorkspaceParam(value);
     };
+    const onWorkspace = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      if (detail) setWorkspaceParam(detail);
+    };
     update();
     window.addEventListener("popstate", update);
-    return () => window.removeEventListener("popstate", update);
+    window.addEventListener(WORKSPACE_EVENT, onWorkspace);
+    return () => {
+      window.removeEventListener("popstate", update);
+      window.removeEventListener(WORKSPACE_EVENT, onWorkspace);
+    };
   }, [pathname]);
   const workspace = getWorkspace(workspaceParam);
   const theme = workspaceTheme[workspace];
@@ -254,7 +263,7 @@ export function Sidebar({ stats, initialWorkspace }: SidebarProps) {
                 <Link
                   key={item}
                   href={makeWorkspaceHref(item)}
-                  onClick={() => setWorkspaceParam(item)}
+                  onClick={() => broadcastWorkspace(item)}
                   className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold"
                   style={{
                     background: active ? itemTheme.gradient : surface.sidebarPanel,
@@ -281,7 +290,7 @@ export function Sidebar({ stats, initialWorkspace }: SidebarProps) {
                 <Link
                   key={item}
                   href={makeWorkspaceHref(item)}
-                  onClick={() => setWorkspaceParam(item)}
+                  onClick={() => broadcastWorkspace(item)}
                   className="h-10 rounded-xl flex items-center gap-2 px-2.5 text-[11px] font-semibold"
                   style={{
                     background: active ? itemTheme.gradient : surface.sidebarPanel,
