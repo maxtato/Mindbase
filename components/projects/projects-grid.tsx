@@ -175,8 +175,8 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
                       borderBottom: `1px solid ${surface.borderSubtle}`,
                     }}
                   >
-                    <div className="flex items-center justify-between gap-2 sm:gap-3">
-                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className="flex items-start justify-between gap-2 sm:gap-3">
+                      <div className="flex items-start gap-2 sm:gap-3 min-w-0">
                         <ProjectIdentityEditor
                           key={`${project.id}-${project.subcategory}`}
                           projectId={project.id}
@@ -190,15 +190,20 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
                           onColor
                         />
                         <div className="min-w-0">
-                          <p className="text-[16px] sm:text-[19px] font-bold leading-tight truncate" style={{ color: surface.onColor }}>
+                          <p
+                            className="text-[16px] sm:text-[19px] font-bold leading-tight line-clamp-2"
+                            style={{ color: surface.onColor, overflowWrap: "anywhere" }}
+                          >
                             {project.name}
                           </p>
                         </div>
                       </div>
 
-                      <Badge variant="onColor" statusKey={project.status}>
-                        {statusLabels[project.status]}
-                      </Badge>
+                      <span className="shrink-0">
+                        <Badge variant="onColor" statusKey={project.status}>
+                          {statusLabels[project.status]}
+                        </Badge>
+                      </span>
                     </div>
                   </div>
 
