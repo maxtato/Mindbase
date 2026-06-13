@@ -545,13 +545,18 @@ function CalendarTaskCard({
   const isTouch = useIsTouchDevice();
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const suppressNextClickRef = useRef(false);
-  const longPress = useLongPressDrag(({ x, y, element }) => {
-    dragStartedRef.current = true;
-    onLongPressEngage?.(x, y, element);
-    window.setTimeout(() => {
-      dragStartedRef.current = false;
-    }, 700);
-  });
+  const longPress = useLongPressDrag(
+    ({ x, y, element }) => {
+      dragStartedRef.current = true;
+      onLongPressEngage?.(x, y, element);
+      window.setTimeout(() => {
+        dragStartedRef.current = false;
+      }, 700);
+    },
+    // touch-action:none neutralise le scroll sur la carte → on peut tolérer une
+    // petite dérive du doigt pendant l'appui sans annuler le « décollage ».
+    { moveTolerance: 16 },
+  );
 
   return (
     <TaskDetailLauncher
@@ -644,6 +649,12 @@ function CalendarTaskCard({
             userSelect: "none",
             WebkitUserSelect: "none",
             WebkitTouchCallout: "none",
+            // CLÉ sur iOS : sans touch-action:none, Safari « vole » le geste pour
+            // scroller (le calendrier est dans des conteneurs scrollables) et émet
+            // pointercancel → l'appui long est annulé avant les 300 ms. On
+            // neutralise le scroll natif SUR la carte ; l'auto-scroll au bord gère
+            // le déplacement, et on scrolle via les zones vides des cellules.
+            touchAction: isTouch ? "none" : undefined,
             padding: "0.65rem 0.7rem 0.6rem 0.65rem",
             overflow: "hidden",
             width: "100%",
