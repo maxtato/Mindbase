@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect } from "react";
+import { useState, useTransition, useRef, useEffect, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import {
@@ -351,19 +351,57 @@ export function ProjectSettingsMenu({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuContentRef = useRef<HTMLDivElement>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number; width: number; maxHeight: number } | null>(null);
+
+  useEffect(() => setMounted(true), []);
+
+  // Position du menu (portal vers <body> pour échapper au overflow de la barre
+  // d'actions). Borné à la largeur/hauteur de l'écran → tient sur iPhone.
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    function update() {
+      const button = buttonRef.current;
+      if (!button) return;
+      const rect = button.getBoundingClientRect();
+      const margin = 12;
+      const width = Math.min(330, window.innerWidth - margin * 2);
+      const left = Math.max(margin, Math.min(rect.right - width, window.innerWidth - width - margin));
+      const top = rect.bottom + 8;
+      // Le menu ne descend jamais sous le bas de l'écran (scroll interne sinon).
+      const maxHeight = window.innerHeight - top - margin;
+      setMenuPos({ top, left, width, maxHeight: Math.max(160, maxHeight) });
+    }
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
+    if (!isOpen) return;
     function handleClick(event: PointerEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) setIsOpen(false);
+      const target = event.target as Node;
+      if (buttonRef.current?.contains(target)) return;
+      if (menuContentRef.current?.contains(target)) return;
+      setIsOpen(false);
     }
-    document.addEventListener("pointerdown", handleClick);
-    return () => document.removeEventListener("pointerdown", handleClick);
-  }, []);
+    const timer = window.setTimeout(() => document.addEventListener("pointerdown", handleClick), 0);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("pointerdown", handleClick);
+    };
+  }, [isOpen]);
 
   return (
-    <div ref={menuRef} style={{ position: "relative" }}>
+    <div style={{ position: "relative" }}>
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setIsOpen((value) => !value)}
         className="mb-project-top-action mb-project-icon-action"
@@ -377,17 +415,21 @@ export function ProjectSettingsMenu({
         </svg>
       </button>
 
-      {isOpen && (
+      {mounted && isOpen && menuPos && createPortal(
         <div
+          ref={menuContentRef}
           className="rounded-2xl p-3"
           style={{
-            position: "absolute",
-            right: 0,
-            top: "calc(100% + 8px)",
-            zIndex: 1000,
-            minWidth: 330,
+            position: "fixed",
+            top: menuPos.top,
+            left: menuPos.left,
+            width: menuPos.width,
+            maxHeight: menuPos.maxHeight,
+            overflowY: "auto",
+            zIndex: 1300,
             background: surface.s1,
             border: `1px solid ${surface.border}`,
+            boxShadow: "var(--mb-shadow-menu)",
           }}
         >
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
@@ -415,7 +457,8 @@ export function ProjectSettingsMenu({
             </svg>
           </button>
           <ProjectDestructiveControls projectId={projectId} workspace={workspace} currentStatus={currentStatus} />
-        </div>
+        </div>,
+        document.body,
       )}
       <ProjectStatusSettingsModal
         open={settingsOpen}
