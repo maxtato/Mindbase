@@ -1,7 +1,7 @@
 // Génère toutes les icônes Mindbase (favicon, apple-touch, PWA) à partir du
 // mark `M` Mindbase utilisé dans l'app (`public/mindbase-iphone.png`). Ce
 // fichier est déjà au format icône iOS (M coloré centré, contour blanc), on
-// le pose simplement sur un fond noir et on exporte aux tailles standard.
+// le pose simplement sur un fond blanc et on exporte aux tailles standard.
 //
 // Lancer : node scripts/generate-icons.mjs
 
@@ -14,9 +14,10 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
 const SOURCE = path.join(root, "public", "mindbase-iphone.png");
 
-// Fond noir solide — assorti au thème dark de l'app (#08080a). iOS arrondit
-// automatiquement les coins, donc pas besoin de masque arrondi côté asset.
-const BACKGROUND = { r: 8, g: 8, b: 10, alpha: 1 };
+// Fond blanc solide — l'icône installée sur l'écran d'accueil iPhone a un fond
+// blanc (pas noir). iOS arrondit automatiquement les coins, donc pas besoin de
+// masque arrondi côté asset.
+const BACKGROUND = { r: 255, g: 255, b: 255, alpha: 1 };
 
 // Compose le `M` au centre, à `markRatio` de la canvas. Pour les icônes
 // maskables PWA on réduit le ratio pour respecter la safe zone iOS/Android.
