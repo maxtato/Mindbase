@@ -840,7 +840,10 @@ summary {
 .mb-filter-pill-menu {
   position: absolute;
   top: calc(100% + 6px);
-  z-index: 60;
+  /* Doit passer AU-DESSUS du backdrop transparent du portail (z-index 1199),
+     sinon sur desktop le backdrop intercepte les clics sur les options et le
+     menu se ferme sans rien sélectionner. */
+  z-index: 1200;
   min-width: max(180px, 100%);
   max-height: 280px;
   overflow-y: auto;

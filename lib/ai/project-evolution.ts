@@ -136,6 +136,7 @@ Tu réponds UNIQUEMENT en JSON strict, en français. Tu produis une liste d'opé
 Règles importantes :
 - N'invente RIEN qui ne soit pas étayé par le texte. Si le texte ne justifie aucun changement, renvoie une liste vide.
 - Pour faire avancer une tâche déjà existante, utilise update_task avec son taskId — NE crée PAS de doublon.
+- En revanche, si le texte évoque un travail, une action ou un livrable PERTINENT qui ne correspond à AUCUNE tâche existante, NE L'IGNORE PAS : crée une nouvelle tâche (add_task). Rattache-la à l'étape existante la plus pertinente (targetStepId), ou crée une nouvelle étape (add_step) si aucune ne convient et range-la dedans (newStepTitle). Le fait qu'un point ne fasse pas avancer une tâche actuelle n'est pas une raison de l'écarter.
 - Ne repasse pas une tâche à un statut antérieur sans raison explicite dans le texte.
 - Les dates sont au format AAAA-MM-JJ. La date du jour est ${today}. Convertis les dates relatives ("vendredi prochain", "dans deux semaines") en dates absolues.
 - Pour owner, réutilise les noms de personnes déjà connus du projet quand c'est la même personne.
