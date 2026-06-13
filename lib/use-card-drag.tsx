@@ -137,11 +137,16 @@ export function useCardDrag(options: UseCardDragOptions) {
           if (x > window.innerWidth - edge) h.scrollLeft += speed;
           else if (x < edge) h.scrollLeft -= speed;
         }
-        // Vertical : on scrolle la PAGE quand le doigt approche du haut/bas de
-        // l'écran (décalages pour la topbar en haut et la bottom nav en bas).
+        // Vertical : on déclenche le défilement par rapport aux BORDS VISIBLES
+        // du conteneur scrollable (pas du viewport brut). La marge haute est
+        // large pour que ça commence à scroller dès qu'on approche du panneau
+        // du haut (filtres / réglages assistant), pas seulement tout en haut.
         if (v) {
-          if (y < edge + 24) v.scrollTop -= speed;
-          else if (y > window.innerHeight - edge - 24) v.scrollTop += speed;
+          const r = v.getBoundingClientRect();
+          const topTrigger = Math.max(r.top, 0) + 120;
+          const bottomTrigger = Math.min(r.bottom, window.innerHeight) - 96;
+          if (y < topTrigger) v.scrollTop -= speed;
+          else if (y > bottomTrigger) v.scrollTop += speed;
         }
         rafRef.current = requestAnimationFrame(tick);
       };

@@ -376,7 +376,11 @@ function KanbanTaskCard({
             }, 0);
           }}
           onPointerDown={(event) => {
-            if ((event.target as Element).closest("button, a, input, textarea, select, [role='button'], [data-mobile-tap-ignore='true']")) return;
+            // NB : la carte elle-même a role="button" → on ne met PAS
+            // [role='button'] dans ce filtre, sinon il s'auto-exclurait et
+            // l'appui long ne démarrerait jamais. On n'ignore que les vrais
+            // contrôles imbriqués (il n'y en a pas ici, mais par sécurité).
+            if ((event.target as Element).closest("button, a, input, textarea, select, [data-mobile-tap-ignore='true']")) return;
             longPress.onPointerDown(event);
           }}
           onPointerMove={longPress.onPointerMove}
