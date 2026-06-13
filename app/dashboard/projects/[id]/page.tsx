@@ -38,6 +38,9 @@ export default async function ProjectDetailPage({
 
   const workspace = getWorkspace(sp.workspace ?? project.workspace);
   const theme = workspaceTheme[workspace];
+  // Couleur du THÈME projet (pictogramme/sous-catégorie) — utilisée pour les
+  // boutons assistant IA, plutôt que l'accent de l'environnement Pro/Perso.
+  const projectAccent = resolveProjectSubcategoryDisplay(project).color || theme.accent;
   const openBlockers = project.blockers.filter((blocker) => blocker.status === "open");
   const steps = project.steps ?? [];
   const hasSteps = steps.length > 0;
@@ -86,7 +89,7 @@ export default async function ProjectDetailPage({
                 <div className="mb-project-rail-content flex flex-col gap-3">
                   <div className="flex items-center justify-between gap-2">
                     <p className="mb-project-rail-title">Synthèse</p>
-                    <AISynthesisButton projectId={project.id} accentColor={theme.accent} />
+                    <AISynthesisButton projectId={project.id} accentColor={projectAccent} />
                   </div>
                   <ProjectRailCard title="Objectif" accentColor={project.subcategoryColor} icon="target">
                     <ExpandableText className="text-xs leading-relaxed" style={{ color: text.secondary }}>
