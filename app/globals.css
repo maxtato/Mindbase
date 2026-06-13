@@ -1366,8 +1366,10 @@ summary {
   padding: 0.42rem;
   border-radius: 20px;
   background: var(--mb-s1);
-  border: 1px solid var(--mb-border-subtle);
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.08);
+  /* Contour net et fermé tout autour (la bordure subtile + ombre seulement en
+     bas donnaient un côté droit qui semblait « ouvert »). */
+  border: 1px solid var(--mb-border);
+  box-shadow: var(--mb-shadow-card);
 }
 
 .mb-project-pilotbar-metrics {
