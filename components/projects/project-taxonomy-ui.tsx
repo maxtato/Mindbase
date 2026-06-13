@@ -15,11 +15,13 @@ interface CategoryIconProps {
 }
 
 export function ProjectCategoryIcon({ icon, color = "currentColor", size = 14 }: CategoryIconProps) {
-  // Style premium : strokes 1.8 cohérents, line caps arrondis, proportions équilibrées,
-  // accents pleins minimaux pour ancrer chaque pictogramme.
+  // Le trait s'adapte à la taille : fin sur les petits pictos (sinon le dessin
+  // devient illisible, le trait « bouche » l'icône) et un peu plus marqué sur
+  // les grands. `non-scaling-stroke` → la valeur est en pixels écran.
+  const strokeWidth = Math.max(0.9, Math.min(2, size * 0.09));
   const common = {
     stroke: color,
-    strokeWidth: 1.8,
+    strokeWidth,
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
     fill: "none" as const,

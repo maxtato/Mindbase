@@ -13,6 +13,7 @@ import {
   analyzeProjectEvolution,
   describeOperation,
   type EvolutionOperation,
+  type EvolutionMessage,
 } from "@/lib/ai/project-evolution";
 import {
   addStepToProject,
@@ -235,27 +236,30 @@ export interface EvolutionPlanItem {
 }
 
 export interface EvolutionPlanResult {
+  /** "question" : l'IA demande une précision ; "plan" : elle propose des opérations. */
+  mode: "question" | "plan";
+  question: string | null;
   summary: string;
   items: EvolutionPlanItem[];
 }
 
 export async function analyzeProjectEvolutionAction(input: {
   projectId: string;
-  text: string;
+  messages: EvolutionMessage[];
 }): Promise<EvolutionPlanResult> {
-  const cleaned = input.text.trim();
-  if (!cleaned) throw new Error("Colle un texte à analyser avant de lancer l'IA.");
+  const messages = (input.messages ?? []).filter((message) => message.content.trim());
+  if (messages.length === 0) throw new Error("Écris un message avant de lancer l'IA.");
 
   const project = await getProjectById(input.projectId);
   if (!project) throw new Error("Projet introuvable.");
 
-  const plan = await analyzeProjectEvolution(project, cleaned);
-  const items: EvolutionPlanItem[] = plan.operations.map((op) => ({
-    op,
-    ...describeOperation(op, project),
-  }));
+  const plan = await analyzeProjectEvolution(project, messages);
+  const items: EvolutionPlanItem[] =
+    plan.mode === "plan"
+      ? plan.operations.map((op) => ({ op, ...describeOperation(op, project) }))
+      : [];
 
-  return { summary: plan.summary, items };
+  return { mode: plan.mode, question: plan.question, summary: plan.summary, items };
 }
 
 // Étape B : application des opérations sélectionnées par l'utilisateur.

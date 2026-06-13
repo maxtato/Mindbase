@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition, useEffect } from "react";
 import {
   analyzeProjectEvolutionAction,
   applyProjectEvolutionAction,
@@ -13,6 +13,8 @@ interface ProjectEvolutionLauncherProps {
   accentColor: string;
 }
 
+type ChatMessage = { role: "user" | "assistant"; content: string };
+
 const KIND_BADGE: Record<string, { label: string; bg: string; fg: string }> = {
   add_step: { label: "Étape", bg: "var(--mb-status-blue-bg)", fg: "var(--mb-status-blue-text)" },
   add_task: { label: "Tâche", bg: "var(--mb-status-green-bg)", fg: "var(--mb-status-green-text)" },
@@ -21,18 +23,29 @@ const KIND_BADGE: Record<string, { label: string; bg: string; fg: string }> = {
 
 export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvolutionLauncherProps) {
   const [open, setOpen] = useState(false);
-  const [note, setNote] = useState("");
+  const [draft, setDraft] = useState("");
+  const [transcript, setTranscript] = useState<ChatMessage[]>([]);
   const [items, setItems] = useState<EvolutionPlanItem[] | null>(null);
-  const [summary, setSummary] = useState("");
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [doneMsg, setDoneMsg] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll en bas du fil à chaque nouveau message / proposition.
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [transcript, items]);
+
+  const started = transcript.length > 0;
+  // Tant qu'on n'a pas de plan, on est en mode conversation.
+  const conversing = items === null;
+  const lastIsQuestion = transcript[transcript.length - 1]?.role === "assistant";
 
   function reset() {
-    setNote("");
+    setDraft("");
+    setTranscript([]);
     setItems(null);
-    setSummary("");
     setSelected(new Set());
     setError(null);
     setDoneMsg(null);
@@ -43,15 +56,28 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
     reset();
   }
 
-  function analyze() {
+  function send() {
+    const content = draft.trim();
+    if (!content) return;
+    const nextTranscript: ChatMessage[] = [...transcript, { role: "user", content }];
+    setTranscript(nextTranscript);
+    setDraft("");
     setError(null);
     setDoneMsg(null);
+
     startTransition(async () => {
       try {
-        const result = await analyzeProjectEvolutionAction({ projectId, text: note });
-        setSummary(result.summary);
-        setItems(result.items);
-        setSelected(new Set(result.items.map((_, index) => index)));
+        const result = await analyzeProjectEvolutionAction({ projectId, messages: nextTranscript });
+        if (result.mode === "question" && result.question) {
+          setTranscript((current) => [...current, { role: "assistant", content: result.question! }]);
+          setItems(null);
+        } else {
+          if (result.summary) {
+            setTranscript((current) => [...current, { role: "assistant", content: result.summary }]);
+          }
+          setItems(result.items);
+          setSelected(new Set(result.items.map((_, index) => index)));
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erreur IA inconnue.");
       }
@@ -66,10 +92,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
     startTransition(async () => {
       try {
         const { applied } = await applyProjectEvolutionAction({ projectId, operations });
-        setItems(null);
-        setSummary("");
-        setSelected(new Set());
-        setNote("");
+        reset();
         setDoneMsg(`${applied} changement${applied > 1 ? "s" : ""} appliqué${applied > 1 ? "s" : ""} au projet.`);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Application impossible.");
@@ -84,6 +107,14 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
       else next.add(index);
       return next;
     });
+  }
+
+  function onInputKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+    // Entrée = envoyer ; Maj+Entrée = nouvelle ligne.
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      if (!pending && draft.trim()) send();
+    }
   }
 
   const selectedCount = selected.size;
@@ -102,7 +133,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
           boxShadow: `0 8px 20px -8px ${accentColor}`,
           whiteSpace: "nowrap",
         }}
-        title="Coller une note / un compte-rendu pour faire évoluer le projet avec l'IA"
+        title="Discuter avec l'IA pour faire évoluer le projet"
       >
         <SparkleIcon />
         Assistant IA
@@ -126,11 +157,11 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="Faire évoluer le projet à partir d'une note"
+            aria-label="Assistant IA — faire évoluer le projet"
             className="mb-modal-surface"
             onClick={(event) => event.stopPropagation()}
             style={{
-              width: "min(580px, 100%)",
+              width: "min(600px, 100%)",
               maxHeight: "100%",
               display: "flex",
               flexDirection: "column",
@@ -144,12 +175,13 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
               style={{ borderBottom: `1px solid ${surface.borderSubtle}` }}
             >
               <div className="min-w-0">
-                <p className="text-sm font-semibold" style={{ color: text.primary }}>
-                  Faire évoluer le projet
+                <p className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: text.primary }}>
+                  <span style={{ color: accentColor }}><SparkleIcon /></span>
+                  Assistant IA
                 </p>
                 <p className="mt-0.5 text-[11px]" style={{ color: text.muted }}>
-                  Colle une note, un compte-rendu ou un mail. L&apos;IA propose les changements
-                  (étapes, tâches, statuts, dates, personnes).
+                  Demande-lui des idées, une liste d&apos;options, ou décris ton avancement.
+                  L&apos;IA dialogue avec toi puis propose une évolution du projet à valider.
                 </p>
               </div>
               <button
@@ -163,87 +195,105 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
               </button>
             </div>
 
-            {/* Body */}
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4" style={{ background: surface.s2 }}>
-              {!items ? (
-                <textarea
-                  value={note}
-                  onChange={(event) => setNote(event.target.value)}
-                  placeholder="Ex. : « RDV client OK, la maquette est validée. Paul prend le dev du paiement pour vendredi prochain. Le volet juridique est bloqué tant qu'on n'a pas le retour de l'avocat. »"
-                  rows={7}
-                  className="mb-input w-full rounded-xl px-3 py-3 text-sm outline-none"
-                  style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}`, resize: "vertical" }}
-                  autoFocus
-                />
-              ) : (
-                <div className="flex flex-col gap-3">
-                  {summary && (
-                    <div
-                      className="rounded-xl px-3 py-2.5 text-[12px] leading-relaxed"
-                      style={{ background: surface.s1, color: text.secondary, border: `1px solid ${surface.borderSubtle}` }}
-                    >
-                      {summary}
-                    </div>
-                  )}
+            {/* Conversation + plan */}
+            <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 py-4" style={{ background: surface.s2 }}>
+              {!started && (
+                <p className="text-[12px] leading-relaxed" style={{ color: text.muted }}>
+                  Ex. : « Liste-moi les parcs nationaux de l&apos;Ouest américain » ou « On a validé
+                  la maquette, Paul prend le paiement ». L&apos;IA te répond, te demande lesquels retenir
+                  / des précisions, puis propose les étapes et tâches à appliquer.
+                </p>
+              )}
 
-                  {items.length === 0 ? (
-                    <p className="text-[12px]" style={{ color: text.muted }}>
-                      L&apos;IA n&apos;a proposé aucun changement à partir de ce texte.
-                    </p>
-                  ) : (
-                    <ul className="flex flex-col gap-2">
-                      {items.map((item, index) => {
-                        const badge = KIND_BADGE[item.op.type] ?? KIND_BADGE.update_task;
-                        const isSelected = selected.has(index);
-                        return (
-                          <li key={index}>
-                            <button
-                              type="button"
-                              onClick={() => toggle(index)}
-                              className="flex w-full items-start gap-2.5 rounded-xl px-3 py-2.5 text-left"
+              {/* Fil de discussion */}
+              <div className="flex flex-col gap-2.5">
+                {transcript.map((message, index) => (
+                  <div
+                    key={index}
+                    className="max-w-[88%] rounded-2xl px-3 py-2 text-[12.5px] leading-relaxed"
+                    style={
+                      message.role === "user"
+                        ? { alignSelf: "flex-end", background: accentColor, color: "#FFFFFF", borderBottomRightRadius: 6 }
+                        : { alignSelf: "flex-start", background: surface.s1, color: text.primary, border: `1px solid ${surface.borderSubtle}`, borderBottomLeftRadius: 6 }
+                    }
+                  >
+                    {message.content}
+                  </div>
+                ))}
+                {pending && (
+                  <div
+                    className="max-w-[88%] rounded-2xl px-3 py-2 text-[12px] italic"
+                    style={{ alignSelf: "flex-start", background: surface.s1, color: text.muted, border: `1px solid ${surface.borderSubtle}` }}
+                  >
+                    L'assistant réfléchit…
+                  </div>
+                )}
+              </div>
+
+              {/* Plan proposé */}
+              {items && items.length > 0 && (
+                <div className="mt-4">
+                  <p className="mb-2 text-[10.5px] font-semibold uppercase tracking-wide" style={{ color: text.muted }}>
+                    Changements proposés — décoche ce que tu ne veux pas
+                  </p>
+                  <ul className="flex flex-col gap-2">
+                    {items.map((item, index) => {
+                      const badge = KIND_BADGE[item.op.type] ?? KIND_BADGE.update_task;
+                      const isSelected = selected.has(index);
+                      return (
+                        <li key={index}>
+                          <button
+                            type="button"
+                            onClick={() => toggle(index)}
+                            className="flex w-full items-start gap-2.5 rounded-xl px-3 py-2.5 text-left"
+                            style={{
+                              background: surface.s1,
+                              border: `1px solid ${isSelected ? accentColor : surface.borderSubtle}`,
+                              opacity: isSelected ? 1 : 0.55,
+                              cursor: "pointer",
+                            }}
+                          >
+                            <span
+                              aria-hidden="true"
+                              className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-md text-[10px]"
                               style={{
-                                background: surface.s1,
-                                border: `1px solid ${isSelected ? accentColor : surface.borderSubtle}`,
-                                opacity: isSelected ? 1 : 0.55,
-                                cursor: "pointer",
+                                background: isSelected ? accentColor : "transparent",
+                                border: `1.5px solid ${isSelected ? accentColor : surface.borderHover}`,
+                                color: "#FFFFFF",
                               }}
                             >
-                              <span
-                                aria-hidden="true"
-                                className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-md text-[10px]"
-                                style={{
-                                  background: isSelected ? accentColor : "transparent",
-                                  border: `1.5px solid ${isSelected ? accentColor : surface.borderHover}`,
-                                  color: "#FFFFFF",
-                                }}
-                              >
-                                {isSelected ? "✓" : ""}
-                              </span>
-                              <span className="min-w-0 flex-1">
-                                <span className="flex items-center gap-2">
-                                  <span
-                                    className="rounded-full px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide"
-                                    style={{ background: badge.bg, color: badge.fg }}
-                                  >
-                                    {badge.label}
-                                  </span>
-                                  <span className="truncate text-[12.5px] font-semibold" style={{ color: text.primary }}>
-                                    {item.title}
-                                  </span>
+                              {isSelected ? "✓" : ""}
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="flex items-center gap-2">
+                                <span
+                                  className="rounded-full px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide"
+                                  style={{ background: badge.bg, color: badge.fg }}
+                                >
+                                  {badge.label}
                                 </span>
-                                {item.detail && (
-                                  <span className="mt-1 block text-[11px] leading-snug" style={{ color: text.muted }}>
-                                    {item.detail}
-                                  </span>
-                                )}
+                                <span className="truncate text-[12.5px] font-semibold" style={{ color: text.primary }}>
+                                  {item.title}
+                                </span>
                               </span>
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
+                              {item.detail && (
+                                <span className="mt-1 block text-[11px] leading-snug" style={{ color: text.muted }}>
+                                  {item.detail}
+                                </span>
+                              )}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </div>
+              )}
+
+              {items && items.length === 0 && (
+                <p className="mt-3 text-[12px]" style={{ color: text.muted }}>
+                  L&apos;IA n&apos;a proposé aucun changement.
+                </p>
               )}
 
               {error && (
@@ -258,39 +308,38 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
               )}
             </div>
 
-            {/* Footer */}
-            <div
-              className="flex items-center justify-end gap-2 px-5 py-3"
-              style={{ borderTop: `1px solid ${surface.borderSubtle}` }}
-            >
-              {!items ? (
-                <>
+            {/* Zone de saisie / actions */}
+            <div className="px-5 py-3" style={{ borderTop: `1px solid ${surface.borderSubtle}` }}>
+              {conversing ? (
+                <div className="flex items-end gap-2">
+                  <textarea
+                    value={draft}
+                    onChange={(event) => setDraft(event.target.value)}
+                    onKeyDown={onInputKeyDown}
+                    placeholder={lastIsQuestion ? "Ta réponse…" : "Demande à l'IA : une idée, une liste, un avancement…"}
+                    rows={lastIsQuestion ? 2 : 3}
+                    className="mb-input min-w-0 flex-1 rounded-xl px-3 py-2.5 text-sm outline-none"
+                    style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}`, resize: "none" }}
+                    autoFocus
+                  />
                   <button
                     type="button"
-                    onClick={close}
-                    className="rounded-lg px-3 py-2 text-xs font-semibold"
-                    style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.border}`, cursor: "pointer" }}
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    type="button"
-                    onClick={analyze}
-                    disabled={pending || !note.trim()}
-                    className="rounded-lg px-3 py-2 text-xs font-semibold"
+                    onClick={send}
+                    disabled={pending || !draft.trim()}
+                    className="shrink-0 rounded-xl px-3.5 py-2.5 text-xs font-semibold"
                     style={{
                       background: accentColor,
                       color: "#FFFFFF",
                       border: "none",
-                      cursor: pending || !note.trim() ? "not-allowed" : "pointer",
-                      opacity: pending || !note.trim() ? 0.6 : 1,
+                      cursor: pending || !draft.trim() ? "not-allowed" : "pointer",
+                      opacity: pending || !draft.trim() ? 0.6 : 1,
                     }}
                   >
-                    {pending ? "Analyse…" : "Analyser"}
+                    {pending ? "…" : lastIsQuestion ? "Répondre" : "Envoyer"}
                   </button>
-                </>
+                </div>
               ) : (
-                <>
+                <div className="flex items-center justify-end gap-2">
                   <button
                     type="button"
                     onClick={reset}
@@ -315,7 +364,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
                   >
                     {pending ? "Application…" : `Appliquer (${selectedCount})`}
                   </button>
-                </>
+                </div>
               )}
             </div>
           </div>
