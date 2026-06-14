@@ -137,8 +137,10 @@ function TaskDetailDrawerInner({
   useEffect(() => {
     const textarea = titleTextareaRef.current;
     if (!textarea) return;
+    // Le titre de la tâche OUVERTE doit être vu en entier (il s'enroule sur
+    // autant de lignes que nécessaire) — pas de plafond qui le tronquerait.
     textarea.style.height = "auto";
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 76)}px`;
+    textarea.style.height = `${textarea.scrollHeight}px`;
   }, [title]);
 
   function getNextComments() {
