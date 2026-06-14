@@ -145,7 +145,7 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
           </p>
         </div>
       ) : (
-        <div className="mb-projects-grid">
+        <div className="mb-projects-grid mb-stagger">
           {filtered.map((project) => {
             const pendingActions = projectPendingTaskCount(project);
             const openBlockers = project.blockers.filter((blocker) => blocker.status === "open");
