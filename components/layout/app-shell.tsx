@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { Sidebar } from "./sidebar";
 import { MobileBottomNav } from "./mobile-bottom-nav";
+import { CommandPalette } from "@/components/search/command-palette";
 import { surface } from "@/lib/design-tokens";
 import { getSidebarStatsByWorkspace } from "@/lib/project-store";
 import { getWorkspace } from "@/lib/workspace";
@@ -49,6 +50,10 @@ export async function AppShell({ children }: AppShellProps) {
           On lui donne le workspace initial pour que la couleur active
           soit correcte dès le SSR (sinon flash violet→bleu en pro). */}
       <MobileBottomNav initialWorkspace={initialWorkspace} />
+
+      {/* Palette de recherche globale (⌘K ou bouton loupe topbar). Rendue une
+          fois au niveau du shell → disponible sur toutes les pages. */}
+      <CommandPalette initialWorkspace={initialWorkspace} />
     </div>
   );
 }
