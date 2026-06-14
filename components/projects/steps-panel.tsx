@@ -1446,24 +1446,9 @@ function TaskCard({
         transition: "background-color 120ms var(--mb-ease), border-color 120ms var(--mb-ease), box-shadow 180ms var(--mb-ease), transform 120ms var(--mb-ease)",
       }}
     >
-      {/* Barre verticale priorité à gauche : indique visuellement la
-          priorité de la tâche. Disparaît dès que la tâche est terminée
-          (elle ne pèse plus rien dans la moyenne de l'étape non plus). */}
-      {taskStatus !== "done" && (
-        <span
-          aria-hidden
-          title={`Priorité : ${displayedPriorityVisual.label.toLowerCase()}`}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: 4,
-            background: displayedPriorityVisual.text,
-            pointerEvents: "none",
-          }}
-        />
-      )}
+      {/* La priorité n'est PLUS une barre à gauche (réservée désormais à l'arête
+          d'identité projet de l'étape) → on l'affiche par une petite pastille
+          colorée devant le titre (cf. plus bas). */}
       <div className="mb-task-row grid items-center gap-2">
         <button
           type="button"
@@ -1490,6 +1475,14 @@ function TaskCard({
         </button>
 
         <div className="min-w-0 flex items-center gap-2 overflow-hidden">
+          {taskStatus !== "done" && (
+            <span
+              aria-hidden
+              title={`Priorité : ${displayedPriorityVisual.label.toLowerCase()}`}
+              className="shrink-0"
+              style={{ width: 7, height: 7, borderRadius: "50%", background: displayedPriorityVisual.text }}
+            />
+          )}
           <div className="min-w-0 flex-1 overflow-hidden">
             {renaming ? (
               <input
