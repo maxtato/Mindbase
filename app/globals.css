@@ -1751,16 +1751,15 @@ summary {
   box-shadow: var(--mb-shadow-md);
 }
 
-/* En-tête d'étape : fond GRIS clair (distinct de la liste de tâches blanche).
+/* En-tête d'étape : fond gris TRÈS clair (un cran sous le blanc des tâches).
    La carte reste blanche + ombre → elle se détache du fond de la page. */
 .mb-step-header {
-  background: var(--mb-s4);
+  background: #eef0f3;
   border-bottom: 1px solid var(--mb-border);
   border-radius: 0;
 }
-/* En sombre, s4 est le ton le plus foncé → s2 (plus clair que la liste). */
 [data-theme="dark"] .mb-step-header {
-  background: var(--mb-s2);
+  background: var(--mb-s3);
 }
 
 /* En-tête d'étape désormais NEUTRE (plus de bandeau coloré) → les pills meta
