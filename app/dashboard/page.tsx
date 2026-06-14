@@ -17,7 +17,6 @@ import { deriveTaskStatus } from "@/lib/project-plan";
 import { surface, text, error as errorTokens, statusColor } from "@/lib/design-tokens";
 import type { Project, Task, TaskStatus } from "@/lib/mock-data";
 import { StatusStackedBar } from "@/components/dashboard/status-stacked-bar";
-import { WeekPlanningPanel, buildPlannedTasks } from "@/components/dashboard/week-planning-panel";
 import { ActivityFeedPanel, buildActivityFeed } from "@/components/dashboard/activity-feed-panel";
 import { KpiCard, type KpiTask } from "@/components/dashboard/kpi-card";
 import { FocusPanel } from "@/components/dashboard/focus-panel";
@@ -59,7 +58,6 @@ export default async function DashboardPage({
   const openTasks = allTasks.filter(
     ({ entry }) => deriveTaskStatus(entry.task) !== "done",
   );
-  const plannedTasks = buildPlannedTasks(openTasks);
 
   // Activité récente (dérivée du state des projets)
   const activityFeed = buildActivityFeed(projects);
@@ -164,8 +162,11 @@ export default async function DashboardPage({
             />
           </section>
 
-          {/* Grid 2×2 — desktop. Sur mobile, tout passe en une colonne.
-              Chaque carte est cliquable et mène à la liste pertinente. */}
+          {/* Bas du dashboard — uniquement du COMPLÉMENTAIRE au bloc Focus
+              (pas de doublon avec « À faire en priorité » / « Projets à
+              surveiller ») : la répartition globale par statut + le journal
+              d'activité. Le détail des tâches/projets se consulte via le Focus
+              et les popovers KPI. */}
           <div className="mb-rise grid gap-4 lg:grid-cols-2" style={{ animationDelay: "140ms" }}>
             <Card
               title="Répartition des tâches"
@@ -174,44 +175,6 @@ export default async function DashboardPage({
               href={`/dashboard/kanban?${qs}`}
             >
               <StatusStackedBar breakdown={breakdown} />
-            </Card>
-
-            <Card
-              title="Tâches à venir"
-              meta={plannedTasks.length > 0 ? `${plannedTasks.length}` : undefined}
-              accent={theme.accent}
-            >
-              <WeekPlanningPanel
-                tasks={plannedTasks}
-                workspace={workspace}
-                limit={6}
-                seeMoreHref={`/dashboard/calendar?${qs}`}
-              />
-            </Card>
-
-            <Card
-              title="Projets ouverts"
-              meta={`${openProjects.length} projet${openProjects.length > 1 ? "s" : ""}`}
-              accent={theme.accent}
-            >
-              {openProjects.length === 0 ? (
-                <EmptyState label="Aucun projet ouvert dans cet espace." />
-              ) : (
-                <div className="flex flex-col gap-2">
-                  {openProjects.slice(0, 3).map((project) => (
-                    <CompactProjectRow key={project.id} project={project} workspace={workspace} />
-                  ))}
-                  {openProjects.length > 3 && (
-                    <Link
-                      href={`/dashboard/projects?${qs}`}
-                      className="self-start text-[11px] font-semibold"
-                      style={{ color: text.muted }}
-                    >
-                      Voir plus ({openProjects.length - 3}) →
-                    </Link>
-                  )}
-                </div>
-              )}
             </Card>
 
             <Card
@@ -285,68 +248,6 @@ function Card({ title, meta, accent, action, href, children }: CardProps) {
         {children}
       </div>
     </section>
-  );
-}
-
-function EmptyState({ label }: { label: string }) {
-  return (
-    <p className="py-2 text-[12px]" style={{ color: text.muted }}>
-      {label}
-    </p>
-  );
-}
-
-// Carte projet compacte pour le dashboard : juste titre + barre d'avancement
-// + une ligne d'infos utiles (statut + % + nombre de tâches restantes).
-// Tient sur ~3 lignes, pour qu'on puisse en aligner 3 dans la carte.
-function CompactProjectRow({ project, workspace }: { project: Project; workspace: string }) {
-  const display = resolveProjectSubcategoryDisplay(project);
-  const href = `/dashboard/projects/${project.id}?workspace=${workspace}`;
-  const allTasks = flattenProjectTasks(project);
-  const remainingTasks = allTasks.filter((entry) => deriveTaskStatus(entry.task) !== "done").length;
-  const progress = Math.max(0, Math.min(100, Math.round(project.progress ?? 0)));
-  return (
-    <Link
-      href={href}
-      className="flex min-w-0 flex-col gap-2 rounded-xl px-3 py-2.5"
-      style={{
-        background: surface.s2,
-        border: `1px solid ${surface.borderSubtle}`,
-      }}
-    >
-      <div className="flex min-w-0 items-center gap-2">
-        <span
-          aria-hidden
-          className="inline-block h-2 w-2 shrink-0 rounded-full"
-          style={{ background: display.color }}
-        />
-        <p
-          className="min-w-0 flex-1 truncate text-[12.5px] font-semibold"
-          style={{ color: text.primary }}
-        >
-          {project.name}
-        </p>
-        <span
-          className="shrink-0 text-[10.5px] font-bold tabular-nums"
-          style={{ color: text.muted }}
-        >
-          {progress}%
-        </span>
-      </div>
-      <div
-        className="relative h-1 w-full overflow-hidden rounded-full"
-        style={{ background: surface.s3 }}
-      >
-        <span
-          aria-hidden
-          className="absolute inset-y-0 left-0 rounded-full"
-          style={{ width: `${progress}%`, background: display.color }}
-        />
-      </div>
-      <p className="text-[10.5px]" style={{ color: text.muted }}>
-        {remainingTasks} tâche{remainingTasks > 1 ? "s" : ""} restante{remainingTasks > 1 ? "s" : ""}
-      </p>
-    </Link>
   );
 }
 
