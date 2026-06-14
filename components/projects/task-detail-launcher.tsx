@@ -293,8 +293,16 @@ function TaskDetailModal({
               Tâche · {stepTitle}
             </p>
             <h2
-              className="mb-task-title mt-1 truncate text-base font-bold"
-              style={{ color: text.primary, letterSpacing: "-0.005em" }}
+              className="mt-1 text-base font-bold"
+              style={{
+                color: text.primary,
+                letterSpacing: "-0.005em",
+                // Titre de la tâche OUVERTE : affiché EN ENTIER (s'enroule sur
+                // plusieurs lignes), jamais tronqué. On gère les mots très longs.
+                lineHeight: 1.3,
+                overflowWrap: "anywhere",
+                wordBreak: "break-word",
+              }}
             >
               {task.title}
             </h2>
