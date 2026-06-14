@@ -35,7 +35,10 @@ export function FocusPanel({ focus, dateLabel, accent, workspaceLabel, createHre
           <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: accent }}>
             Focus · {workspaceLabel} · {dateLabel}
           </p>
-          <h1 className="mt-1.5 text-[1.15rem] font-bold leading-snug sm:text-[1.3rem]" style={{ color: text.primary }}>
+          <h1
+            className="mt-1.5 text-[1.5rem] font-bold leading-tight sm:text-[1.95rem]"
+            style={{ color: text.primary, letterSpacing: "-0.02em" }}
+          >
             {focus.brief}
           </h1>
         </div>
