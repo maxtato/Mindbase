@@ -22,8 +22,9 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
       className="mb-topbar flex items-center justify-between gap-4 shrink-0"
       style={{
         position: "relative",
-        minHeight: "clamp(64px, 7vw, 70px)",
-        padding: "12px clamp(12px, 3vw, 24px)",
+        // Barre plus épaisse (présence + premium).
+        minHeight: "clamp(74px, 9vw, 86px)",
+        padding: "15px clamp(12px, 3vw, 24px)",
         // Voile d'accent très léger en haut → on « sent » l'environnement
         // (Perso violet / Pro bleu) sans bandeau coloré. Re-rendu par page.
         background: `linear-gradient(180deg, color-mix(in srgb, ${theme.accent} 7%, ${surface.s1}) 0%, ${surface.s1} 72%)`,
@@ -48,26 +49,25 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
         <Image
           src="/mindbase-iphone.png"
           alt="Mindbase"
-          // Intrinsèque 3× la taille d'affichage (32px) → net sur les écrans
-          // retina iPhone (next/image servait ~64px pour un slot de 96px @3×).
-          width={96}
-          height={96}
+          // Logo agrandi + intrinsèque 3× (net sur retina iPhone).
+          width={120}
+          height={120}
           quality={95}
           priority
           className="shrink-0 sm:hidden"
-          style={{ display: "block", width: 32, height: 32, objectFit: "contain", borderRadius: 8 }}
+          style={{ display: "block", width: 40, height: 40, objectFit: "contain", borderRadius: 9 }}
         />
         {breadcrumb ?? (
           <div className="min-w-0">
             <h1
               className="truncate"
               style={{
-                fontSize: "clamp(16px, 4vw, 22px)",
+                fontSize: "clamp(20px, 5vw, 26px)",
                 fontWeight: 700,
                 color: text.primary,
                 margin: 0,
                 letterSpacing: "-0.02em",
-                lineHeight: 1.2,
+                lineHeight: 1.15,
               }}
             >
               {title}
