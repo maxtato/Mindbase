@@ -312,6 +312,23 @@ select:focus-visible,
   outline-offset: 2px;
 }
 
+/* Au TAP (souris/doigt), on ne montre AUCUN contour : l'ancien contour foncé
+   autour d'une étape/tâche au toucher venait du focus natif. On ne garde le
+   liseré d'accent que pour la navigation clavier (:focus-visible ci-dessus). */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Étape : retour « tu touches ça » discret et premium — la bande d'en-tête se
+   fonce légèrement à la pression (dans l'esprit du gris des tâches), au lieu
+   d'un contour noir. */
+.mb-step-header {
+  transition: filter var(--mb-duration-fast) var(--mb-ease);
+}
+.mb-step-header:active {
+  filter: brightness(0.94);
+}
+
 /* Respecte la préférence système « réduire les animations » : on neutralise
    transitions et animations (accessibilité — mal des transports, sensibilité). */
 @media (prefers-reduced-motion: reduce) {
@@ -322,6 +339,31 @@ select:focus-visible,
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Scrollbars fines et discrètes — uniquement sur pointeur fin (desktop) ; iOS
+   masque déjà ses scrollbars. Détail premium, sans gêner le tactile. */
+@media (pointer: fine) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--mb-border-hover) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: var(--mb-border-hover);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--mb-text-dim);
   }
 }
 

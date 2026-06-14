@@ -202,11 +202,13 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
           <Image
             src="/mindbase-iphone.png"
             alt="Mindbase"
-            width={brandLogoSize}
-            height={brandLogoSize}
+            // Intrinsèque 3× la taille d'affichage → net sur écrans retina.
+            width={brandLogoSize * 3}
+            height={brandLogoSize * 3}
+            quality={95}
             priority
             className="shrink-0"
-            style={{ display: "block", objectFit: "contain", borderRadius: 10 }}
+            style={{ display: "block", width: brandLogoSize, height: brandLogoSize, objectFit: "contain", borderRadius: 10 }}
           />
           {!collapsed && (
             <span
