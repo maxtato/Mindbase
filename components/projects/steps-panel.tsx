@@ -980,10 +980,6 @@ function StepCard({
         className="mb-step-header w-full flex items-center justify-between gap-3"
         style={{
           padding: "11px 16px 10px",
-          // Bandeau d'en-tête = très léger voile de la couleur du projet :
-          // distinct de la liste de tâches (blanche) ET du fond gris de la page,
-          // cohérent avec l'identité projet, sans être criard.
-          background: `color-mix(in srgb, ${accentColor} 9%, var(--mb-s1))`,
         }}
       >
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
