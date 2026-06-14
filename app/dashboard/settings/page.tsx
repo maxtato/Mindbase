@@ -61,8 +61,9 @@ export default async function SettingsPage({
           <article
             className="rounded-[22px] p-5"
             style={{
-              background: surface.s2,
+              background: surface.s1,
               border: `1px solid ${surface.borderSubtle}`,
+              boxShadow: "var(--mb-shadow-card)",
             }}
           >
             <h2 className="text-sm font-semibold" style={{ color: text.primary }}>
