@@ -633,19 +633,11 @@ summary {
   touch-action: manipulation;
 }
 
-/* Empêche les hover sticky sur mobile : on n'applique les transitions hover
-   que sur les pointeurs qui peuvent réellement survoler (souris, trackpad).
-   Sur tactile, le simple tap n'active plus l'effet hover résiduel. */
-@media (hover: none) {
-  .mb-card-interactive:hover,
-  .mb-task-card:hover,
-  .mb-step-card:hover {
-    background: inherit;
-    border-color: inherit;
-    box-shadow: inherit;
-    transform: none;
-  }
-}
+/* (Anciennement : un « reset » du hover sur mobile qui utilisait
+   `border-color: inherit` — lequel résolvait vers la couleur de texte FONCÉE
+   du parent et dessinait un contour noir sur la dernière carte touchée.
+   Supprimé : tous les effets de survol sont désormais limités à
+   `@media (hover: hover)`, donc rien ne « colle » au toucher.) */
 
 @media (hover: none), (pointer: coarse) {
   [draggable="true"],
@@ -1080,14 +1072,17 @@ summary {
               transform var(--mb-duration-fast) var(--mb-ease);
 }
 
-.mb-card-interactive:hover {
-  border-color: var(--mb-border-hover) !important;
-  box-shadow: var(--mb-shadow-md) !important;
-  transform: translateY(-1px);
+/* Survol UNIQUEMENT sur appareils à vrai survol (souris) → rien ne « colle »
+   au toucher sur iPhone. */
+@media (hover: hover) {
+  .mb-card-interactive:hover {
+    border-color: var(--mb-border-hover) !important;
+    box-shadow: var(--mb-shadow-md) !important;
+    transform: translateY(-1px);
+  }
 }
 
-/* Retour de pression tactile : léger enfoncement (scale) — « senti » sur iPhone.
-   Le lift au survol est neutralisé sur tactile par le bloc @media (hover:none). */
+/* Retour de pression tactile : léger enfoncement (scale) — « senti » sur iPhone. */
 .mb-card-interactive:active {
   transform: scale(0.988);
 }
