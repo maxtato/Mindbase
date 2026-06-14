@@ -46,11 +46,14 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
         <Image
           src="/mindbase-iphone.png"
           alt="Mindbase"
-          width={32}
-          height={32}
+          // Intrinsèque 3× la taille d'affichage (32px) → net sur les écrans
+          // retina iPhone (next/image servait ~64px pour un slot de 96px @3×).
+          width={96}
+          height={96}
+          quality={95}
           priority
           className="shrink-0 sm:hidden"
-          style={{ display: "block", objectFit: "contain", borderRadius: 8 }}
+          style={{ display: "block", width: 32, height: 32, objectFit: "contain", borderRadius: 8 }}
         />
         {breadcrumb ?? (
           <div className="min-w-0">
