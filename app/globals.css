@@ -328,6 +328,20 @@ body {
   animation: mb-rise 360ms var(--mb-ease) both;
 }
 
+/* Apparition échelonnée des enfants directs (listes/grilles) — effet « cascade »
+   léger. Au-delà de 8, les éléments apparaissent sans délai (perf + sobriété). */
+.mb-stagger > * {
+  animation: mb-rise 360ms var(--mb-ease) both;
+}
+.mb-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.mb-stagger > *:nth-child(2) { animation-delay: 45ms; }
+.mb-stagger > *:nth-child(3) { animation-delay: 90ms; }
+.mb-stagger > *:nth-child(4) { animation-delay: 135ms; }
+.mb-stagger > *:nth-child(5) { animation-delay: 180ms; }
+.mb-stagger > *:nth-child(6) { animation-delay: 225ms; }
+.mb-stagger > *:nth-child(7) { animation-delay: 270ms; }
+.mb-stagger > *:nth-child(8) { animation-delay: 315ms; }
+
 /* Respecte la préférence système « réduire les animations » : on neutralise
    transitions et animations (accessibilité — mal des transports, sensibilité). */
 @media (prefers-reduced-motion: reduce) {

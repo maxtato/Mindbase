@@ -24,7 +24,9 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
         position: "relative",
         minHeight: "clamp(64px, 7vw, 70px)",
         padding: "12px clamp(12px, 3vw, 24px)",
-        background: surface.s1,
+        // Voile d'accent très léger en haut → on « sent » l'environnement
+        // (Perso violet / Pro bleu) sans bandeau coloré. Re-rendu par page.
+        background: `linear-gradient(180deg, color-mix(in srgb, ${theme.accent} 7%, ${surface.s1}) 0%, ${surface.s1} 72%)`,
         borderBottom: `1px solid ${surface.borderSubtle}`,
       }}
     >
