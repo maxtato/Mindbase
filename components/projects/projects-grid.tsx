@@ -165,13 +165,12 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
                     border: `1px solid ${surface.border}`,
                   }}
                 >
-                  {/* Solid colored header band — paddings réduits en mobile
-                      pour laisser plus de place au contenu et que les cartes
-                      tiennent confortablement dans l'écran iPhone. */}
+                  {/* En-tête GRIS discret (comme l'en-tête d'étape) : la couleur
+                      du projet ne sert plus de bandeau plein, juste au
+                      pictogramme. Titre en texte sombre lisible. */}
                   <div
-                    className="p-3.5 sm:p-5"
+                    className="mb-project-card-header p-3.5 sm:p-5"
                     style={{
-                      background: subcategoryDisplay.color,
                       borderBottom: `1px solid ${surface.borderSubtle}`,
                     }}
                   >
@@ -187,12 +186,11 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
                           customSubcategoryLabel={project.customSubcategoryLabel}
                           customSubcategoryColor={project.customSubcategoryColor}
                           size="md"
-                          onColor
                         />
                         <div className="min-w-0">
                           <p
                             className="text-[16px] sm:text-[19px] font-bold leading-tight line-clamp-2"
-                            style={{ color: surface.onColor, overflowWrap: "anywhere" }}
+                            style={{ color: text.primary, overflowWrap: "anywhere" }}
                           >
                             {project.name}
                           </p>
@@ -200,7 +198,7 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
                       </div>
 
                       <span className="shrink-0">
-                        <Badge variant="onColor" statusKey={project.status}>
+                        <Badge variant="status" statusKey={project.status}>
                           {statusLabels[project.status]}
                         </Badge>
                       </span>

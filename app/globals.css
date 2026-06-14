@@ -1762,6 +1762,15 @@ summary {
   background: var(--mb-s3);
 }
 
+/* En-tête des cartes projet (menu Projets) : même gris discret que l'en-tête
+   d'étape — plus de bandeau coloré plein, la couleur va au pictogramme. */
+.mb-project-card-header {
+  background: #eef0f3;
+}
+[data-theme="dark"] .mb-project-card-header {
+  background: var(--mb-s3);
+}
+
 /* En-tête d'étape désormais NEUTRE (plus de bandeau coloré) → les pills meta
    (statut, compteur, %) et le bouton d'actions gardent leurs couleurs
    naturelles, lisibles sur fond clair. (Anciennes surcharges « blanc sur
@@ -1770,34 +1779,40 @@ summary {
 /* Bandeau légende au-dessus des tâches (Tâche · Statut · Échéance ·
    Assigné). Subtle bg + text un peu plus appuyé pour le démarquer comme
    header de tableau. */
+/* Légende de tableau retirée : les tâches sont désormais des cartes
+   superposées (façon kanban/calendrier), pas des lignes de tableau. */
 .mb-task-table-header {
-  background: var(--mb-s2);
-  border-bottom: 1px solid var(--mb-border-subtle);
-  color: var(--mb-text-secondary) !important;
+  display: none !important;
 }
 
+/* Zone des tâches = surface GRISE (niveau intermédiaire) sur laquelle les
+   cartes-tâches BLANCHES « flottent » avec une ombre — exactement comme les
+   cartes du kanban/calendrier sur leur conteneur. */
 .mb-step-task-list {
-  background: var(--mb-s1);
+  background: var(--mb-s2);
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  overflow: hidden;
+  padding: 8px;
 }
 
 .mb-step-task-list > button {
-  margin: 10px 12px 12px;
+  margin: 2px 0 0;
 }
 
+/* Carte-tâche dans une étape = carte blanche surélevée (ombre + arrondi +
+   bordure fine), séparée des autres par le gap de la liste. */
 .mb-step-card .mb-task-card {
-  background: transparent !important;
-  border: 0 !important;
-  border-radius: 0 !important;
+  background: var(--mb-s1) !important;
+  border: 1px solid var(--mb-border-subtle) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--mb-shadow-card);
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  padding: 10px 12px 10px 16px !important;
+  padding: 10px 12px 10px 14px !important;
 }
 
 /* Survol = griser légèrement, UNIQUEMENT sur appareils avec vrai survol
@@ -1827,16 +1842,7 @@ summary {
   }
 }
 
-.mb-step-card .mb-task-card::after {
-  content: "";
-  position: absolute;
-  right: 12px;
-  bottom: 0;
-  left: 12px;
-  height: 1px;
-  background: var(--mb-border-subtle);
-  pointer-events: none;
-}
+/* (Plus de séparateur entre tâches : les cartes sont espacées par le gap.) */
 
 .mb-step-card .mb-task-card:last-child::after {
   display: none;
