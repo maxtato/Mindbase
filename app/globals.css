@@ -109,7 +109,9 @@
 
   --mb-text-primary: #16191f;
   --mb-text-secondary: #3a414d;
-  --mb-text-muted: #6a717c;
+  /* Assombri (#6a717c → #5a6370) pour passer le contraste WCAG AA (4.5:1) sur
+     les fonds clairs, pour le petit texte (labels, métadonnées, indices). */
+  --mb-text-muted: #5a6370;
   --mb-text-dim: #9aa0ab;
   --mb-text-ghost: #c2c7cf;
 
@@ -211,7 +213,8 @@
 
   --mb-text-primary: #f4f5f7;
   --mb-text-secondary: #d4d7dd;
-  --mb-text-muted: #aab0ba;
+  /* Légèrement éclairci (#aab0ba → #b4bac3) pour le contraste AA en sombre. */
+  --mb-text-muted: #b4bac3;
   --mb-text-dim: #848a94;
   --mb-text-ghost: #6b7280;
 
@@ -307,6 +310,19 @@ select:focus-visible,
 [tabindex]:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--mb-accent-soft) 52%, transparent);
   outline-offset: 2px;
+}
+
+/* Respecte la préférence système « réduire les animations » : on neutralise
+   transitions et animations (accessibilité — mal des transports, sensibilité). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 html[data-mindbase-tap-debug="1"]::before {
@@ -1053,7 +1069,7 @@ summary {
 }
 
 .mb-card-hover {
-  transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+  transition: background-color var(--mb-duration-base) var(--mb-ease), color var(--mb-duration-base) var(--mb-ease), border-color var(--mb-duration-base) var(--mb-ease);
 }
 
 .mb-card-hover:hover {
@@ -1496,7 +1512,7 @@ summary {
   border: 1px solid var(--mb-border-subtle);
   color: var(--mb-text-secondary);
   box-shadow: var(--mb-shadow-soft);
-  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
+  transition: background-color var(--mb-duration-base) var(--mb-ease), border-color var(--mb-duration-base) var(--mb-ease), color var(--mb-duration-base) var(--mb-ease), transform var(--mb-duration-base) var(--mb-ease);
 }
 
 .mb-project-rail-toggle:hover {
@@ -1568,7 +1584,7 @@ summary {
   color: var(--mb-sidebar-text-dim);
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
   cursor: pointer;
-  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
+  transition: background-color var(--mb-duration-base) var(--mb-ease), border-color var(--mb-duration-base) var(--mb-ease), color var(--mb-duration-base) var(--mb-ease), transform var(--mb-duration-base) var(--mb-ease);
 }
 
 .mb-sidebar-collapse-toggle:hover {
@@ -1665,7 +1681,7 @@ summary {
 
 .mb-project-brief-card {
   background: var(--mb-s2);
-  transition: border-color 0.16s ease, background-color 0.16s ease;
+  transition: border-color var(--mb-duration-base) var(--mb-ease), background-color var(--mb-duration-base) var(--mb-ease);
 }
 
 .mb-project-brief-card:hover {
@@ -1839,7 +1855,7 @@ summary {
 }
 
 :where(button, [role="button"]) {
-  transition: background-color 0.16s ease, color 0.16s ease;
+  transition: background-color var(--mb-duration-base) var(--mb-ease), color var(--mb-duration-base) var(--mb-ease);
 }
 
 :where(button, [role="button"]):not(:disabled):hover {

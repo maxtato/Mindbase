@@ -7,7 +7,8 @@ import { getProjectsForWorkspace } from "@/lib/project-store";
 import { getDisplayStepTitle } from "@/lib/project-display";
 import { deriveTaskDisplayPriority, deriveTaskStatus } from "@/lib/project-plan";
 import type { ProjectPriority } from "@/lib/project-taxonomy";
-import type { Task, TaskStatus } from "@/lib/mock-data";
+import type { TaskStatus } from "@/lib/mock-data";
+import { taskBelongsToUser } from "@/lib/task-filters";
 import { getWorkspace } from "@/lib/workspace";
 import { getProfile } from "@/lib/account-store";
 
@@ -149,17 +150,4 @@ function matchStatusFilter(status: TaskStatus, filter: StatusFilter) {
   if (filter === "all") return true;
   if (filter === "open") return status !== "done";
   return status === filter;
-}
-
-// Match "mes tâches" : owner direct ou présent dans assignees (prénom-base).
-function taskBelongsToUser(task: Task, me: string) {
-  const meKey = me.trim().toLowerCase().split(" ")[0];
-  if (!meKey) return false;
-  const matches = (name: string | undefined) => {
-    if (!name) return false;
-    const key = name.trim().toLowerCase();
-    return key === me.toLowerCase() || key.split(" ")[0] === meKey;
-  };
-  if (matches(task.owner)) return true;
-  return (task.assignees ?? []).some((name) => matches(name));
 }

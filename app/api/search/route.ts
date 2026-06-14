@@ -51,6 +51,16 @@ export async function GET(request: Request) {
   const q = normalize(rawQuery);
   if (q.length < 2) return NextResponse.json({ results: [] });
 
+  try {
+    return await runSearch(q);
+  } catch (error) {
+    // Une panne du store ne doit pas renvoyer un 500 à la palette → liste vide.
+    console.error("[search] failed:", error);
+    return NextResponse.json({ results: [] });
+  }
+}
+
+async function runSearch(q: string) {
   const results: SearchResult[] = [];
 
   for (const workspace of WORKSPACES) {

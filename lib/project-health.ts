@@ -7,6 +7,7 @@ import type { Project, Task, Step } from "@/lib/mock-data";
 import { formatShortDate } from "@/lib/date-format";
 import { calculateProjectIndicators, deriveTaskDisplayPriority, deriveTaskStatus } from "@/lib/project-plan";
 import { flattenProjectTasks, isTaskOverdue, type FlattenedProjectTask } from "@/lib/project-insights";
+import { daysFromToday } from "@/lib/timezone";
 
 export type HealthLevel = "healthy" | "watch" | "risk" | "critical";
 
@@ -85,27 +86,26 @@ function isHighPriorityTask(task: Task) {
   return deriveTaskDisplayPriority(task) === "high";
 }
 
-/** Trouve la prochaine échéance ouverte (la plus proche dans le futur ou aujourd'hui). */
-function findSoonestDue(tasks: FlattenedProjectTask[], now: Date): { date: Date; entry: FlattenedProjectTask } | null {
-  let best: { date: Date; entry: FlattenedProjectTask } | null = null;
+/** Trouve la prochaine échéance ouverte (la plus proche dans le futur ou
+ *  aujourd'hui). Ancré sur Europe/Paris via `daysFromToday`. */
+function findSoonestDue(tasks: FlattenedProjectTask[], now: Date): { daysUntil: number; entry: FlattenedProjectTask } | null {
+  let best: { daysUntil: number; entry: FlattenedProjectTask } | null = null;
   for (const entry of tasks) {
     const status = deriveTaskStatus(entry.task);
     if (status === "done") continue;
     if (!entry.task.dueDate) continue;
-    const date = new Date(`${entry.task.dueDate}T12:00:00`);
-    if (Number.isNaN(date.getTime())) continue;
-    if (date < now && status !== "blocked") continue; // les retards sont déjà gérés ailleurs
-    if (!best || date < best.date) best = { date, entry };
+    const daysUntil = daysFromToday(entry.task.dueDate, now);
+    if (daysUntil < 0 && status !== "blocked") continue; // les retards sont déjà gérés ailleurs
+    if (!best || daysUntil < best.daysUntil) best = { daysUntil, entry };
   }
   return best;
 }
 
-function formatDueLabel(date: Date, now: Date): string {
-  const days = daysBetween(now, date);
-  if (days <= 0) return "aujourd'hui";
-  if (days === 1) return "demain";
-  if (days < 7) return `dans ${days} j`;
-  return formatShortDate(date);
+function formatDueLabel(daysUntil: number, dueKey: string): string {
+  if (daysUntil <= 0) return "aujourd'hui";
+  if (daysUntil === 1) return "demain";
+  if (daysUntil < 7) return `dans ${daysUntil} j`;
+  return formatShortDate(new Date(`${dueKey}T12:00:00`));
 }
 
 export function computeProjectHealth(project: Project, now = new Date()): ProjectHealth {
@@ -128,7 +128,7 @@ export function computeProjectHealth(project: Project, now = new Date()): Projec
   const mediumManualRisks = openManualRisks.filter((risk) => risk.severity === "medium").length;
 
   const soonest = findSoonestDue(openEntries, now);
-  const soonestIsClose = soonest ? daysBetween(now, soonest.date) <= 7 : false;
+  const soonestIsClose = soonest ? soonest.daysUntil <= 7 : false;
   const lowProgress = project.progress < 70;
 
   const blockedSteps = (project.steps ?? []).filter((step: Step) => {
@@ -245,7 +245,7 @@ export function computeProjectHealth(project: Project, now = new Date()): Projec
       blockedCount: blockedEntries.length,
       overdueCount: overdueEntries.length,
       progress: project.progress,
-      dueLabel: soonest ? formatDueLabel(soonest.date, now) : undefined,
+      dueLabel: soonest && soonest.entry.task.dueDate ? formatDueLabel(soonest.daysUntil, soonest.entry.task.dueDate) : undefined,
       inactivityDays: inactivityDays >= 14 ? inactivityDays : undefined,
     },
     nextAction,
