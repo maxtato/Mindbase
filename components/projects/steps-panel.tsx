@@ -974,13 +974,16 @@ function StepCard({
         transition: "box-shadow 180ms var(--mb-ease), opacity 120ms var(--mb-ease)",
       }}
     >
+      {/* Fine arête colorée à gauche = identité projet DISCRÈTE (au lieu d'un
+          bandeau plein, qui faisait « criard »). */}
+      <span
+        aria-hidden
+        style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: accentColor, pointerEvents: "none" }}
+      />
       <div
         className="mb-step-header w-full flex items-center justify-between gap-3"
         style={{
           padding: "11px 16px 10px",
-          // Bande haute = couleur projet pleine. Texte/pills passent en
-          // variantes claires pour rester lisibles (cf. inline styles).
-          background: accentColor,
         }}
       >
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -988,19 +991,19 @@ function StepCard({
             aria-hidden
             className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
             style={{
-              background: "rgba(255,255,255,0.2)",
+              background: accentColor,
               color: "#FFFFFF",
-              border: "1.5px solid rgba(255,255,255,0.55)",
+              border: "none",
             }}
           >
             {step.order}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold truncate" style={{ color: "#FFFFFF" }}>
+            <p className="text-sm font-semibold truncate" style={{ color: text.primary }}>
               {displayTitle}
             </p>
             {step.description && (
-              <p className="text-[11px] mt-0.5 truncate" style={{ color: "rgba(255,255,255,0.78)" }}>
+              <p className="text-[11px] mt-0.5 truncate" style={{ color: text.muted }}>
                 {step.description}
               </p>
             )}
