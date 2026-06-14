@@ -73,10 +73,10 @@
   /* ─── Thème CLAIR par défaut : gris & blanc neutre ──────────────────────
      Fond gris clair, cartes blanches qui « pop », champs légèrement
      recessés. Hiérarchie : bg(gris) > s4(creux) … s1(blanc pur). */
-  --bg: #f3f4f6;
+  --bg: #eaecf1;
   --fg: #14171d;
 
-  --mb-bg: #f3f4f6;
+  --mb-bg: #eaecf1;
   --mb-s1: #ffffff;
   --mb-s2: #f6f7f9;
   --mb-s3: #fbfcfd;
@@ -1741,7 +1741,9 @@ summary {
    détache nettement du fond gris de la page (ombre marquée + arrondi). */
 .mb-step-card {
   position: relative;
-  background: var(--mb-s1);
+  /* Conteneur d'étape UNIFORME en gris (comme une colonne kanban) → le titre
+     repose sur ce gris, les cartes-tâches blanches flottent dessus. */
+  background: var(--mb-s2);
   border: 1px solid var(--mb-border-subtle);
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 10px 26px -6px rgba(16, 24, 40, 0.12);
   border-radius: 18px;
@@ -1751,24 +1753,18 @@ summary {
   box-shadow: var(--mb-shadow-md);
 }
 
-/* En-tête d'étape : fond gris TRÈS clair (un cran sous le blanc des tâches).
-   La carte reste blanche + ombre → elle se détache du fond de la page. */
+/* En-tête d'étape : PAS de bande distincte — le titre se pose directement sur
+   le fond gris du conteneur d'étape (même gris que la zone des tâches), comme
+   une colonne kanban. Les tâches blanches flottent par-dessus. */
 .mb-step-header {
-  background: #eef0f3;
-  border-bottom: 1px solid var(--mb-border);
+  background: transparent;
   border-radius: 0;
 }
-[data-theme="dark"] .mb-step-header {
-  background: var(--mb-s3);
-}
 
-/* En-tête des cartes projet (menu Projets) : même gris discret que l'en-tête
-   d'étape — plus de bandeau coloré plein, la couleur va au pictogramme. */
+/* En-tête des cartes projet (menu Projets) : MÊME gris que le conteneur des
+   cartes d'étape (s2) — la couleur du projet va au pictogramme, pas en bandeau. */
 .mb-project-card-header {
-  background: #eef0f3;
-}
-[data-theme="dark"] .mb-project-card-header {
-  background: var(--mb-s3);
+  background: var(--mb-s2);
 }
 
 /* En-tête d'étape désormais NEUTRE (plus de bandeau coloré) → les pills meta
