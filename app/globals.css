@@ -302,15 +302,8 @@ body {
   outline: none;
 }
 
-/* Étape : retour « tu touches ça » discret et premium — la bande d'en-tête se
-   fonce légèrement à la pression (dans l'esprit du gris des tâches), au lieu
-   d'un contour noir. */
-.mb-step-header {
-  transition: filter var(--mb-duration-fast) var(--mb-ease);
-}
-.mb-step-header:active {
-  filter: brightness(0.94);
-}
+/* (Aucun retour de pression sur l'en-tête d'étape : l'utilisateur ne veut PAS
+   que le titre se grise au toucher.) */
 
 /* Apparition douce (fade + légère montée) pour les blocs clés — vivant mais
    discret. Neutralisé par prefers-reduced-motion (cf. plus bas). */
@@ -1814,13 +1807,22 @@ summary {
   }
 }
 
-/* Pas de contour/anneau au toucher autour d'une étape ou d'une tâche. */
+/* Pas de contour/anneau au toucher autour d'une étape ou d'une tâche. Sur
+   appareil TACTILE, on neutralise TOUT anneau de focus (outline + box-shadow)
+   sur la carte étape ET tous ses descendants — c'est ce qui dessinait le
+   « contour noir » au toucher. Le focus clavier (desktop) reste intact. */
 .mb-step-card:focus,
 .mb-step-card:focus-visible,
-.mb-step-card:focus-within,
-.mb-step-card .mb-task-card:focus,
-.mb-step-card .mb-task-card:focus-visible {
+.mb-step-card:focus-within {
   outline: none !important;
+}
+@media (hover: none), (pointer: coarse) {
+  .mb-step-card,
+  .mb-step-card *:focus,
+  .mb-step-card *:focus-visible,
+  .mb-step-card *:focus-within {
+    outline: none !important;
+  }
 }
 
 .mb-step-card .mb-task-card::after {
@@ -1848,10 +1850,6 @@ summary {
     background: var(--mb-s2);
     border-color: var(--mb-border);
   }
-}
-
-.mb-task-card:active {
-  transform: translateY(0.5px);
 }
 
 .mb-task-card:has(.mb-task-expanded) {
