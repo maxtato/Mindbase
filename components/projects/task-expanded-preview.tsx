@@ -144,7 +144,20 @@ interface FieldShellProps {
 
 function FieldShell({ title, icon, iconColor, rightLabel, rightSlot, children }: FieldShellProps) {
   return (
-    <section style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+    <section
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+        // Même langage que les cartes-tâches du projet : carte blanche
+        // surélevée (ombre + bordure fine + arrondi) sur le conteneur gris.
+        background: surface.s1,
+        border: `1px solid ${surface.borderSubtle}`,
+        borderRadius: 14,
+        boxShadow: "var(--mb-shadow-card)",
+        padding: 12,
+      }}
+    >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <TaskPreviewIcon icon={icon} color={iconColor} />
@@ -218,7 +231,7 @@ function AIChip({
 function fieldInputStyle() {
   return {
     width: "100%",
-    background: surface.s3,
+    background: surface.s2,
     border: `1px solid ${surface.borderSubtle}`,
     borderRadius: 8,
     padding: "10px 12px",
