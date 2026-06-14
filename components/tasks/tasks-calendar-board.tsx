@@ -335,6 +335,8 @@ export function TasksCalendarBoard({
                                       background: "rgba(0,0,0,0.42)",
                                       border: "none",
                                       cursor: "default",
+                                      // Empêche le swipe sur le fond de scroller la page derrière.
+                                      touchAction: "none",
                                     }}
                                   />
                                   <div
@@ -389,13 +391,14 @@ export function TasksCalendarBoard({
                                         </svg>
                                       </button>
                                     </div>
-                                    <div style={{ display: "grid", gap: 6, padding: 6, overflowY: "auto" }}>
+                                    <div style={{ display: "grid", gap: 6, padding: 6, overflowY: "auto", overscrollBehavior: "contain" }}>
                                       {dayTasks.map((item) => (
                                         <CalendarTaskCard
                                           key={`${item.project.id}-${item.entry.id}`}
                                           item={item}
                                           workspace={workspace}
                                           isDragging={draggingKey === getTaskKey(item) || touchDraggingKey === getTaskKey(item)}
+                                          lockTouchScroll
                                           // On décolle la carte ET on ferme la modal « liste du
                                           // jour » : sinon l'overlay reste au-dessus du calendrier
                                           // et bloque le drop (elementFromPoint tombe sur la modal,
@@ -522,6 +525,7 @@ function CalendarTaskCard({
   onDragEnd,
   onClickOverride,
   onLongPressEngage,
+  lockTouchScroll = false,
 }: {
   item: TaskItem;
   workspace: Workspace;
@@ -537,6 +541,10 @@ function CalendarTaskCard({
    *  plutôt que d'ouvrir un drawer en place — la fermeture de la liste
    *  démonterait sinon le portal du drawer. */
   onClickOverride?: () => void;
+  /** Bloque le scroll natif sur la carte (touch-action:none). Utilisé dans la
+   *  modal multi-tâches : il n'y a rien à scroller dedans, et sans ça un drag
+   *  faisait défiler la page d'arrière-plan au lieu de déplacer la tâche. */
+  lockTouchScroll?: boolean;
 }) {
   const { project, entry } = item;
   const status = deriveTaskStatus(entry.task);
@@ -646,6 +654,7 @@ function CalendarTaskCard({
             userSelect: "none",
             WebkitUserSelect: "none",
             WebkitTouchCallout: "none",
+            touchAction: lockTouchScroll ? "none" : undefined,
             padding: "0.65rem 0.7rem 0.6rem 0.65rem",
             overflow: "hidden",
             width: "100%",
