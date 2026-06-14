@@ -1010,7 +1010,10 @@ function StepCard({
             {step.order}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold truncate" style={{ color: text.primary }}>
+            <p
+              className="truncate"
+              style={{ color: text.primary, fontSize: 15.5, fontWeight: 700, letterSpacing: "-0.01em", lineHeight: 1.2 }}
+            >
               {displayTitle}
             </p>
             {step.description && (

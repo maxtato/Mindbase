@@ -1758,10 +1758,18 @@ summary {
   overflow: hidden;
 }
 
+/* En-tête d'étape = un VRAI titre de section : fond gris légèrement creusé +
+   séparateur NET avec la liste des tâches (blanche). Le titre est plus gros et
+   plus gras côté composant → hiérarchie claire et pro, sans couleur. */
 .mb-step-header {
-  background: var(--mb-s2);
-  border-bottom: 1px solid var(--mb-border-subtle);
+  background: var(--mb-s4);
+  border-bottom: 1px solid var(--mb-border);
   border-radius: 0;
+}
+/* En sombre, s4 est le ton le plus FONCÉ → on prend s2 (plus clair que la
+   liste) pour que l'en-tête reste « au-dessus » du contenu. */
+[data-theme="dark"] .mb-step-header {
+  background: var(--mb-s2);
 }
 
 /* En-tête d'étape désormais NEUTRE (plus de bandeau coloré) → les pills meta
