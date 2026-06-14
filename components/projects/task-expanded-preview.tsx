@@ -115,17 +115,18 @@ export function TaskExpandedPreview({
 
 // ─── Field wrappers ────────────────────────────────────────────────────────
 
+// Regroupement d'une colonne de champs. Volontairement « nu » (pas de
+// carte) : les cartes blanches sont les FieldShell eux-mêmes, qui
+// flottent directement sur le conteneur gris — comme les cartes-tâches
+// dans une étape de projet. Empiler une carte blanche (pane) autour de
+// cartes blanches (FieldShell) créait une superposition inutile.
 function TaskPreviewPane({ children }: { children: ReactNode }) {
   return (
     <section
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: 14,
-        padding: 14,
-        background: surface.s1,
-        borderRadius: 12,
-        border: `1px solid ${surface.borderSubtle}`,
+        gap: 10,
       }}
     >
       {children}
