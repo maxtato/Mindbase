@@ -97,15 +97,28 @@ export default async function DashboardPage({
 
       <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-4 py-5 lg:px-6">
         <div className="mx-auto flex w-full max-w-[1480px] flex-col gap-4">
+          {/* Bouton « Créer un projet » tout en haut du dashboard. */}
+          <div className="mb-rise flex justify-end">
+            <Link
+              href={`/dashboard/projects/new?${qs}`}
+              className="inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-[13px] font-semibold whitespace-nowrap"
+              style={{ background: theme.accent, color: "#FFFFFF", border: "none", boxShadow: `0 6px 16px -8px ${theme.accent}` }}
+            >
+              <span aria-hidden style={{ fontSize: 15, lineHeight: 1 }}>
+                +
+              </span>
+              Créer un projet
+            </Link>
+          </div>
+
           {/* Focus proactif : la première chose visible — quoi faire maintenant
               et quels projets surveiller (réutilise project-health + insights). */}
-          <div className="mb-rise">
+          <div className="mb-rise" style={{ animationDelay: "60ms" }}>
             <FocusPanel
               focus={focus}
               dateLabel={focusDate}
               accent={theme.accent}
               workspaceLabel={theme.label}
-              createHref={`/dashboard/projects/new?${qs}`}
             />
           </div>
 
