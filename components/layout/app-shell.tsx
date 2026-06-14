@@ -18,9 +18,10 @@ import { getWorkspace } from "@/lib/workspace";
 
 interface AppShellProps {
   children: React.ReactNode;
+  accountName?: string;
 }
 
-export async function AppShell({ children }: AppShellProps) {
+export async function AppShell({ children, accountName }: AppShellProps) {
   const sidebarStats = await getSidebarStatsByWorkspace();
   const cookieStore = await cookies();
   const initialWorkspace = getWorkspace(cookieStore.get("mindbase-workspace")?.value);
@@ -33,7 +34,7 @@ export async function AppShell({ children }: AppShellProps) {
       {/* Sidebar — masquée < sm via Tailwind, plus de Suspense boundary.
           On lui passe initialWorkspace pour que les liens SSR pointent
           déjà vers le bon workspace, sans dépendre de l'hydratation. */}
-      <Sidebar stats={sidebarStats} initialWorkspace={initialWorkspace} />
+      <Sidebar stats={sidebarStats} initialWorkspace={initialWorkspace} accountName={accountName} />
 
       {/* Main area — on réserve la safe-area haute de l'iPhone (horloge /
           batterie / Dynamic Island) UNE seule fois ici, pour toutes les pages

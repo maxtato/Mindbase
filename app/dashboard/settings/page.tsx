@@ -1,6 +1,8 @@
 import { Topbar } from "@/components/layout/topbar";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { PushSettings } from "@/components/notifications/push-settings";
+import { ProfileSettings } from "@/components/account/profile-settings";
+import { getProfile } from "@/lib/account-store";
 import { surface, text } from "@/lib/design-tokens";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
 
@@ -12,6 +14,7 @@ export default async function SettingsPage({
   const sp = await searchParams;
   const workspace = getWorkspace(sp.workspace);
   const theme = workspaceTheme[workspace];
+  const profile = await getProfile();
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -38,6 +41,13 @@ export default async function SettingsPage({
             Cette page reste volontairement légère pour l’instant : elle sert de base aux réglages globaux
             comme le thème, l’agenda et les préférences générales.
           </p>
+        </section>
+
+        <section
+          className="rounded-[22px] p-6"
+          style={{ background: surface.s1, border: `1px solid ${surface.border}` }}
+        >
+          <ProfileSettings workspace={workspace} initialName={profile.name} initialEmail={profile.email} />
         </section>
 
         <section

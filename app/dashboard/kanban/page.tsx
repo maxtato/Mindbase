@@ -8,7 +8,7 @@ import { getProjectsForWorkspace } from "@/lib/project-store";
 import { getDisplayStepTitle } from "@/lib/project-display";
 import { deriveTaskStatus } from "@/lib/project-plan";
 import { getWorkspace } from "@/lib/workspace";
-import { getActiveAccountName } from "@/lib/current-account";
+import { getProfile } from "@/lib/account-store";
 
 type StatusFilter = "open" | "all" | TaskStatus;
 type OwnerFilter = "all" | "mine";
@@ -22,7 +22,7 @@ export default async function KanbanPage({
   const workspace = getWorkspace(sp.workspace);
   const statusFilter = parseStatusFilter(sp.status);
   const ownerFilter: OwnerFilter = sp.owner === "mine" ? "mine" : "all";
-  const me = getActiveAccountName();
+  const me = (await getProfile()).name;
   const projects = (await getProjectsForWorkspace(workspace)).filter(
     (project) => project.status !== "archived" && !project.deleted,
   );

@@ -17,7 +17,8 @@ import { priorityVisuals } from "@/lib/project-taxonomy";
 import { getVisibleTaskOwner } from "@/lib/task-people";
 import { deleteTone, TrashIcon } from "@/components/ui/trash-icon";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
-import { getActiveAccountName, getActiveAccountPersonId } from "@/lib/current-account";
+import { getActiveAccountPersonId } from "@/lib/current-account";
+import { useAccountName } from "@/components/account/account-context";
 
 interface TaskDetailDrawerProps {
   open: boolean;
@@ -84,6 +85,7 @@ function TaskDetailDrawerInner({
   const router = useRouter();
   const theme = workspaceTheme[workspace];
   const uiAccent = theme.accent;
+  const accountName = useAccountName();
   const [title, setTitle] = useState(task.title);
   const [owner, setOwner] = useState(getVisibleTaskOwner(task.owner) ?? "");
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>(task.teamIds ?? []);
@@ -302,8 +304,8 @@ function TaskDetailDrawerInner({
     event.preventDefault();
     const content = discussionText.trim();
     if (!content) return;
-    const authorName = getActiveAccountName();
-    const authorPersonId = getActiveAccountPersonId(projectPeople);
+    const authorName = accountName;
+    const authorPersonId = getActiveAccountPersonId(projectPeople, accountName);
     const optimistic: TaskDiscussionMessage = {
       id: `msg_${Math.random().toString(36).slice(2, 10)}`,
       authorName,
@@ -998,7 +1000,7 @@ function TaskDetailDrawerInner({
                 </div>
                 <form onSubmit={addDiscussionMessage} className="grid gap-2">
                   <div className="rounded-xl px-3 py-2 text-[11px]" style={{ background: surface.s2, color: text.muted }}>
-                    Envoyé comme <strong style={{ color: text.secondary }}>{getActiveAccountName()}</strong>
+                    Envoyé comme <strong style={{ color: text.secondary }}>{accountName}</strong>
                   </div>
                   <textarea
                     value={discussionText}

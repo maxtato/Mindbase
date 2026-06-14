@@ -13,8 +13,8 @@ export function getActiveAccountName() {
   return ACTIVE_ACCOUNT_NAME;
 }
 
-export function getActiveAccountPersonId(people: ProjectPerson[] = []) {
-  const activeName = normalizeName(ACTIVE_ACCOUNT_NAME);
+export function getActiveAccountPersonId(people: ProjectPerson[] = [], accountName: string = ACTIVE_ACCOUNT_NAME) {
+  const activeName = normalizeName(accountName || ACTIVE_ACCOUNT_NAME);
   const activeFirstName = activeName.split(" ")[0];
 
   return people.find((person) => {
