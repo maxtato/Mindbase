@@ -57,11 +57,12 @@
   --mb-font-semibold: 600;
   --mb-font-bold: 700;
 
-  /* Shadow scale — premium : ombres LARGES, basses en opacité et superposées
-     (2 couches) → effet « carte qui flotte » doux et réaliste, pas de halo dur. */
-  --mb-shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
-  --mb-shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.05);
-  --mb-shadow-md: 0 2px 6px rgba(16, 24, 40, 0.05), 0 14px 32px rgba(16, 24, 40, 0.08);
+  /* Shadow scale — premium : ombres LARGES, basses en opacité et superposées,
+     + un fin liseré clair en haut (« éclairé par le dessus », façon iOS/macOS)
+     qui donne de la matière aux cartes blanches. */
+  --mb-shadow-xs: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 2px rgba(16, 24, 40, 0.05);
+  --mb-shadow-sm: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 3px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.05);
+  --mb-shadow-md: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 2px 6px rgba(16, 24, 40, 0.05), 0 14px 32px rgba(16, 24, 40, 0.08);
   --mb-shadow-lg: 0 4px 14px rgba(16, 24, 40, 0.06), 0 30px 64px rgba(16, 24, 40, 0.12);
 
   /* Motion */
@@ -102,7 +103,7 @@
   --mb-card-shadow: rgba(16, 24, 40, 0.08);
   --mb-page-inset: #eaecf0;
   --mb-shadow-soft: 0 2px 24px rgba(16, 24, 40, 0.05);
-  --mb-shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 16px rgba(16, 24, 40, 0.05);
+  --mb-shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 16px rgba(16, 24, 40, 0.05);
   --mb-shadow-menu: 0 16px 40px rgba(16, 24, 40, 0.14);
   --mb-shadow-float: 0 30px 72px rgba(16, 24, 40, 0.18);
   --mb-accent-soft: #6d28d9;
@@ -294,24 +295,6 @@ body {
   font-feature-settings: "tnum", "kern";
 }
 
-/* Sélection de texte aux couleurs de l'accent — détail discret mais premium. */
-::selection {
-  background: color-mix(in srgb, var(--mb-accent-soft) 22%, transparent);
-}
-
-/* Anneau de focus élégant (clavier uniquement, invisible au doigt) — finition
-   premium + accessibilité, sans gêner l'usage tactile sur iPhone. */
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible,
-[role="button"]:focus-visible,
-[tabindex]:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--mb-accent-soft) 52%, transparent);
-  outline-offset: 2px;
-}
-
 /* Au TAP (souris/doigt), on ne montre AUCUN contour : l'ancien contour foncé
    autour d'une étape/tâche au toucher venait du focus natif. On ne garde le
    liseré d'accent que pour la navigation clavier (:focus-visible ci-dessus). */
@@ -339,31 +322,6 @@ select:focus-visible,
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
-  }
-}
-
-/* Scrollbars fines et discrètes — uniquement sur pointeur fin (desktop) ; iOS
-   masque déjà ses scrollbars. Détail premium, sans gêner le tactile. */
-@media (pointer: fine) {
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--mb-border-hover) transparent;
-  }
-  *::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-  *::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  *::-webkit-scrollbar-thumb {
-    background: var(--mb-border-hover);
-    border-radius: 999px;
-    border: 3px solid transparent;
-    background-clip: padding-box;
-  }
-  *::-webkit-scrollbar-thumb:hover {
-    background: var(--mb-text-dim);
   }
 }
 
@@ -746,12 +704,24 @@ summary {
   outline-offset: 2px;
 }
 
+/* Bouton primaire « premium » : léger relief (ombre portée) + gloss clair en
+   haut → aspect bouton physique soigné, quel que soit l'accent. */
+.mb-button-primary {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 1px 2px rgba(16, 24, 40, 0.16),
+    0 4px 12px -2px rgba(16, 24, 40, 0.18);
+  transition: box-shadow var(--mb-duration-base) var(--mb-ease), filter var(--mb-duration-fast) var(--mb-ease),
+    transform var(--mb-duration-fast) var(--mb-ease);
+}
 .mb-button-primary:not(:disabled):hover {
-  filter: brightness(1.08);
+  filter: brightness(1.06);
+  transform: translateY(-0.5px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26), 0 2px 4px rgba(16, 24, 40, 0.18),
+    0 9px 20px -4px rgba(16, 24, 40, 0.24);
 }
 .mb-button-primary:not(:disabled):active {
-  filter: brightness(0.94);
+  filter: brightness(0.95);
   transform: translateY(0.5px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 1px 2px rgba(16, 24, 40, 0.16);
 }
 
 .mb-button-secondary:not(:disabled):hover {
