@@ -2141,9 +2141,7 @@ textarea::placeholder {
 
   .mb-project-rail-toggle {
     position: static;
-    /* Marge haute négative pour coller la flèche de synthèse au bouton
-       « Ajouter une étape » (l'utilisateur trouvait l'espace trop grand). */
-    margin: -6px auto 0.3rem;
+    margin: 0 auto 0.3rem;
     width: 100%;
     max-width: 220px;
     border-radius: 999px;
@@ -2184,7 +2182,7 @@ textarea::placeholder {
   }
 
   .mb-project-detail-shell {
-    height: auto;
+    height: auto !important;
   }
 
   .mb-project-detail-frame {
@@ -2193,17 +2191,21 @@ textarea::placeholder {
     overscroll-behavior: contain;
   }
 
+  /* iPhone : flux naturel — la colonne étapes ne doit PAS remplir toute la
+     hauteur (sinon align-items:stretch + height:100% poussaient la flèche de
+     synthèse tout en bas, gros vide). On force la hauteur au contenu et on
+     empile en partant du haut. */
   .mb-project-detail-shell .mb-project-command-grid {
-    height: auto;
+    height: auto !important;
+    align-items: start;
+    align-content: start;
   }
 
   .mb-project-main-scroll {
-    overflow: visible;
+    overflow: visible !important;
     padding-right: 0;
-    /* Sinon le 100% du desktop étire la colonne et pousse la synthèse loin
-       sous les étapes (gros vide avant la flèche de repli). */
-    height: auto;
-    max-height: none;
+    height: auto !important;
+    max-height: none !important;
   }
 
   .mb-filter-pill-menu {
