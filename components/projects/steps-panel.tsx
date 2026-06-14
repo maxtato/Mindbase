@@ -1097,7 +1097,7 @@ function StepCard({
         </div>
       )}
 
-      <div className="mb-step-task-list" style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      <div className="mb-step-task-list" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {tasks.length === 0 ? (
           <p
             style={{
@@ -1430,7 +1430,7 @@ function TaskCard({
         opacity: isDragging ? 0.65 : 1,
         boxShadow: dropPosition
           ? `inset 0 ${dropPosition === "before" ? "2px" : "-2px"} 0 ${accentColor}`
-          : "none",
+          : "var(--mb-shadow-card)",
         transition: "background-color 120ms var(--mb-ease), border-color 120ms var(--mb-ease), box-shadow 180ms var(--mb-ease), transform 120ms var(--mb-ease)",
       }}
     >
