@@ -73,10 +73,10 @@
   /* ─── Thème CLAIR par défaut : gris & blanc neutre ──────────────────────
      Fond gris clair, cartes blanches qui « pop », champs légèrement
      recessés. Hiérarchie : bg(gris) > s4(creux) … s1(blanc pur). */
-  --bg: #f3f4f6;
+  --bg: #eaecf1;
   --fg: #14171d;
 
-  --mb-bg: #f3f4f6;
+  --mb-bg: #eaecf1;
   --mb-s1: #ffffff;
   --mb-s2: #f6f7f9;
   --mb-s3: #fbfcfd;
