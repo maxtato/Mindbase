@@ -1,5 +1,6 @@
 import { Topbar } from "@/components/layout/topbar";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
+import { PushSettings } from "@/components/notifications/push-settings";
 import { surface, text } from "@/lib/design-tokens";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
 
@@ -37,6 +38,13 @@ export default async function SettingsPage({
             Cette page reste volontairement légère pour l’instant : elle sert de base aux réglages globaux
             comme le thème, l’agenda et les préférences générales.
           </p>
+        </section>
+
+        <section
+          className="rounded-[22px] p-6"
+          style={{ background: surface.s1, border: `1px solid ${surface.border}` }}
+        >
+          <PushSettings workspace={workspace} />
         </section>
 
         <section className="grid gap-4 md:grid-cols-3">
