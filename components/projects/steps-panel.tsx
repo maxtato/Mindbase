@@ -974,23 +974,8 @@ function StepCard({
         transition: "box-shadow 180ms var(--mb-ease), opacity 120ms var(--mb-ease)",
       }}
     >
-      {/* Fine arête colorée à gauche = identité projet DISCRÈTE (au lieu d'un
-          bandeau plein, qui faisait « criard »). Flottante (insérée du haut/bas
-          + coins arrondis) pour ne PAS toucher les coins → l'arrondi de la
-          carte reste parfaitement net. */}
-      <span
-        aria-hidden
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 12,
-          bottom: 12,
-          width: 3,
-          background: accentColor,
-          borderRadius: "0 3px 3px 0",
-          pointerEvents: "none",
-        }}
-      />
+      {/* Identité projet = uniquement le numéro d'étape coloré (plus d'arête
+          latérale, jugée superflue). */}
       <div
         className="mb-step-header w-full flex items-center justify-between gap-3"
         style={{
