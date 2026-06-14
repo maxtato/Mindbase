@@ -9,7 +9,7 @@ import { deriveTaskDisplayPriority, deriveTaskStatus } from "@/lib/project-plan"
 import type { ProjectPriority } from "@/lib/project-taxonomy";
 import type { Task, TaskStatus } from "@/lib/mock-data";
 import { getWorkspace } from "@/lib/workspace";
-import { getActiveAccountName } from "@/lib/current-account";
+import { getProfile } from "@/lib/account-store";
 
 type StatusFilter = "open" | "all" | TaskStatus;
 type PriorityFilter = "all" | ProjectPriority;
@@ -27,7 +27,7 @@ export default async function CalendarPage({
   const statusFilter = parseStatusFilter(sp.status);
   const priorityFilter = parsePriorityFilter(sp.priority);
   const ownerFilter: OwnerFilter = sp.owner === "mine" ? "mine" : "all";
-  const me = getActiveAccountName();
+  const me = (await getProfile()).name;
 
   const projects = (await getProjectsForWorkspace(workspace)).filter(
     (project) => project.status !== "archived" && !project.deleted,

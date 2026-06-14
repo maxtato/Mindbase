@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { appendProjectTeamMessageAction } from "@/app/dashboard/projects/[id]/actions";
 import type { ProjectPerson, ProjectTeamMessage } from "@/lib/mock-data";
 import { surface, text } from "@/lib/design-tokens";
-import { getActiveAccountName, getActiveAccountPersonId } from "@/lib/current-account";
+import { getActiveAccountPersonId } from "@/lib/current-account";
+import { useAccountName } from "@/components/account/account-context";
 
 interface ProjectTeamChatLauncherProps {
   projectId: string;
@@ -21,6 +22,7 @@ export function ProjectTeamChatLauncher({
   accentColor,
 }: ProjectTeamChatLauncherProps) {
   const router = useRouter();
+  const accountName = useAccountName();
   const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -33,8 +35,8 @@ export function ProjectTeamChatLauncher({
 
     startTransition(async () => {
       await appendProjectTeamMessageAction(projectId, {
-        authorName: getActiveAccountName(),
-        authorPersonId: getActiveAccountPersonId(people),
+        authorName: accountName,
+        authorPersonId: getActiveAccountPersonId(people, accountName),
         content: cleaned,
       });
       setContent("");
@@ -116,7 +118,7 @@ export function ProjectTeamChatLauncher({
 
               <form onSubmit={submitMessage} className="grid gap-2 rounded-2xl p-3" style={{ background: surface.s1 }}>
                 <div className="rounded-xl px-3 py-2 text-xs" style={{ background: surface.s2, color: text.muted }}>
-                  Envoyé comme <strong style={{ color: text.secondary }}>{getActiveAccountName()}</strong>
+                  Envoyé comme <strong style={{ color: text.secondary }}>{accountName}</strong>
                 </div>
                 <textarea
                   value={content}

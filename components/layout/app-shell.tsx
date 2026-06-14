@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { Sidebar } from "./sidebar";
 import { MobileBottomNav } from "./mobile-bottom-nav";
+import { CommandPalette } from "@/components/search/command-palette";
 import { surface } from "@/lib/design-tokens";
 import { getSidebarStatsByWorkspace } from "@/lib/project-store";
 import { getWorkspace } from "@/lib/workspace";
@@ -17,9 +18,10 @@ import { getWorkspace } from "@/lib/workspace";
 
 interface AppShellProps {
   children: React.ReactNode;
+  accountName?: string;
 }
 
-export async function AppShell({ children }: AppShellProps) {
+export async function AppShell({ children, accountName }: AppShellProps) {
   const sidebarStats = await getSidebarStatsByWorkspace();
   const cookieStore = await cookies();
   const initialWorkspace = getWorkspace(cookieStore.get("mindbase-workspace")?.value);
@@ -32,7 +34,7 @@ export async function AppShell({ children }: AppShellProps) {
       {/* Sidebar — masquée < sm via Tailwind, plus de Suspense boundary.
           On lui passe initialWorkspace pour que les liens SSR pointent
           déjà vers le bon workspace, sans dépendre de l'hydratation. */}
-      <Sidebar stats={sidebarStats} initialWorkspace={initialWorkspace} />
+      <Sidebar stats={sidebarStats} initialWorkspace={initialWorkspace} accountName={accountName} />
 
       {/* Main area — on réserve la safe-area haute de l'iPhone (horloge /
           batterie / Dynamic Island) UNE seule fois ici, pour toutes les pages
@@ -49,6 +51,10 @@ export async function AppShell({ children }: AppShellProps) {
           On lui donne le workspace initial pour que la couleur active
           soit correcte dès le SSR (sinon flash violet→bleu en pro). */}
       <MobileBottomNav initialWorkspace={initialWorkspace} />
+
+      {/* Palette de recherche globale (⌘K ou bouton loupe topbar). Rendue une
+          fois au niveau du shell → disponible sur toutes les pages. */}
+      <CommandPalette initialWorkspace={initialWorkspace} />
     </div>
   );
 }

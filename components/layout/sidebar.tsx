@@ -28,9 +28,11 @@ interface SidebarProps {
    *  SSR. Sinon le state initial null générerait des hrefs ?workspace=
    *  personal qui peuvent être suivis avant que l'hydratation ne corrige. */
   initialWorkspace?: Workspace;
+  /** Nom du compte courant (profil) affiché en bas de la sidebar. */
+  accountName?: string;
 }
 
-export function Sidebar({ stats, initialWorkspace }: SidebarProps) {
+export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   // Lit le workspace depuis l'URL côté client uniquement (pas de useSearchParams).
@@ -422,11 +424,13 @@ export function Sidebar({ stats, initialWorkspace }: SidebarProps) {
             className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0"
             style={{ background: theme.gradient }}
           >
-            M
+            {(accountName?.trim() || "Maxime T.").charAt(0).toUpperCase()}
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <p className="text-[11px] font-medium truncate leading-none" style={{ color: text.sidebar }}>Maxime T.</p>
+              <p className="text-[11px] font-medium truncate leading-none" style={{ color: text.sidebar }}>
+                {accountName?.trim() || "Maxime T."}
+              </p>
             </div>
           )}
         </div>

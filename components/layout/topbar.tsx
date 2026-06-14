@@ -3,6 +3,7 @@ import { workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { surface, text } from "@/lib/design-tokens";
 import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
+import { CommandTrigger } from "@/components/search/command-trigger";
 
 interface TopbarProps {
   title: string;
@@ -84,6 +85,8 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
       </div>
 
       <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+        {/* Recherche globale (palette ⌘K) — accessible partout. */}
+        <CommandTrigger />
         {/* Switcher d'environnement (Personnel / Professionnel) — cliquable.
             Sur desktop, la sidebar a son propre switcher mais celui-ci reste
             utile et cohérent. Sur mobile, c'est le seul moyen de basculer. */}
