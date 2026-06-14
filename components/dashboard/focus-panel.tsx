@@ -24,9 +24,9 @@ export function FocusPanel({ focus, dateLabel, accent, workspaceLabel }: FocusPa
     <section
       className="relative flex flex-col gap-4 rounded-[22px] p-5 lg:p-6"
       style={{
-        background: `linear-gradient(180deg, color-mix(in srgb, ${accent} 7%, ${surface.s1}) 0%, ${surface.s1} 60%)`,
+        background: surface.s1,
         border: `1px solid ${surface.borderSubtle}`,
-        boxShadow: "var(--mb-shadow-xs)",
+        boxShadow: "var(--mb-shadow-card)",
       }}
     >
       <div className="min-w-0">

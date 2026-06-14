@@ -55,10 +55,10 @@ export function TaskChangeDetailDialog({
         className="mb-modal-surface rounded-2xl overflow-hidden"
         style={{ width: "min(520px, 100%)" }}
       >
-        <div className="px-5 py-4" style={{ background: theme.solidDark, borderBottom: `1px solid ${theme.solidMid}` }}>
+        <div className="px-5 py-4" style={{ background: surface.s2, borderBottom: `1px solid ${surface.borderSubtle}` }}>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: theme.accentText }}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: text.muted }}>
                 Mise à jour manuelle
               </p>
               <h3 className="mt-1 text-base font-semibold leading-tight" style={{ color: text.primary }}>
@@ -74,7 +74,7 @@ export function TaskChangeDetailDialog({
               type="button"
               onClick={onClose}
               className="rounded-lg p-2 shrink-0"
-              style={{ background: theme.solidMid, color: theme.accentText, border: "none", cursor: "pointer" }}
+              style={{ background: surface.s1, color: text.muted, border: `1px solid ${surface.borderSubtle}`, cursor: "pointer" }}
               title="Annuler"
             >
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">

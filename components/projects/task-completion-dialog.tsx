@@ -52,13 +52,13 @@ export function TaskCompletionDialog({
         {/* Header */}
         <div
           className="px-5 py-4"
-          style={{ background: theme.solidDark, borderBottom: `1px solid ${theme.solidMid}` }}
+          style={{ background: surface.s2, borderBottom: `1px solid ${surface.borderSubtle}` }}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <p
                 className="text-xs font-semibold uppercase tracking-[0.16em]"
-                style={{ color: theme.accentText }}
+                style={{ color: text.muted }}
               >
                 Tâche terminée
               </p>
