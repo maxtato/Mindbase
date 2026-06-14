@@ -8,7 +8,6 @@ interface FocusPanelProps {
   dateLabel: string;
   accent: string;
   workspaceLabel: string;
-  createHref: string;
 }
 
 const TONE: Record<FocusTone, { bg: string; fg: string }> = {
@@ -20,7 +19,7 @@ const TONE: Record<FocusTone, { bg: string; fg: string }> = {
 
 // Bloc « Focus / Aujourd'hui » : la première chose qu'on voit en arrivant.
 // Répond à « qu'est-ce que je fais maintenant et qu'est-ce qui dérive ? ».
-export function FocusPanel({ focus, dateLabel, accent, workspaceLabel, createHref }: FocusPanelProps) {
+export function FocusPanel({ focus, dateLabel, accent, workspaceLabel }: FocusPanelProps) {
   return (
     <section
       className="relative flex flex-col gap-4 rounded-[22px] p-5 lg:p-6"
@@ -30,28 +29,16 @@ export function FocusPanel({ focus, dateLabel, accent, workspaceLabel, createHre
         boxShadow: "var(--mb-shadow-xs)",
       }}
     >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: accent }}>
-            Focus · {workspaceLabel} · {dateLabel}
-          </p>
-          <h1
-            className="mt-1.5 text-[1.5rem] font-bold leading-tight sm:text-[1.95rem]"
-            style={{ color: text.primary, letterSpacing: "-0.02em" }}
-          >
-            {focus.brief}
-          </h1>
-        </div>
-        <Link
-          href={createHref}
-          className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-semibold whitespace-nowrap"
-          style={{ background: accent, color: "#FFFFFF", border: "none" }}
+      <div className="min-w-0">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: accent }}>
+          Focus · {workspaceLabel} · {dateLabel}
+        </p>
+        <h1
+          className="mt-1.5 text-[1.5rem] font-bold leading-tight sm:text-[1.95rem]"
+          style={{ color: text.primary, letterSpacing: "-0.02em" }}
         >
-          <span aria-hidden style={{ fontSize: 14, lineHeight: 1 }}>
-            +
-          </span>
-          Créer un projet
-        </Link>
+          {focus.brief}
+        </h1>
       </div>
 
       {focus.allClear ? (
