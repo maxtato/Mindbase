@@ -1764,32 +1764,10 @@ summary {
   border-radius: 0;
 }
 
-/* Pills meta de l'étape (status, task count, indicators, %) sur fond
-   coloré : on bascule en variantes "on-color" — fond blanc semi-transparent,
-   texte blanc, bordure blanche subtile, dots colorés conservés. */
-.mb-step-header > div:last-child > span {
-  background: rgba(255,255,255,0.18) !important;
-  border-color: rgba(255,255,255,0.32) !important;
-  color: #FFFFFF !important;
-}
-.mb-step-header [title*="tâches terminées"] > div:first-child {
-  background: rgba(255,255,255,0.22) !important;
-  border-color: rgba(255,255,255,0.32) !important;
-}
-.mb-step-header [title*="tâches terminées"] > div:first-child > div {
-  background: #FFFFFF !important;
-}
-.mb-step-header [title*="tâches terminées"] > span {
-  color: #FFFFFF !important;
-}
-.mb-step-header button {
-  background: rgba(255,255,255,0.18) !important;
-  color: #FFFFFF !important;
-  border-color: rgba(255,255,255,0.32) !important;
-}
-.mb-step-header button:hover {
-  background: rgba(255,255,255,0.28) !important;
-}
+/* En-tête d'étape désormais NEUTRE (plus de bandeau coloré) → les pills meta
+   (statut, compteur, %) et le bouton d'actions gardent leurs couleurs
+   naturelles, lisibles sur fond clair. (Anciennes surcharges « blanc sur
+   couleur » retirées.) */
 
 /* Bandeau légende au-dessus des tâches (Tâche · Statut · Échéance ·
    Assigné). Subtle bg + text un peu plus appuyé pour le démarquer comme
