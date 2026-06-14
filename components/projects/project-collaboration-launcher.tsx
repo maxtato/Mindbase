@@ -130,12 +130,18 @@ export function ProjectCollaborationLauncher({
         <div className="mb-modal-backdrop fixed inset-0 z-50 flex items-center justify-center px-4 py-5">
           <section
             className="mb-modal-surface w-full max-w-[920px] rounded-[28px]"
-            style={{ color: text.primary }}
+            style={{
+              color: text.primary,
+              display: "flex",
+              flexDirection: "column",
+              maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px)",
+              overflow: "hidden",
+            }}
             role="dialog"
             aria-modal="true"
             aria-label="Collaborer sur le projet"
           >
-            <header className="flex items-start justify-between gap-4 px-5 py-4" style={{ background: surface.s2 }}>
+            <header className="flex shrink-0 items-start justify-between gap-4 px-5 py-4" style={{ background: surface.s2 }}>
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: accentColor }}>
                   Collaboration projet
@@ -158,7 +164,10 @@ export function ProjectCollaborationLauncher({
               </button>
             </header>
 
-            <div className="grid gap-3 p-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+            <div
+              className="grid min-h-0 flex-1 gap-3 p-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]"
+              style={{ overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}
+            >
               <div className="grid gap-3">
                 <Panel title="Personnes associées" meta={`${people.length} personne${people.length > 1 ? "s" : ""}`}>
                   {people.length === 0 ? (
@@ -197,25 +206,31 @@ export function ProjectCollaborationLauncher({
                       Crée une équipe pour associer plusieurs personnes à une tâche en un clic.
                     </p>
                   ) : (
-                    <div className="flex flex-wrap gap-1.5">
-                      {teams.map((team) => {
-                        const selected = team.id === editedTeamId;
-                        return (
-                          <button
-                            key={team.id}
-                            type="button"
-                            onClick={() => selectTeam(team)}
-                            className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                            style={{
-                              background: selected ? team.color ?? accentColor : surface.s2,
-                              color: selected ? "#FFFFFF" : team.color ?? text.secondary,
-                              border: "none",
-                            }}
-                          >
-                            {team.name}
-                          </button>
-                        );
-                      })}
+                    <div className="grid gap-1.5">
+                      <div className="flex flex-wrap gap-1.5">
+                        {teams.map((team) => {
+                          const selected = team.id === editedTeamId;
+                          const count = team.memberIds?.length ?? 0;
+                          return (
+                            <button
+                              key={team.id}
+                              type="button"
+                              onClick={() => selectTeam(team)}
+                              className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                              style={{
+                                background: selected ? team.color ?? accentColor : surface.s2,
+                                color: selected ? "#FFFFFF" : team.color ?? text.secondary,
+                                border: `1px solid ${selected ? (team.color ?? accentColor) : surface.borderSubtle}`,
+                              }}
+                            >
+                              {team.name} · {count}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <p className="text-[10.5px]" style={{ color: text.muted }}>
+                        Touche une équipe pour modifier son nom, sa couleur et ses membres ci-dessous.
+                      </p>
                     </div>
                   )}
                 </Panel>
@@ -283,30 +298,38 @@ function MemberPicker({
   color: string;
   onToggle: (personId: string) => void;
 }) {
-  if (people.length === 0) {
-    return <p className="text-[11px]" style={{ color: text.muted }}>Ajoute d’abord une personne pour composer une équipe.</p>;
-  }
-
   return (
-    <div className="flex flex-wrap gap-1.5">
-      {people.map((person) => {
-        const selected = selectedIds.includes(person.id);
-        return (
-          <button
-            key={person.id}
-            type="button"
-            onClick={() => onToggle(person.id)}
-            className="rounded-full px-2 py-1 text-[11px] font-semibold"
-            style={{
-              background: selected ? color : surface.s1,
-              color: selected ? "#FFFFFF" : text.secondary,
-              border: "none",
-            }}
-          >
-            {person.name}
-          </button>
-        );
-      })}
+    <div className="grid gap-1.5">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.1em]" style={{ color: text.muted }}>
+        Membres — touche une personne pour l’associer
+      </p>
+      {people.length === 0 ? (
+        <p className="text-[11px]" style={{ color: text.muted }}>
+          Ajoute d’abord une personne (à gauche) pour composer une équipe.
+        </p>
+      ) : (
+        <div className="flex flex-wrap gap-1.5">
+          {people.map((person) => {
+            const selected = selectedIds.includes(person.id);
+            return (
+              <button
+                key={person.id}
+                type="button"
+                onClick={() => onToggle(person.id)}
+                className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold"
+                style={{
+                  background: selected ? color : surface.s1,
+                  color: selected ? "#FFFFFF" : text.secondary,
+                  border: `1px solid ${selected ? color : surface.borderSubtle}`,
+                }}
+              >
+                <span aria-hidden style={{ opacity: 0.85 }}>{selected ? "✓" : "+"}</span>
+                {person.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
