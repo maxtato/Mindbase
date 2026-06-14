@@ -312,6 +312,22 @@ body {
   filter: brightness(0.94);
 }
 
+/* Apparition douce (fade + légère montée) pour les blocs clés — vivant mais
+   discret. Neutralisé par prefers-reduced-motion (cf. plus bas). */
+@keyframes mb-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.mb-rise {
+  animation: mb-rise 360ms var(--mb-ease) both;
+}
+
 /* Respecte la préférence système « réduire les animations » : on neutralise
    transitions et animations (accessibilité — mal des transports, sensibilité). */
 @media (prefers-reduced-motion: reduce) {

@@ -99,19 +99,21 @@ export default async function DashboardPage({
         <div className="mx-auto flex w-full max-w-[1480px] flex-col gap-4">
           {/* Focus proactif : la première chose visible — quoi faire maintenant
               et quels projets surveiller (réutilise project-health + insights). */}
-          <FocusPanel
-            focus={focus}
-            dateLabel={focusDate}
-            accent={theme.accent}
-            workspaceLabel={theme.label}
-            createHref={`/dashboard/projects/new?${qs}`}
-          />
+          <div className="mb-rise">
+            <FocusPanel
+              focus={focus}
+              dateLabel={focusDate}
+              accent={theme.accent}
+              workspaceLabel={theme.label}
+              createHref={`/dashboard/projects/new?${qs}`}
+            />
+          </div>
 
           {/* KPI principaux — rangée de 3 chiffres. Les KPI tâches ouvrent
               un popover listant les tâches concernées (clic sur une tâche
               du popover → navigation vers la page projet + drawer auto-
               ouvert). KPI projets reste un lien vers la liste des projets. */}
-          <section className="grid grid-cols-3 gap-3">
+          <section className="mb-rise grid grid-cols-3 gap-3" style={{ animationDelay: "70ms" }}>
             <KpiCard
               label="Projets"
               value={kpiProjects}
@@ -136,7 +138,7 @@ export default async function DashboardPage({
 
           {/* Grid 2×2 — desktop. Sur mobile, tout passe en une colonne.
               Chaque carte est cliquable et mène à la liste pertinente. */}
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="mb-rise grid gap-4 lg:grid-cols-2" style={{ animationDelay: "140ms" }}>
             <Card
               title="Répartition des tâches"
               meta={totalTasks > 0 ? `${totalTasks} tâche${totalTasks > 1 ? "s" : ""}` : undefined}

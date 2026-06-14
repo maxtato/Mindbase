@@ -71,7 +71,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     if (variant === "primary") {
       const accent = accentColor ?? text.primary;
       return {
-        background: accent,
+        // Dégradé vertical très subtil (haut légèrement plus clair) → reflet
+        // premium, en complément du gloss/relief CSS de .mb-button-primary.
+        background: `linear-gradient(180deg, color-mix(in srgb, ${accent} 90%, #ffffff 10%) 0%, ${accent} 100%)`,
         color: surface.onColor,
         border: `1px solid ${accent}`,
       } satisfies CSSProperties;
