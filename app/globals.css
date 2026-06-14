@@ -1081,13 +1081,22 @@ summary {
               transform var(--mb-duration-base) var(--mb-ease);
 }
 
-.mb-card-interactive:hover {
-  border-color: var(--mb-border-hover) !important;
-  box-shadow: var(--mb-shadow-sm) !important;
+.mb-card-interactive {
+  transition: border-color var(--mb-duration-fast) var(--mb-ease),
+              box-shadow var(--mb-duration-base) var(--mb-ease),
+              transform var(--mb-duration-fast) var(--mb-ease);
 }
 
+.mb-card-interactive:hover {
+  border-color: var(--mb-border-hover) !important;
+  box-shadow: var(--mb-shadow-md) !important;
+  transform: translateY(-1px);
+}
+
+/* Retour de pression tactile : léger enfoncement (scale) — « senti » sur iPhone.
+   Le lift au survol est neutralisé sur tactile par le bloc @media (hover:none). */
 .mb-card-interactive:active {
-  transform: translateY(0.5px);
+  transform: scale(0.988);
 }
 
 /* ─── Badges modernes ────────────────────────────────────────────────────── */
@@ -2132,7 +2141,9 @@ textarea::placeholder {
 
   .mb-project-rail-toggle {
     position: static;
-    margin: 0 auto 0.4rem;
+    /* Marge haute négative pour coller la flèche de synthèse au bouton
+       « Ajouter une étape » (l'utilisateur trouvait l'espace trop grand). */
+    margin: -6px auto 0.3rem;
     width: 100%;
     max-width: 220px;
     border-radius: 999px;
@@ -2260,7 +2271,7 @@ textarea::placeholder {
   }
 
   .mb-project-command-grid {
-    gap: 0.3rem;
+    gap: 0;
   }
 
   .mb-project-brief-grid {

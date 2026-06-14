@@ -62,6 +62,11 @@ export function TasksCalendarBoard({
   // Quand une cellule a plusieurs tâches : un premier tap sur la carte
   // preview "éclate" toutes les tâches du jour pour qu'on puisse choisir.
   const [expandedDate, setExpandedDate] = useState<string | null>(null);
+  // Quand on « décolle » une tâche DEPUIS la modal multi-tâches : on garde la
+  // modal MONTÉE (sinon iOS tue le toucher quand sa cible disparaît du DOM, et
+  // le drag ne suit pas), mais on la rend invisible + click-through le temps du
+  // drag pour exposer la grille du calendrier comme zone de dépôt.
+  const [liftingFromModal, setLiftingFromModal] = useState(false);
   // Tâche actuellement ouverte dans un drawer contrôlé. On lifte le state ici
   // (plutôt que dans chaque CalendarTaskCard) pour qu'une tâche cliquée
   // depuis la modal "liste du jour" survive à la fermeture de cette modal —
@@ -115,6 +120,15 @@ export function TasksCalendarBoard({
       if (item && item.dueDate !== target) setPendingDateChange({ item, date: target });
     },
   });
+
+  // Fin du drag « depuis la modal » : quand l'aperçu retombe (plus de carte en
+  // cours de drag), on referme la modal et on réarme l'état.
+  useEffect(() => {
+    if (liftingFromModal && !touchDraggingKey) {
+      setLiftingFromModal(false);
+      setExpandedDate(null);
+    }
+  }, [liftingFromModal, touchDraggingKey]);
 
   function handleDateChangeConfirm(details: string) {
     if (!pendingDateChange) return;
@@ -337,6 +351,11 @@ export function TasksCalendarBoard({
                                       cursor: "default",
                                       // Empêche le swipe sur le fond de scroller la page derrière.
                                       touchAction: "none",
+                                      // Pendant le décollage : on s'efface et on laisse passer les
+                                      // touchers vers le calendrier (sans démonter → toucher préservé).
+                                      opacity: liftingFromModal ? 0 : 1,
+                                      pointerEvents: liftingFromModal ? "none" : undefined,
+                                      transition: "opacity 120ms var(--mb-ease)",
                                     }}
                                   />
                                   <div
@@ -358,6 +377,9 @@ export function TasksCalendarBoard({
                                       display: "flex",
                                       flexDirection: "column",
                                       overflow: "hidden",
+                                      opacity: liftingFromModal ? 0 : 1,
+                                      pointerEvents: liftingFromModal ? "none" : undefined,
+                                      transition: "opacity 120ms var(--mb-ease)",
                                     }}
                                     onClick={(event) => event.stopPropagation()}
                                   >
@@ -399,13 +421,14 @@ export function TasksCalendarBoard({
                                           workspace={workspace}
                                           isDragging={draggingKey === getTaskKey(item) || touchDraggingKey === getTaskKey(item)}
                                           lockTouchScroll
-                                          // On décolle la carte ET on ferme la modal « liste du
-                                          // jour » : sinon l'overlay reste au-dessus du calendrier
-                                          // et bloque le drop (elementFromPoint tombe sur la modal,
-                                          // pas sur la cellule de date dessous). begin() a déjà
-                                          // cloné la carte pour l'aperçu → le drag survit.
+                                          // On décolle la carte SANS démonter la modal : on la rend
+                                          // juste invisible + click-through (liftingFromModal) pour
+                                          // exposer la grille comme zone de dépôt. Démonter ici tuait
+                                          // le toucher iOS (cible retirée du DOM) → le drag ne suivait
+                                          // pas et il fallait ré-appuyer. La modal se ferme à la fin
+                                          // du drag (effet plus haut).
                                           onLongPressEngage={(x, y, element) => {
-                                            setExpandedDate(null);
+                                            setLiftingFromModal(true);
                                             begin(getTaskKey(item), item.entry.task.title, x, y, element);
                                           }}
                                           onDragStart={() => setDraggingKey(getTaskKey(item))}
