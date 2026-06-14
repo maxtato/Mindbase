@@ -139,13 +139,15 @@ function countToday(projects: Project[], now: Date) {
 
 function buildBrief(counts: { dueToday: number; overdue: number; attention: number }): string {
   const parts: string[] = [];
-  if (counts.overdue > 0) parts.push(`${counts.overdue} en retard`);
-  if (counts.dueToday > 0) parts.push(`${counts.dueToday} pour aujourd'hui`);
+  if (counts.overdue > 0) parts.push(`${counts.overdue} tâche${counts.overdue > 1 ? "s" : ""} en retard`);
+  if (counts.dueToday > 0) parts.push(`${counts.dueToday} tâche${counts.dueToday > 1 ? "s" : ""} pour aujourd'hui`);
   if (counts.attention > 0) parts.push(`${counts.attention} projet${counts.attention > 1 ? "s" : ""} à surveiller`);
 
+  // Pas de préfixe « Aujourd'hui : » → évite la répétition avec « pour
+  // aujourd'hui ». On démarre directement par les compteurs.
   if (parts.length === 0) return "Tout est sous contrôle — rien d'urgent aujourd'hui.";
-  if (parts.length === 1) return `Aujourd'hui : ${parts[0]}.`;
-  return `Aujourd'hui : ${parts.slice(0, -1).join(", ")} et ${parts[parts.length - 1]}.`;
+  if (parts.length === 1) return `${parts[0]}.`;
+  return `${parts.slice(0, -1).join(", ")} et ${parts[parts.length - 1]}.`;
 }
 
 export function buildDailyFocus(projects: Project[], workspace: Workspace, now = new Date()): DailyFocus {
