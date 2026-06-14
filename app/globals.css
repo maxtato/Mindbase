@@ -1751,13 +1751,16 @@ summary {
   box-shadow: var(--mb-shadow-md);
 }
 
-/* En-tête d'étape : même blanc que la liste de tâches → la carte est uniforme
-   et ressort du fond ; la hiérarchie « titre de section » vient du TITRE (plus
-   gros/gras côté composant) + d'un séparateur net avec les tâches. */
+/* En-tête d'étape : fond GRIS clair (distinct de la liste de tâches blanche).
+   La carte reste blanche + ombre → elle se détache du fond de la page. */
 .mb-step-header {
-  background: var(--mb-s1);
+  background: var(--mb-s4);
   border-bottom: 1px solid var(--mb-border);
   border-radius: 0;
+}
+/* En sombre, s4 est le ton le plus foncé → s2 (plus clair que la liste). */
+[data-theme="dark"] .mb-step-header {
+  background: var(--mb-s2);
 }
 
 /* En-tête d'étape désormais NEUTRE (plus de bandeau coloré) → les pills meta
