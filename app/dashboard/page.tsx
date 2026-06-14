@@ -20,6 +20,8 @@ import { StatusStackedBar } from "@/components/dashboard/status-stacked-bar";
 import { WeekPlanningPanel, buildPlannedTasks } from "@/components/dashboard/week-planning-panel";
 import { ActivityFeedPanel, buildActivityFeed } from "@/components/dashboard/activity-feed-panel";
 import { KpiCard, type KpiTask } from "@/components/dashboard/kpi-card";
+import { FocusPanel } from "@/components/dashboard/focus-panel";
+import { buildDailyFocus, formatFocusDate } from "@/lib/project-focus";
 import { resolveProjectSubcategoryDisplay } from "@/lib/project-taxonomy";
 
 type DashboardTask = {
@@ -85,43 +87,25 @@ export default async function DashboardPage({
   const openTasksKpi = openTasks.map((item) => toKpiTask(item));
   const overdueTasksKpi = overdueTasks.map((item) => toKpiTask(item, "En retard", "danger"));
 
+  // Bloc « Focus / Aujourd'hui » : actions prioritaires + projets qui dérivent.
+  const focus = buildDailyFocus(projects, workspace);
+  const focusDate = formatFocusDate();
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <Topbar title="Dashboard" workspace={workspace} />
 
       <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-4 py-5 lg:px-6">
         <div className="mx-auto flex w-full max-w-[1480px] flex-col gap-4">
-          {/* Bandeau d'accroche minimaliste : juste un CTA pour créer un projet. */}
-          <section
-            className="flex flex-col gap-3 rounded-[20px] px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
-            style={{
-              background: surface.s1,
-              border: `1px solid ${surface.borderSubtle}`,
-              boxShadow: "var(--mb-shadow-xs)",
-            }}
-          >
-            <div className="min-w-0">
-              <p
-                className="text-[10px] font-semibold uppercase tracking-[0.14em]"
-                style={{ color: theme.accent }}
-              >
-                Cockpit · {theme.label}
-              </p>
-              <h1 className="mt-1 text-[1.15rem] font-bold leading-snug" style={{ color: text.primary }}>
-                Vue d'ensemble
-              </h1>
-            </div>
-            <Link
-              href={`/dashboard/projects/new?${qs}`}
-              className="inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-semibold whitespace-nowrap"
-              style={{ background: theme.accent, color: "#FFFFFF", border: "none" }}
-            >
-              <span aria-hidden style={{ fontSize: 14, lineHeight: 1 }}>
-                +
-              </span>
-              Créer un projet
-            </Link>
-          </section>
+          {/* Focus proactif : la première chose visible — quoi faire maintenant
+              et quels projets surveiller (réutilise project-health + insights). */}
+          <FocusPanel
+            focus={focus}
+            dateLabel={focusDate}
+            accent={theme.accent}
+            workspaceLabel={theme.label}
+            createHref={`/dashboard/projects/new?${qs}`}
+          />
 
           {/* KPI principaux — rangée de 3 chiffres. Les KPI tâches ouvrent
               un popover listant les tâches concernées (clic sur une tâche
