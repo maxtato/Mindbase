@@ -1761,13 +1761,10 @@ summary {
   border-radius: 0;
 }
 
-/* En-tête des cartes projet (menu Projets) : même gris discret que l'en-tête
-   d'étape — plus de bandeau coloré plein, la couleur va au pictogramme. */
+/* En-tête des cartes projet (menu Projets) : MÊME gris que le conteneur des
+   cartes d'étape (s2) — la couleur du projet va au pictogramme, pas en bandeau. */
 .mb-project-card-header {
-  background: #eef0f3;
-}
-[data-theme="dark"] .mb-project-card-header {
-  background: var(--mb-s3);
+  background: var(--mb-s2);
 }
 
 /* En-tête d'étape désormais NEUTRE (plus de bandeau coloré) → les pills meta
