@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { cache } from "react";
 import { createClient, type RedisClientType } from "redis";
 import type { Workspace } from "@/lib/workspace";
 import { projects as projectSeeds, type Action, type ChecklistItem, type Decision, type Project, type ProjectActivityItem, type ProjectFile, type ProjectMode, type ProjectPerson, type ProjectStatus, type ProjectStatusSettings, type ProjectTeam, type ProjectTeamMessage, type Risk, type Step, type StepStatus, type Task, type TaskDiscussionMessage, type TaskStatus } from "@/lib/mock-data";
@@ -726,8 +727,14 @@ async function queueWrite<T>(operation: () => Promise<T>) {
   return next;
 }
 
+// Lecture du store mémoïsée à l'échelle d'UNE requête (React.cache) : le
+// dashboard, la recherche (2 espaces) et le cron évitent ainsi de relire et
+// re-normaliser Redis plusieurs fois pour le même rendu. Les mutations passent
+// par ensureProjectStore() directement (non mémoïsé) → toujours frais.
+const readProjectsForRequest = cache(async () => ensureProjectStore());
+
 export async function getAllProjects() {
-  const projects = await ensureProjectStore();
+  const projects = await readProjectsForRequest();
   return projects
     .filter((project) => !project.deleted)
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));

@@ -12,7 +12,7 @@ export async function POST() {
   const subscriptions = await getSubscriptions();
   const dead: string[] = [];
   let sent = 0;
-  await Promise.all(
+  await Promise.allSettled(
     subscriptions.map(async (sub) => {
       const alive = await sendPush(sub, {
         title: "Mindbase",

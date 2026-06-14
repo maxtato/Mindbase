@@ -1,6 +1,7 @@
 import type { Project, Task, TaskStatus } from "@/lib/mock-data";
 import { formatTaskScheduleDate } from "@/lib/date-format";
 import { deriveTaskStatus } from "@/lib/project-plan";
+import { nowTimeKey, todayKey } from "@/lib/timezone";
 
 export type ProjectDetailView = "steps";
 export type ProjectBoardStatus = TaskStatus;
@@ -53,10 +54,13 @@ export function getBoardStatus(task: Task): ProjectBoardStatus {
 
 export function isTaskOverdue(task: Task, now = new Date()) {
   if (deriveTaskStatus(task) === "done" || !task.dueDate) return false;
-  const dueDateTime = task.dueTime
-    ? new Date(`${task.dueDate}T${task.dueTime}:00`)
-    : new Date(`${task.dueDate}T23:59:59`);
-  return dueDateTime.getTime() < now.getTime();
+  // Comparaison ancrée sur Europe/Paris (cf. lib/timezone) : un jour passé =
+  // en retard ; le jour même, en retard seulement après l'heure d'échéance.
+  const today = todayKey(now);
+  if (task.dueDate < today) return true;
+  if (task.dueDate > today) return false;
+  if (task.dueTime) return nowTimeKey(now) > task.dueTime;
+  return false;
 }
 
 export function projectHasOverdueTask(project: Project, now = new Date()) {

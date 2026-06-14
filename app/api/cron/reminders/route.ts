@@ -66,7 +66,8 @@ export async function GET(request: Request) {
   const subscriptions = await getSubscriptions();
   const dead: string[] = [];
   let sent = 0;
-  await Promise.all(
+  // allSettled : un abonnement défaillant ne doit pas bloquer l'envoi aux autres.
+  await Promise.allSettled(
     subscriptions.map(async (sub) => {
       const alive = await sendPush(sub, payload);
       if (alive) sent += 1;

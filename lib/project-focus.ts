@@ -9,6 +9,7 @@ import { flattenProjectTasks, isTaskOverdue } from "@/lib/project-insights";
 import { deriveTaskDisplayPriority, deriveTaskStatus } from "@/lib/project-plan";
 import { computeProjectHealth, type HealthLevel } from "@/lib/project-health";
 import { resolveProjectSubcategoryDisplay } from "@/lib/project-taxonomy";
+import { daysFromToday, todayKey } from "@/lib/timezone";
 
 export type FocusTone = "danger" | "warn" | "info" | "neutral";
 
@@ -45,18 +46,6 @@ export interface DailyFocus {
   allClear: boolean;
 }
 
-const DAY_MS = 1000 * 60 * 60 * 24;
-
-function startOfDay(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function parseDueDate(value: string | undefined) {
-  if (!value) return null;
-  const date = new Date(`${value}T12:00:00`);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
 function dueTag(daysUntil: number): { tag: string; tone: FocusTone; weight: number } | null {
   if (daysUntil < 0) return { tag: "En retard", tone: "danger", weight: 1000 - daysUntil };
   if (daysUntil === 0) return { tag: "Aujourd'hui", tone: "warn", weight: 800 };
@@ -66,7 +55,6 @@ function dueTag(daysUntil: number): { tag: string; tone: FocusTone; weight: numb
 }
 
 function buildActions(projects: Project[], workspace: Workspace, now: Date): FocusAction[] {
-  const today = startOfDay(now);
   const actions: FocusAction[] = [];
 
   for (const project of projects) {
@@ -76,13 +64,12 @@ function buildActions(projects: Project[], workspace: Workspace, now: Date): Foc
       const status = deriveTaskStatus(task);
       if (status === "done") continue;
 
-      const due = parseDueDate(task.dueDate);
-      const daysUntil = due ? Math.round((startOfDay(due).getTime() - today.getTime()) / DAY_MS) : null;
+      const daysUntil = task.dueDate ? daysFromToday(task.dueDate, now) : null;
       const overdue = isTaskOverdue(task, now);
       const highPriority = deriveTaskDisplayPriority(task, now) === "high";
 
       let descriptor: { tag: string; tone: FocusTone; weight: number } | null = null;
-      if (overdue && due) {
+      if (overdue && task.dueDate) {
         descriptor = { tag: "En retard", tone: "danger", weight: 1000 + (daysUntil !== null ? -daysUntil : 0) };
       } else if (daysUntil !== null) {
         descriptor = dueTag(daysUntil);
@@ -133,7 +120,7 @@ function buildAttention(projects: Project[], now: Date): { list: FocusAttentionP
 }
 
 function countToday(projects: Project[], now: Date) {
-  const today = startOfDay(now);
+  const today = todayKey(now);
   let dueToday = 0;
   let overdue = 0;
   for (const project of projects) {
@@ -144,8 +131,7 @@ function countToday(projects: Project[], now: Date) {
         overdue += 1;
         continue;
       }
-      const due = parseDueDate(task.dueDate);
-      if (due && startOfDay(due).getTime() === today.getTime()) dueToday += 1;
+      if (task.dueDate === today) dueToday += 1;
     }
   }
   return { dueToday, overdue };
