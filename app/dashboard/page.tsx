@@ -87,6 +87,20 @@ export default async function DashboardPage({
   const openTasksKpi = openTasks.map((item) => toKpiTask(item));
   const overdueTasksKpi = overdueTasks.map((item) => toKpiTask(item, "En retard", "danger"));
 
+  // Liste des projets ouverts pour le popover du KPI « Projets » : on peut
+  // scroller et cliquer sur un projet pour l'ouvrir (comme les tâches).
+  const projectsKpi: KpiTask[] = openProjects.map((project) => {
+    const remaining = flattenProjectTasks(project).filter((entry) => deriveTaskStatus(entry.task) !== "done").length;
+    return {
+      key: project.id,
+      title: project.name,
+      projectName: `${remaining} tâche${remaining > 1 ? "s" : ""} restante${remaining > 1 ? "s" : ""}`,
+      projectColor: resolveProjectSubcategoryDisplay(project).color,
+      href: `/dashboard/projects/${project.id}?workspace=${workspace}`,
+      meta: `${Math.max(0, Math.min(100, Math.round(project.progress ?? 0)))}%`,
+    };
+  });
+
   // Bloc « Focus / Aujourd'hui » : actions prioritaires + projets qui dérivent.
   const focus = buildDailyFocus(projects, workspace);
   const focusDate = formatFocusDate();
@@ -131,7 +145,8 @@ export default async function DashboardPage({
               label="Projets"
               value={kpiProjects}
               tone="info"
-              href={`/dashboard/projects?${qs}`}
+              tasks={projectsKpi}
+              emptyLabel="Aucun projet ouvert."
             />
             <KpiCard
               label="Tâches ouvertes"

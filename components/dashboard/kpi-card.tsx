@@ -67,7 +67,11 @@ export function KpiCard({ label, value, hint, tone = "neutral", href, tasks, emp
       if (popoverRef.current?.contains(target)) return;
       setOpen(false);
     }
-    function handleScroll() {
+    function handleScroll(event: Event) {
+      // Ne PAS fermer si c'est la liste du popover elle-même qu'on scrolle —
+      // seul un scroll de la PAGE (qui désaligne le popover ancré) le ferme.
+      const node = event.target as Node | null;
+      if (node && popoverRef.current?.contains(node)) return;
       setOpen(false);
     }
     function handleKey(event: KeyboardEvent) {
@@ -214,6 +218,8 @@ const KpiPopover = function KpiPopover({
         width,
         maxHeight: "min(60vh, 480px)",
         overflowY: "auto",
+        overscrollBehavior: "contain",
+        WebkitOverflowScrolling: "touch",
         zIndex: 9999,
         background: surface.s1,
         border: `1px solid ${surface.border}`,
