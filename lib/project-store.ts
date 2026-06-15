@@ -326,7 +326,7 @@ function buildProjectNarrativeFallback(raw: Partial<Project>, field: "descriptio
   const context = sanitizeText(raw.context);
 
   if (field === "description") {
-    return description || context || objective || `Projet "${name}" à structurer avec MindLay.`;
+    return description || context || objective || `Projet "${name}" à structurer avec Flatmind.`;
   }
 
   if (field === "objective") {

@@ -194,7 +194,7 @@ export function PushSettings({ workspace }: { workspace: Workspace }) {
 
       {status === "needs-install" && (
         <Hint color={text.muted}>
-          Sur iPhone, ajoute d'abord MindLay à l'écran d'accueil (Partager → « Sur l'écran d'accueil »),
+          Sur iPhone, ajoute d'abord Flatmind à l'écran d'accueil (Partager → « Sur l'écran d'accueil »),
           puis rouvre l'app depuis l'icône pour activer les notifications.
         </Hint>
       )}

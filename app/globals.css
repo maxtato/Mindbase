@@ -8,7 +8,7 @@
   --font-mono: "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono", monospace;
 }
 
-/* Wordmark MindLay : « Mind » en League Spartan, « lay » en brush-script Yellowtail. */
+/* Wordmark Flatmind : « Flat » en League Spartan, « mind » en script Pacifico. */
 .mb-wordmark-mind {
   font-family: "League Spartan", var(--font-sans);
 }

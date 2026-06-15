@@ -7,21 +7,21 @@ import { registerCustomEnvironments } from "@/lib/workspace";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MindLay — Think. Structure. Create.",
+  title: "Flatmind — Think. Structure. Create.",
   description: "Reliez vos projets, tâches, fichiers et décisions en un seul endroit.",
-  applicationName: "MindLay",
+  applicationName: "Flatmind",
   // Active le mode PWA / standalone sur iOS quand l'app est ajoutée à l'écran
   // d'accueil : pas de barre Safari, status bar adaptée au thème sombre.
   appleWebApp: {
     capable: true,
-    title: "MindLay",
+    title: "Flatmind",
     statusBarStyle: "black-translucent",
   },
   // Hint Apple : tuile par défaut Win/Edge (PWA installable côté desktop).
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-title": "MindLay",
+    "apple-mobile-web-app-title": "Flatmind",
   },
 };
 

@@ -5,14 +5,14 @@
 // tout le contenu de la page dans un <div hidden> et bloquer les taps).
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getWorkspace, workspaceTheme, BUILTIN_WORKSPACES, ALL_WORKSPACE } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { error, surface, text } from "@/lib/design-tokens";
 import { broadcastWorkspace, WORKSPACE_EVENT } from "@/lib/workspace-client";
-import { MindLayWordmark } from "@/components/branding/mindlay-wordmark";
+import { FlatmindWordmark } from "@/components/branding/mindlay-wordmark";
+import { FlatmindMark } from "@/components/branding/flatmind-mark";
 import { useEnvironments } from "@/components/environments/environments-provider";
 
 const WIDE = 212;
@@ -194,7 +194,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
         <Link
           href={makeHref("/dashboard")}
           className="flex items-center shrink-0"
-          title="MindLay"
+          title="Flatmind"
           style={{
             width: brandWidth,
             height: brandHeight,
@@ -202,20 +202,10 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
             justifyContent: collapsed ? "center" : "flex-start",
           }}
         >
-          {/* Icône carrée (logo) + wordmark agrandi quand la sidebar est dépliée. */}
-          <Image
-            src="/mindbase-iphone.png"
-            alt="MindLay"
-            // Intrinsèque 3× la taille d'affichage → net sur écrans retina.
-            width={brandLogoSize * 3}
-            height={brandLogoSize * 3}
-            quality={95}
-            priority
-            className="shrink-0"
-            style={{ display: "block", width: brandLogoSize, height: brandLogoSize, objectFit: "contain", borderRadius: 10 }}
-          />
+          {/* Icône (cerveau Flatmind) + wordmark agrandi quand la sidebar est dépliée. */}
+          <FlatmindMark size={brandLogoSize} className="shrink-0" style={{ color: text.sidebar }} />
           {!collapsed && (
-            <MindLayWordmark fontSize={34} style={{ color: text.sidebar }} />
+            <FlatmindWordmark fontSize={34} style={{ color: text.sidebar }} />
           )}
         </Link>
 

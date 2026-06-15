@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MindLayLogo } from "@/components/branding/mindlay-logo";
+import { FlatmindLogo } from "@/components/branding/mindlay-logo";
 import {
   FieldLabel,
   SurfaceCard,
@@ -19,10 +19,10 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center px-6 py-10">
       <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <SurfaceCard className="hidden p-10 lg:block">
-          <MindLayLogo showTagline />
+          <FlatmindLogo showTagline />
 
           <p className="mt-10 max-w-xl text-lg leading-8" style={textStyles.muted}>
-            MindLay aide à relier projets, tâches, fichiers et décisions
+            Flatmind aide à relier projets, tâches, fichiers et décisions
             dans deux environnements distincts: perso et pro.
           </p>
 
@@ -66,7 +66,7 @@ export default function LoginPage() {
             Connexion
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight" style={textStyles.strong}>
-            Accéder à MindLay
+            Accéder à Flatmind
           </h1>
           <p className="mt-4 text-base leading-7" style={textStyles.muted}>
             Connecte-toi à ton espace personnel ou professionnel.
