@@ -6,6 +6,7 @@ import { refresh, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   addProjectPerson,
+  removeProjectPerson,
   addProjectTeam,
   addFileToProject,
   addStepToProject,
@@ -624,6 +625,11 @@ export async function addTaskDiscussionMessageAction(
 export async function addProjectPersonAction(projectId: string, input: { name: string; email?: string; role?: string }) {
   await addProjectPerson(projectId, input);
   await finalizeProjectMutation(projectId, `personne ajoutée au projet : ${input.name}.`);
+}
+
+export async function removeProjectPersonAction(projectId: string, personId: string) {
+  await removeProjectPerson(projectId, personId);
+  await finalizeProjectMutation(projectId, `personne retirée du projet : ${personId}.`);
 }
 
 export async function addProjectTeamAction(projectId: string, input: { name: string; color?: string; memberIds?: string[] }) {

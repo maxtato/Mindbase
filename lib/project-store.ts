@@ -1236,6 +1236,47 @@ export async function addProjectPerson(
   });
 }
 
+export async function removeProjectPerson(
+  projectId: string,
+  personId: string,
+): Promise<Project | undefined> {
+  return queueWrite(async () => {
+    const projects = await ensureProjectStore();
+    const projectIndex = projects.findIndex((project) => project.id === projectId);
+    if (projectIndex === -1) return undefined;
+
+    const current = projects[projectIndex];
+    const person = (current.people ?? []).find((p) => p.id === personId);
+    if (!person) return current;
+
+    const now = new Date().toISOString();
+    const activityItem: ProjectActivityItem = {
+      id: `act_${crypto.randomUUID().slice(0, 8)}`,
+      date: now,
+      title: "Personne retirée du projet",
+      detail: person.name,
+      tone: "neutral",
+    };
+
+    const updated = normalizeProject({
+      ...current,
+      people: (current.people ?? []).filter((p) => p.id !== personId),
+      // On retire aussi la personne des équipes pour éviter des membres orphelins.
+      teams: (current.teams ?? []).map((team) => ({
+        ...team,
+        memberIds: (team.memberIds ?? []).filter((id) => id !== personId),
+      })),
+      activity: [activityItem, ...(current.activity ?? [])].slice(0, 50),
+      updatedAt: now,
+    });
+
+    const nextProjects = [...projects];
+    nextProjects[projectIndex] = updated;
+    await persistProjects(nextProjects);
+    return updated;
+  });
+}
+
 export async function addProjectTeam(
   projectId: string,
   input: Pick<ProjectTeam, "name"> & Partial<Pick<ProjectTeam, "color" | "memberIds">>,
