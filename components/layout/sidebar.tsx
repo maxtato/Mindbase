@@ -8,7 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { getWorkspace, workspaceTheme, BUILTIN_WORKSPACES } from "@/lib/workspace";
+import { getWorkspace, workspaceTheme, BUILTIN_WORKSPACES, ALL_WORKSPACE } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { error, surface, text } from "@/lib/design-tokens";
 import { broadcastWorkspace, WORKSPACE_EVENT } from "@/lib/workspace-client";
@@ -99,7 +99,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
     return `/dashboard?${sp.toString()}`;
   };
 
-  const workspaces: Workspace[] = [...BUILTIN_WORKSPACES, ...environments.map((e) => e.id)];
+  const workspaces: Workspace[] = [...BUILTIN_WORKSPACES, ...environments.map((e) => e.id), ALL_WORKSPACE];
   const navItems = [
     {
       href: "/dashboard",

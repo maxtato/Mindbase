@@ -33,7 +33,7 @@ export function MindLayWordmark({
         style={{
           position: "relative",
           display: "inline-block",
-          marginLeft: fontSize * 0.06,
+          marginLeft: -fontSize * 0.04,
           paddingRight: fontSize * 0.16,
         }}
       >

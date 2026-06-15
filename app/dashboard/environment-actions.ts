@@ -24,6 +24,23 @@ export async function createEnvironmentAction(input: { name: string; color: stri
   return { id };
 }
 
+// Renomme et/ou recolore un environnement personnalisé.
+export async function updateEnvironmentAction(input: { id: string; name?: string; color?: string }): Promise<void> {
+  if (!input.id.startsWith("env_")) return;
+  const existing = await getCustomEnvironments();
+  const next = existing.map((e) =>
+    e.id === input.id
+      ? {
+          ...e,
+          name: input.name !== undefined ? (input.name.trim().slice(0, 40) || e.name) : e.name,
+          color: input.color !== undefined ? normalizeEnvColor(input.color) : e.color,
+        }
+      : e,
+  );
+  const store = await cookies();
+  store.set(ENV_COOKIE, JSON.stringify(next), { path: "/", maxAge: ONE_YEAR, sameSite: "lax" });
+}
+
 // Supprime un environnement personnalisé. (Les projets qui y étaient rattachés
 // ne sont pas supprimés ; ils restent accessibles via la vue « Tous ».)
 export async function deleteEnvironmentAction(id: string): Promise<void> {

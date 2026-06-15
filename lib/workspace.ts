@@ -27,6 +27,23 @@ export interface CustomEnvironment {
 export const BUILTIN_WORKSPACES = ["personal", "professional"] as const;
 export type BuiltinWorkspace = (typeof BUILTIN_WORKSPACES)[number];
 
+// Vue agrégée : tous les environnements à la fois.
+export const ALL_WORKSPACE = "all";
+
+const allTheme: WorkspaceTheme = {
+  accent: "#475569",
+  accentHover: "#334155",
+  accentBg: "color-mix(in srgb, #475569 12%, transparent)",
+  accentText: "#334155",
+  accentSoft: "color-mix(in srgb, #475569 16%, transparent)",
+  accentBorder: "color-mix(in srgb, #475569 38%, transparent)",
+  solidDark: "#1e293b",
+  solidMid: "#475569",
+  label: "Tous",
+  initial: "T",
+  gradient: "linear-gradient(135deg, #64748b, #334155)",
+};
+
 const builtinTheme: Record<BuiltinWorkspace, WorkspaceTheme> = {
   personal: {
     accent: "var(--mb-personal-accent)",
@@ -91,6 +108,7 @@ export function registerCustomEnvironments(envs: CustomEnvironment[]) {
 
 export function resolveWorkspaceTheme(workspace: string): WorkspaceTheme {
   if (workspace === "personal" || workspace === "professional") return builtinTheme[workspace];
+  if (workspace === ALL_WORKSPACE) return allTheme;
   return customThemes.get(workspace) ?? builtinTheme.personal;
 }
 

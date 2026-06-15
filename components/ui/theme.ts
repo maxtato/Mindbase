@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { Workspace as WorkspaceType } from "@/lib/workspace";
+import { isBuiltinWorkspace, resolveWorkspaceTheme, type Workspace as WorkspaceType } from "@/lib/workspace";
 
 export type SurfaceTone = "primary" | "secondary" | "accent";
 export type FieldTone = "dark" | "light" | "accent";
@@ -293,7 +293,9 @@ export function getButtonToneClass(
   workspace: WorkspaceType = "personal"
 ) {
   if (tone === "workspace") {
-    return resolveUiWorkspaceTheme(workspace).buttonClassName;
+    // Environnement personnalisé : pas de classe thémée (la couleur vient du
+    // style inline, cf. getButtonToneStyle).
+    return isBuiltinWorkspace(workspace) ? workspaceThemes[workspace].buttonClassName : "mb-button";
   }
 
   return buttonToneClasses[tone];
@@ -304,7 +306,15 @@ export function getButtonToneStyle(
   workspace: WorkspaceType = "personal"
 ) {
   if (tone === "workspace") {
-    return resolveUiWorkspaceTheme(workspace).buttonStyle;
+    if (isBuiltinWorkspace(workspace)) return workspaceThemes[workspace].buttonStyle;
+    // Environnement personnalisé : couleur dérivée de l'environnement.
+    const t = resolveWorkspaceTheme(workspace);
+    return {
+      background: t.accent,
+      color: "#ffffff",
+      border: `1px solid ${t.accentBorder}`,
+      boxShadow: designTokens.shadows.button,
+    } satisfies CSSProperties;
   }
 
   return buttonToneStyles[tone];

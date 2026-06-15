@@ -793,6 +793,8 @@ export async function cleanupInactiveProjectStorage() {
 
 export async function getProjectsForWorkspace(workspace: Workspace) {
   const projects = await getAllProjects();
+  // Vue agrégée "all" : tous les environnements confondus.
+  if (workspace === "all") return projects;
   return projects.filter((project) => project.workspace === workspace);
 }
 
