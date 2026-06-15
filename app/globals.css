@@ -2160,11 +2160,18 @@ textarea::placeholder {
 
   .mb-project-rail-toggle {
     position: static;
-    margin: 0 auto 0.3rem;
+    /* Marge haute négative pour coller la flèche au « + » de création d'étape
+       (qui termine la colonne principale juste au-dessus). */
+    margin: -2px auto 0.3rem;
     width: 100%;
     max-width: 220px;
     border-radius: 999px;
     padding: 0.35rem 0.75rem;
+  }
+
+  /* Replié : pas de hauteur réservée superflue sous la flèche. */
+  .mb-project-rail-shell:not([open]) {
+    min-height: 0;
   }
 
   /* iPhone : la synthèse se replie verticalement (elle est SOUS ce bouton) →
@@ -2221,7 +2228,7 @@ textarea::placeholder {
     flex-direction: column;
     height: auto !important;
     align-items: stretch;
-    gap: 0.25rem;
+    gap: 0;
   }
 
   .mb-project-main-scroll {
