@@ -53,6 +53,7 @@ export type ProjectCategoryIconKey =
   | "heart"
   | "spark"
   | "music"
+  | "gamepad"
   | "plane"
   | "car"
   | "palette"
@@ -84,7 +85,7 @@ export const subcategoriesByWorkspace = {
     { key: "finances", label: "Finances", color: "#10B981", icon: "wallet" },
     { key: "sante", label: "Santé", color: "#FB7185", icon: "heart" },
     { key: "famille", label: "Famille", color: "#F472B6", icon: "users" },
-    { key: "loisirs", label: "Loisirs", color: "#F97316", icon: "music" },
+    { key: "loisirs", label: "Loisirs", color: "#F97316", icon: "gamepad" },
     { key: "voyage", label: "Voyage", color: "#0EA5E9", icon: "plane" },
     { key: "vehicules", label: "Véhicules", color: "#3B82F6", icon: "car" },
     { key: "creatif", label: "Créatif", color: "#C084FC", icon: "palette" },
