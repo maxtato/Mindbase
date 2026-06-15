@@ -2771,19 +2771,19 @@ function AddStepForm({ projectId, workspace }: { projectId: string; workspace: W
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="self-start rounded-xl px-3.5 py-2 text-[11.5px] font-semibold flex items-center justify-center gap-1.5"
+        title="Ajouter une étape"
+        aria-label="Ajouter une étape"
+        className="self-start inline-flex h-8 w-8 items-center justify-center rounded-lg"
         style={{
-          background: theme.accent,
-          color: "#FFFFFF",
-          border: "none",
+          background: surface.s2,
+          color: theme.accent,
+          border: `1px dashed ${surface.border}`,
           cursor: "pointer",
-          boxShadow: `0 6px 16px -10px ${theme.accent}`,
         }}
       >
-        <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
           <path d="M8 3.5v9M3.5 8h9" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
         </svg>
-        Ajouter une étape
       </button>
     );
   }
@@ -2834,19 +2834,19 @@ function AddTaskForm({ projectId, workspace, stepId }: { projectId: string; work
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="self-start rounded-lg px-3 py-1.5 text-[11px] font-semibold flex items-center justify-center gap-1.5"
+        title="Ajouter une tâche"
+        aria-label="Ajouter une tâche"
+        className="self-start inline-flex h-7 w-7 items-center justify-center rounded-lg"
         style={{
-          background: theme.accent,
-          color: "#FFFFFF",
-          border: "none",
+          background: surface.s2,
+          color: theme.accent,
+          border: `1px dashed ${surface.borderSubtle}`,
           cursor: "pointer",
-          boxShadow: `0 5px 14px -10px ${theme.accent}`,
         }}
       >
-        <svg width="9" height="9" viewBox="0 0 16 16" fill="none">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
           <path d="M8 3.5v9M3.5 8h9" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
         </svg>
-        Ajouter une tâche
       </button>
       {isOpen && (
         <CreateTaskDrawer
