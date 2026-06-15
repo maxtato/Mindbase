@@ -1,8 +1,11 @@
 import type { CSSProperties } from "react";
 
-// Wordmark « MindLay » : « Mind » en sans-serif gras + « Lay » en écriture
-// brush-script avec un trait souligné effilé. Monochrome (hérite de `color`),
-// donc s'adapte au thème clair/sombre et au contexte (sidebar, etc.).
+// Couleur de marque MindLay : violet « lay » + trait souligné.
+const LAY_COLOR = "#5e17eb";
+
+// Wordmark « MindLay » : « Mind » en League Spartan + « lay » en brush-script
+// Yellowtail (violet), légèrement plus grand, avec un trait souligné effilé
+// (même violet) abaissé sous le mot.
 export function MindLayWordmark({
   fontSize = 24,
   className,
@@ -23,19 +26,23 @@ export function MindLayWordmark({
         ...style,
       }}
     >
-      <span style={{ fontWeight: 800, letterSpacing: "-0.02em", fontSize }}>Mind</span>
+      <span className="mb-wordmark-mind" style={{ fontWeight: 800, letterSpacing: "-0.02em", fontSize }}>
+        Mind
+      </span>
       <span
         style={{
           position: "relative",
           display: "inline-block",
-          marginLeft: fontSize * 0.05,
-          paddingRight: fontSize * 0.12,
+          marginLeft: fontSize * 0.06,
+          paddingRight: fontSize * 0.18,
+          color: LAY_COLOR,
         }}
       >
-        <span className="mb-script" style={{ fontSize: fontSize * 1.1, lineHeight: 1 }}>
+        {/* « lay » un peu plus grand que « Mind ». */}
+        <span className="mb-script" style={{ fontSize: fontSize * 1.35, lineHeight: 1 }}>
           lay
         </span>
-        {/* Trait « brush » sous le mot, effilé vers la droite. */}
+        {/* Trait « brush » sous le mot (même violet), abaissé. */}
         <svg
           aria-hidden
           viewBox="0 0 120 18"
@@ -43,7 +50,7 @@ export function MindLayWordmark({
           style={{
             position: "absolute",
             left: "-4%",
-            bottom: -fontSize * 0.14,
+            bottom: -fontSize * 0.3,
             width: "112%",
             height: fontSize * 0.4,
             overflow: "visible",
