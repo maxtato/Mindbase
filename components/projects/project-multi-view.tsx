@@ -19,9 +19,11 @@ export function ProjectMultiView({ project, workspace }: ProjectMultiViewProps) 
       projectName={project.name}
       workspace={workspace}
       initialSteps={steps}
-      // Tout l'intérieur (numéros d'étape, boutons, accents…) suit la couleur de
-      // l'ENVIRONNEMENT. Seul le pictogramme du projet garde sa couleur de thème.
+      // Les accents (boutons, progression, coches…) suivent la couleur de
+      // l'ENVIRONNEMENT. La pastille de numéro d'étape et le pictogramme du
+      // projet gardent la couleur de THÈME du projet (subcategoryColor).
       accentColor={workspaceTheme[workspace].accent}
+      projectColor={project.subcategoryColor}
       projectPeople={project.people ?? []}
       projectTeams={project.teams ?? []}
       statusSettings={project.statusSettings}

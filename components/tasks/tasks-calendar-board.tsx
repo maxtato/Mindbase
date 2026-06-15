@@ -688,27 +688,41 @@ function CalendarTaskCard({
           }}
           title="Cliquer pour ouvrir, glisser pour planifier"
         >
-          {!isDone && (
-            <span
-              aria-hidden
-              title={`Priorité : ${displayedPriorityVisual.label.toLowerCase()}`}
-              style={{
-                position: "absolute",
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: 3,
-                background: displayedPriorityVisual.text,
-                pointerEvents: "none",
-              }}
-            />
-          )}
-          <p
-            className="mb-board-task-title line-clamp-2 text-[11px] font-semibold leading-snug"
-            style={{ color: text.primary }}
-          >
-            {entry.task.title}
-          </p>
+          {/* Trait vertical = couleur de THÈME du projet (identité projet). */}
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: 3,
+              background: project.subcategoryColor,
+              pointerEvents: "none",
+            }}
+          />
+          <div className="flex items-start gap-1.5" style={{ paddingRight: 14 }}>
+            {!isDone && (
+              <span
+                aria-hidden
+                title={`Priorité : ${displayedPriorityVisual.label.toLowerCase()}`}
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: 999,
+                  background: displayedPriorityVisual.text,
+                  flexShrink: 0,
+                  marginTop: 3,
+                }}
+              />
+            )}
+            <p
+              className="mb-board-task-title line-clamp-2 text-[11px] font-semibold leading-snug min-w-0 flex-1"
+              style={{ color: text.primary }}
+            >
+              {entry.task.title}
+            </p>
+          </div>
           <p className="mt-1 truncate text-[10px]" style={{ color: text.muted }}>
             {project.name}
           </p>

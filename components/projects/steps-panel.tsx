@@ -47,6 +47,9 @@ interface StepsPanelProps {
   workspace: Workspace;
   initialSteps: Step[];
   accentColor: string;
+  /** Couleur de thème du projet (subcategoryColor) — utilisée pour la pastille
+   *  du numéro d'étape. */
+  projectColor: string;
   projectPeople?: ProjectPerson[];
   projectTeams?: ProjectTeam[];
   statusSettings?: ProjectStatusSettings;
@@ -126,7 +129,7 @@ function appendRealization(existing: string | undefined, detail: string) {
   return `${previous}\n${cleaned}`;
 }
 
-export function StepsPanel({ projectId, projectName, workspace, initialSteps, accentColor, projectPeople = [], projectTeams = [], statusSettings }: StepsPanelProps) {
+export function StepsPanel({ projectId, projectName, workspace, initialSteps, accentColor, projectColor, projectPeople = [], projectTeams = [], statusSettings }: StepsPanelProps) {
   const router = useRouter();
   const orderedSteps = useMemo(() => sortSteps(initialSteps), [initialSteps]);
   const [steps, setSteps] = useState<Step[]>(orderedSteps);
@@ -739,6 +742,7 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
               workspace={workspace}
               step={step}
               accentColor={accentColor}
+              projectColor={projectColor}
               isDragging={dragState?.type === "step" && dragState.stepId === step.id}
               dropPosition={stepDropTarget?.stepId === step.id ? stepDropTarget.position : null}
               onStepDragStart={(event) => handleStepDragStart(event, step.id)}
@@ -868,6 +872,7 @@ function StepCard({
   workspace,
   step,
   accentColor,
+  projectColor,
   isDragging,
   dropPosition,
   onStepDragStart,
@@ -896,6 +901,7 @@ function StepCard({
   workspace: Workspace;
   step: Step;
   accentColor: string;
+  projectColor: string;
   isDragging: boolean;
   dropPosition: DropPosition | null;
   onStepDragStart: (event: DragEvent<HTMLElement>) => void;
@@ -987,7 +993,7 @@ function StepCard({
             aria-hidden
             className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
             style={{
-              background: accentColor,
+              background: projectColor,
               color: "#FFFFFF",
               border: "none",
             }}

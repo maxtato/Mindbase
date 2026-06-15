@@ -5,10 +5,9 @@ import { surface, text } from "@/lib/design-tokens";
 import { useEnvironments } from "@/components/environments/environments-provider";
 import { updateEnvironmentAction, deleteEnvironmentAction } from "@/app/dashboard/environment-actions";
 
-const PRESET_COLORS = [
-  "#5e17eb", "#7c3aed", "#2563eb", "#0ea5e9", "#0d9488",
-  "#16a34a", "#ca8a04", "#ea580c", "#dc2626", "#db2777", "#475569", "#111827",
-];
+// Tous les environnements partagent la couleur violette : pas de choix de
+// couleur, seul le nom est modifiable.
+const ENV_COLOR = "var(--mb-personal-accent)";
 
 export function EnvironmentsManager() {
   const environments = useEnvironments();
@@ -22,11 +21,6 @@ export function EnvironmentsManager() {
   async function rename(id: string, name: string) {
     setBusyId(id);
     await updateEnvironmentAction({ id, name });
-    window.location.reload();
-  }
-  async function recolor(id: string, color: string) {
-    setBusyId(id);
-    await updateEnvironmentAction({ id, color });
     window.location.reload();
   }
   async function remove(id: string) {
@@ -52,18 +46,13 @@ export function EnvironmentsManager() {
               className="flex items-center gap-3 rounded-xl px-3 py-2.5"
               style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}
             >
-              <label
-                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
-                style={{ background: env.color, position: "relative", cursor: "pointer" }}
-                title="Changer la couleur"
+              <span
+                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                style={{ background: ENV_COLOR }}
+                aria-hidden
               >
-                <input
-                  type="color"
-                  defaultValue={env.color}
-                  onChange={(e) => recolor(env.id, e.target.value)}
-                  style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer" }}
-                />
-              </label>
+                {(env.name.trim().charAt(0) || "E").toUpperCase()}
+              </span>
               <input
                 type="text"
                 defaultValue={env.name}
