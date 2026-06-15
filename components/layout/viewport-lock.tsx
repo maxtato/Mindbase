@@ -2,43 +2,25 @@
 
 import { useEffect } from "react";
 
-// Sur iPhone, ni `100dvh` ni `position:fixed; inset:0` ne donnent de façon
-// fiable la hauteur EXACTE de la zone visible (toolbar dynamique, safe-areas,
-// PWA standalone…), d'où une bande grise sous la bottom nav. On mesure donc la
-// zone visible réelle via `visualViewport` et on l'expose dans
-// `--mb-app-height`, que l'app-shell utilise comme hauteur. Mis à jour à chaque
-// changement (rotation, toolbar, clavier). Body en overflow:hidden pour éviter
-// tout défilement parasite. Scopé au dashboard (monté/démonté avec lui).
+// Sur le dashboard, on empêche tout défilement du body : l'app-shell
+// (position:fixed; inset:0) gère sa propre zone scrollable interne. Évite que
+// le fond de page « dépasse » ou rebondisse sous l'app-shell sur iPhone.
+// Scopé au dashboard (restauré au démontage → les pages d'auth gardent leur
+// défilement normal).
 export function ViewportLock() {
   useEffect(() => {
-    const root = document.documentElement;
+    const html = document.documentElement;
     const body = document.body;
-    const prev = { ho: root.style.overflow, bo: body.style.overflow };
-    root.style.overflow = "hidden";
-    body.style.overflow = "hidden";
-
-    const apply = () => {
-      const h = window.visualViewport?.height ?? window.innerHeight;
-      root.style.setProperty("--mb-app-height", `${Math.round(h)}px`);
+    const prev = {
+      htmlOverflow: html.style.overflow,
+      bodyOverflow: body.style.overflow,
     };
-    apply();
-
-    const vv = window.visualViewport;
-    vv?.addEventListener("resize", apply);
-    vv?.addEventListener("scroll", apply);
-    window.addEventListener("resize", apply);
-    window.addEventListener("orientationchange", apply);
-
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
     return () => {
-      root.style.overflow = prev.ho;
-      body.style.overflow = prev.bo;
-      root.style.removeProperty("--mb-app-height");
-      vv?.removeEventListener("resize", apply);
-      vv?.removeEventListener("scroll", apply);
-      window.removeEventListener("resize", apply);
-      window.removeEventListener("orientationchange", apply);
+      html.style.overflow = prev.htmlOverflow;
+      body.style.overflow = prev.bodyOverflow;
     };
   }, []);
-
   return null;
 }
