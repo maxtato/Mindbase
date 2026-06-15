@@ -19,10 +19,12 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
 
   return (
     <header
-      className="mb-topbar flex items-center justify-between gap-4 shrink-0"
+      className="mb-topbar flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4 shrink-0"
       style={{
         position: "relative",
-        // Barre plus épaisse (présence + premium).
+        // Barre plus épaisse (présence + premium). Sur iPhone elle passe sur
+        // 2 lignes (titre en haut, contrôles en dessous) → le nom du menu n'est
+        // plus coupé par la recherche / le sélecteur d'environnement.
         minHeight: "clamp(74px, 9vw, 86px)",
         padding: "15px clamp(12px, 3vw, 24px)",
         // Fond uni (plus de voile dégradé) — la signature d'environnement reste
@@ -44,7 +46,7 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
           opacity: 0.9,
         }}
       />
-      <div className="flex items-center gap-2 min-w-0 sm:gap-3">
+      <div className="flex w-full items-center gap-2 min-w-0 sm:w-auto sm:gap-3">
         {/* iPhone uniquement : logo MindLay devant le titre du menu. Sur
             desktop la sidebar porte déjà le logo → on masque via le WRAPPER
             (sm:hidden). Important : on ne met PAS sm:hidden sur l'<Image> car
@@ -94,7 +96,7 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
         )}
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+      <div className="flex w-full shrink-0 flex-wrap items-center justify-start gap-2 sm:w-auto sm:justify-end">
         {/* Recherche globale (palette ⌘K) — accessible partout. */}
         <CommandTrigger />
         {/* Switcher d'environnement (Personnel / Professionnel) — cliquable.

@@ -30,18 +30,20 @@ export type BuiltinWorkspace = (typeof BUILTIN_WORKSPACES)[number];
 // Vue agrégée : tous les environnements à la fois.
 export const ALL_WORKSPACE = "all";
 
+// Vue « Tous » : mauve clair.
+const ALL_COLOR = "#a78bfa";
 const allTheme: WorkspaceTheme = {
-  accent: "#475569",
-  accentHover: "#334155",
-  accentBg: "color-mix(in srgb, #475569 12%, transparent)",
-  accentText: "#334155",
-  accentSoft: "color-mix(in srgb, #475569 16%, transparent)",
-  accentBorder: "color-mix(in srgb, #475569 38%, transparent)",
-  solidDark: "#1e293b",
-  solidMid: "#475569",
+  accent: ALL_COLOR,
+  accentHover: `color-mix(in srgb, ${ALL_COLOR} 85%, #000)`,
+  accentBg: `color-mix(in srgb, ${ALL_COLOR} 14%, transparent)`,
+  accentText: `color-mix(in srgb, ${ALL_COLOR} 70%, #000)`,
+  accentSoft: `color-mix(in srgb, ${ALL_COLOR} 18%, transparent)`,
+  accentBorder: `color-mix(in srgb, ${ALL_COLOR} 40%, transparent)`,
+  solidDark: `color-mix(in srgb, ${ALL_COLOR} 80%, #000)`,
+  solidMid: ALL_COLOR,
   label: "Tous",
   initial: "T",
-  gradient: "linear-gradient(135deg, #64748b, #334155)",
+  gradient: `linear-gradient(135deg, ${ALL_COLOR}, color-mix(in srgb, ${ALL_COLOR} 70%, #000))`,
 };
 
 const builtinTheme: Record<BuiltinWorkspace, WorkspaceTheme> = {
