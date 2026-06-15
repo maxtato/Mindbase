@@ -132,9 +132,8 @@ export function ProjectIdentityEditor({
           borderRadius: size === "lg" ? 14 : size === "sm" ? 10 : 12,
           border: onColor ? `1px solid rgba(255,255,255,0.4)` : "none",
           cursor: "pointer",
-          boxShadow: onColor
-            ? "0 4px 10px -4px rgba(0,0,0,0.18)"
-            : `0 6px 16px -8px ${display.color}, inset 0 1px 0 rgba(255,255,255,0.2)`,
+          // Ombre neutre et discrète (plus de halo coloré qui « bavait »).
+          boxShadow: "0 1px 3px rgba(16, 24, 40, 0.12)",
           transition: "background-color 180ms var(--mb-ease), box-shadow 180ms var(--mb-ease), transform 120ms var(--mb-ease)",
         }}
         title="Modifier le type et le pictogramme du projet"

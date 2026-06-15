@@ -2221,7 +2221,7 @@ textarea::placeholder {
     flex-direction: column;
     height: auto !important;
     align-items: stretch;
-    gap: 0.6rem;
+    gap: 0.25rem;
   }
 
   .mb-project-main-scroll {
