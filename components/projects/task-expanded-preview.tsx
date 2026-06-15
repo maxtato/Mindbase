@@ -9,6 +9,7 @@ import { addTaskDiscussionMessageAction } from "@/app/dashboard/projects/[id]/ac
 import {
   suggestTaskChecklistAction,
   applyAIChecklistAction,
+  organizeTaskRealizationAction,
 } from "@/app/dashboard/projects/ai-actions";
 import { ExpectedAssistant } from "@/components/projects/expected-assistant";
 import { Button } from "@/components/ui/button";
@@ -95,7 +96,7 @@ export function TaskExpandedPreview({
             projectId={projectId}
             stepId={stepId}
           />
-          <RealizationField task={task} onUpdate={onUpdate} accentColor={accentColor} bulletAccent={aiAccent} />
+          <RealizationField task={task} onUpdate={onUpdate} accentColor={accentColor} bulletAccent={aiAccent} aiAccent={aiAccent} />
         </TaskPreviewPane>
 
         <TaskPreviewPane>
@@ -563,11 +564,13 @@ function RealizationField({
   onUpdate,
   accentColor,
   bulletAccent,
+  aiAccent,
 }: {
   task: Task;
   onUpdate?: TaskExpandedPreviewProps["onUpdate"];
   accentColor: string;
   bulletAccent: string;
+  aiAccent: string;
 }) {
   const initialRows = useMemo(
     () => parseBulletRows(task.realization ?? task.completionDetails ?? ""),
@@ -579,8 +582,44 @@ function RealizationField({
   const dirty = !rowsEqual(rows, initialRows);
   const editable = Boolean(onUpdate);
 
+  const [aiPending, setAiPending] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const hasText = rows.some((row) => row.trim());
+
+  // Assistant IA : sépare le texte saisi en actions distinctes (une par ligne).
+  async function handleOrganize() {
+    if (!editable || aiPending) return;
+    const text = rowsToString(rows);
+    if (!text.trim()) {
+      setAiError("Écris d'abord ce qui a été fait.");
+      return;
+    }
+    setAiError(null);
+    setAiPending(true);
+    try {
+      const { lines } = await organizeTaskRealizationAction({ text });
+      if (lines.length > 0) setRows(lines);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : "Erreur IA.");
+    } finally {
+      setAiPending(false);
+    }
+  }
+
   return (
-    <FieldShell title="Réalisation" icon="realization" iconColor={statusColor.green.text}>
+    <FieldShell
+      title="Réalisation"
+      icon="realization"
+      iconColor={statusColor.green.text}
+      rightSlot={
+        <AIChip
+          label={aiPending ? "IA…" : "Assistant IA"}
+          accentColor={aiAccent}
+          onClick={handleOrganize}
+          disabled={aiPending || !editable || !hasText}
+        />
+      }
+    >
       <BulletListEditor
         rows={rows}
         onChange={setRows}
@@ -589,6 +628,11 @@ function RealizationField({
         minHeight={200}
         editable={editable}
       />
+      {aiError && (
+        <p className="mt-1.5 text-[11px]" style={{ color: errorTokens.text }}>
+          {aiError}
+        </p>
+      )}
       <FieldActions
         dirty={dirty}
         onSave={() => onUpdate?.({ realization: rowsToString(rows) })}
