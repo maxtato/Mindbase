@@ -82,7 +82,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
 
   const brandWidth = collapsed ? 52 : 188;
   const brandHeight = collapsed ? 52 : 72;
-  const brandLogoSize = collapsed ? 46 : 36;
+  const brandLogoSize = collapsed ? 38 : 28;
 
   const isActive = (href: string, exact = false) =>
     exact ? pathname === href : pathname.startsWith(href);
