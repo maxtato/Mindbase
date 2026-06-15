@@ -83,7 +83,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
   }, []);
 
   const brandWidth = collapsed ? 52 : 188;
-  const brandHeight = collapsed ? 52 : 64;
+  const brandHeight = collapsed ? 52 : 72;
   const brandLogoSize = collapsed ? 46 : 42;
 
   const isActive = (href: string, exact = false) =>
@@ -183,7 +183,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
       <div
         className="mb-4 relative"
         style={{
-          minHeight: collapsed ? 74 : 76,
+          minHeight: collapsed ? 74 : 88,
           paddingInline: collapsed ? 3 : 12,
           display: "flex",
           flexDirection: "column",
@@ -204,19 +204,21 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
             justifyContent: collapsed ? "center" : "flex-start",
           }}
         >
-          <Image
-            src="/mindbase-iphone.png"
-            alt="MindLay"
-            // Intrinsèque 3× la taille d'affichage → net sur écrans retina.
-            width={brandLogoSize * 3}
-            height={brandLogoSize * 3}
-            quality={95}
-            priority
-            className="shrink-0"
-            style={{ display: "block", width: brandLogoSize, height: brandLogoSize, objectFit: "contain", borderRadius: 10 }}
-          />
-          {!collapsed && (
-            <MindLayWordmark fontSize={24} style={{ color: text.sidebar }} />
+          {collapsed ? (
+            <Image
+              src="/mindbase-iphone.png"
+              alt="MindLay"
+              // Intrinsèque 3× la taille d'affichage → net sur écrans retina.
+              width={brandLogoSize * 3}
+              height={brandLogoSize * 3}
+              quality={95}
+              priority
+              className="shrink-0"
+              style={{ display: "block", width: brandLogoSize, height: brandLogoSize, objectFit: "contain", borderRadius: 10 }}
+            />
+          ) : (
+            // Déplié : le wordmark seul, agrandi pour remplir la largeur de la sidebar.
+            <MindLayWordmark fontSize={40} style={{ color: text.sidebar }} />
           )}
         </Link>
 
