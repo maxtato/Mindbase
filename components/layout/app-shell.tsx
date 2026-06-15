@@ -41,12 +41,12 @@ export async function AppShell({ children, accountName }: AppShellProps) {
       className="flex overflow-hidden"
       style={{
         background: surface.bg,
-        // position:fixed + inset:0 colle le shell exactement à la zone visible
-        // (PWA standalone iPhone) → la bottom nav est toujours au ras du bas,
-        // sans bande grise dessous. height:100dvh en repli.
+        // position:fixed + inset:0 SANS height explicite : l'élément s'étire de
+        // top:0 à bottom:0 = toute la zone visible (PWA iPhone), donc la bottom
+        // nav touche vraiment le bas. (Mettre height:100dvh annulait bottom:0 et
+        // laissait une marge sous la barre.)
         position: "fixed",
         inset: 0,
-        height: "100dvh",
       }}
     >
       {/* Sidebar — masquée < sm via Tailwind, plus de Suspense boundary.

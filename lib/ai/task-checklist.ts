@@ -13,15 +13,21 @@ interface GenerateChecklistInput {
   task: Task;
 }
 
-const SYSTEM_PROMPT = `Tu génères la checklist d'une tâche : uniquement les sous-actions concrètes encore nécessaires.
+const SYSTEM_PROMPT = `Tu génères la checklist d'une tâche : les sous-actions concrètes encore nécessaires.
+
+BUT ULTIME — FAIRE AVANCER LE PROJET :
+- Pars TOUJOURS du principe que l'objectif final est de faire PROGRESSER le projet vers son but.
+- Chaque sous-action proposée doit être celle qui fait avancer le plus concrètement cette tâche — et donc le projet — vers cet objectif.
+- Priorise les actions à FORT IMPACT et celles qui DÉBLOQUENT la suite (décisions, livrables, dépendances), pas le travail cosmétique ou administratif.
+- Demande-toi pour chaque item : « est-ce que faire ça rapproche réellement le projet de son objectif ? » Si non, ne le propose pas.
 
 AVANT DE RÉPONDRE, lis ATTENTIVEMENT :
 1. La tâche : titre, attendu, réalisation déjà rédigée.
 2. L'étape qui la contient : titre et description.
-3. Le plan complet du projet pour repérer ce qui est déjà couvert ailleurs.
+3. L'objectif et le contexte du projet (plan complet) — pour viser ce qui le fait avancer et repérer ce qui est déjà couvert ailleurs.
 
 PHILOSOPHIE — concision et pertinence stricte :
-- Mieux vaut 2 items vraiment utiles que 5 vagues. Vise minimal et concret.
+- Mieux vaut 2 items vraiment utiles (qui font avancer le projet) que 5 vagues. Vise minimal, concret et à impact.
 - Chaque item doit être une action que l'utilisateur DOIT faire pour finir la tâche, pas une étape théorique.
 - Ne propose une action que si elle est NÉCESSAIRE, SPÉCIFIQUE à cette tâche et NON déjà couverte ailleurs.
 - Si la tâche est triviale, simple ou presque finie, propose 0 ou 1 item — il est légitime de renvoyer une liste vide.
@@ -88,7 +94,7 @@ export async function generateTaskChecklist(input: GenerateChecklistInput): Prom
       : "Checklist actuelle : vide.",
     "",
     "=== TA MISSION ===",
-    "Propose UNIQUEMENT les sous-actions concrètes restantes pour cette tâche, en cohérence avec le projet et l'étape, sans empiéter sur d'autres tâches du plan. Privilégie la pertinence à la quantité.",
+    "Propose UNIQUEMENT les sous-actions concrètes restantes pour cette tâche, en gardant comme cap de FAIRE AVANCER LE PROJET vers son objectif : choisis les plus pertinentes et à plus fort impact, en cohérence avec le projet et l'étape, sans empiéter sur d'autres tâches du plan. Privilégie la pertinence et l'impact à la quantité.",
   ].join("\n");
 
   const response = await client.chat.completions.create({
