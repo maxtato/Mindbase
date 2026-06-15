@@ -4,7 +4,7 @@ import type { CSSProperties } from "react";
 // forme est peinte avec `currentColor`. Résultat : monochrome, net à toute
 // densité, et qui suit le thème — sombre en mode clair, blanc en mode sombre
 // (quand `color` pointe sur une variable de texte qui s'inverse).
-const ASPECT = 1824 / 1412; // ratio natif de l'asset
+const ASPECT = 1; // logo carré (cadre quasi carré)
 
 export function FlatmindLogoMark({
   height = 32,
