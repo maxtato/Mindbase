@@ -37,8 +37,8 @@ export function MindLayWordmark({
           paddingRight: fontSize * 0.16,
         }}
       >
-        {/* « lay » légèrement plus grand que « Mind ». */}
-        <span className="mb-script" style={{ fontSize: fontSize * 1.1, lineHeight: 1 }}>
+        {/* « lay » à la même échelle que « Mind » (légèrement réduit). */}
+        <span className="mb-script" style={{ fontSize: fontSize * 1.0, lineHeight: 1 }}>
           lay
         </span>
         {/* Trait « brush » sous le mot (même teinte que le texte). */}
