@@ -1,10 +1,10 @@
-import Image from "next/image";
 import { workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { surface, text } from "@/lib/design-tokens";
 import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
 import { CommandTrigger } from "@/components/search/command-trigger";
-import { MindLayWordmark } from "@/components/branding/mindlay-wordmark";
+import { FlatmindWordmark } from "@/components/branding/mindlay-wordmark";
+import { FlatmindMark } from "@/components/branding/flatmind-mark";
 
 interface TopbarProps {
   title: string;
@@ -47,7 +47,7 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
           opacity: 0.9,
         }}
       />
-      {/* Ligne 1 : titre du menu à GAUCHE, et sur iPhone le wordmark « MindLay »
+      {/* Ligne 1 : titre du menu à GAUCHE, et sur iPhone le wordmark « Flatmind »
           à DROITE. Sur desktop la sidebar porte déjà le logo → wordmark masqué
           (sm:hidden). */}
       <div className="flex w-full items-center justify-between gap-2 min-w-0 sm:w-auto sm:justify-start sm:gap-3">
@@ -85,18 +85,10 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
           </div>
         )}
 
-        {/* iPhone : logo (icône « M ») + wordmark « MindLay » à droite du titre. */}
+        {/* iPhone : logo (cerveau Flatmind) + wordmark « Flatmind » à droite du titre. */}
         <span className="flex shrink-0 items-center gap-2 sm:hidden">
-          <Image
-            src="/mindbase-iphone.png"
-            alt="MindLay"
-            width={108}
-            height={108}
-            quality={95}
-            priority
-            style={{ display: "block", width: 32, height: 32, objectFit: "contain", borderRadius: 8 }}
-          />
-          <MindLayWordmark fontSize={28} style={{ color: text.primary }} />
+          <FlatmindMark size={30} style={{ color: text.primary }} />
+          <FlatmindWordmark fontSize={28} style={{ color: text.primary }} />
         </span>
       </div>
 

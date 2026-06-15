@@ -2,11 +2,11 @@ import type { MetadataRoute } from "next";
 
 // Manifest PWA — installable depuis Safari iOS (Partager → Sur l'écran d'accueil)
 // et depuis Chrome / Edge sur desktop & Android. Les icônes sont générées par
-// `scripts/generate-icons.mjs` à partir du mark MindLay.
+// `scripts/generate-icons.mjs` à partir du mark Flatmind.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "MindLay",
-    short_name: "MindLay",
+    name: "Flatmind",
+    short_name: "Flatmind",
     description: "Reliez vos projets, tâches, fichiers et décisions en un seul endroit.",
     start_url: "/dashboard",
     scope: "/",

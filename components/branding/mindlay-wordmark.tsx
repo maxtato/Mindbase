@@ -1,9 +1,9 @@
 import type { CSSProperties } from "react";
 
-// Wordmark « MindLay » : « Mind » en League Spartan + « lay » en brush-script
-// Yellowtail, légèrement plus grand, avec un trait souligné effilé. Monochrome :
-// tout hérite de `color` (donc même teinte que « Mind » / le contexte).
-export function MindLayWordmark({
+// Wordmark « Flatmind » : « Flat » en League Spartan + « mind » en script
+// Pacifico, avec un trait souligné effilé sous « mind ». Monochrome : tout
+// hérite de `color` (donc même teinte que le contexte).
+export function FlatmindWordmark({
   fontSize = 24,
   className,
   style,
@@ -24,11 +24,9 @@ export function MindLayWordmark({
       }}
     >
       <span className="mb-wordmark-mind" style={{ fontWeight: 700, letterSpacing: "-0.02em", fontSize }}>
-        Mind
+        Flat
       </span>
-      {/* « lay » est un sibling inline avec alignItems:baseline sur le parent →
-          sa ligne de base s'aligne sur celle de « Mind » (pas de décalage
-          manuel, qui désalignait). */}
+      {/* « mind » : script Pacifico, aligné sur la ligne de base de « Flat ». */}
       <span
         style={{
           position: "relative",
@@ -37,12 +35,10 @@ export function MindLayWordmark({
           paddingRight: fontSize * 0.16,
         }}
       >
-        {/* « lay » à la même échelle que « Mind » (légèrement réduit). */}
         <span className="mb-script" style={{ fontSize: fontSize * 1.0, lineHeight: 1 }}>
-          lay
+          mind
         </span>
-        {/* Trait « brush » sous le mot (même teinte que le texte) : fin et
-            détaché du texte. */}
+        {/* Trait « brush » sous « mind » (même teinte) : fin et détaché. */}
         <svg
           aria-hidden
           viewBox="0 0 120 18"

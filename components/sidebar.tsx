@@ -92,7 +92,7 @@ export function Sidebar() {
           )}
         </div>
         <div className="mb-sidebar-brand-text">
-          <span className="mb-sidebar-brand-name">MindLay</span>
+          <span className="mb-sidebar-brand-name">Flatmind</span>
           <span className="mb-sidebar-brand-meta" style={{ color: theme.accentText }}>
             {theme.label}
           </span>
