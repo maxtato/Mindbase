@@ -39,7 +39,15 @@ export async function AppShell({ children, accountName }: AppShellProps) {
     <ViewportLock />
     <div
       className="flex overflow-hidden"
-      style={{ background: surface.bg, height: "100dvh" }}
+      style={{
+        background: surface.bg,
+        // position:fixed + inset:0 colle le shell exactement à la zone visible
+        // (PWA standalone iPhone) → la bottom nav est toujours au ras du bas,
+        // sans bande grise dessous. height:100dvh en repli.
+        position: "fixed",
+        inset: 0,
+        height: "100dvh",
+      }}
     >
       {/* Sidebar — masquée < sm via Tailwind, plus de Suspense boundary.
           On lui passe initialWorkspace pour que les liens SSR pointent
