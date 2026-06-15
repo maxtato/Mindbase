@@ -2199,13 +2199,17 @@ textarea::placeholder {
   }
 
   /* iPhone : flux naturel — la colonne étapes ne doit PAS remplir toute la
-     hauteur (sinon align-items:stretch + height:100% poussaient la flèche de
-     synthèse tout en bas, gros vide). On force la hauteur au contenu et on
-     empile en partant du haut. */
+     hauteur (sinon un grand vide apparaissait entre « Ajouter une étape » et
+     la flèche de synthèse). On bascule le conteneur en FLEX colonne : les
+     enfants prennent leur hauteur de contenu dans l'axe d'empilement et ne
+     peuvent pas être étirés verticalement comme avec align-items:stretch en
+     grille. align-items:stretch garde les cartes en pleine largeur. */
   .mb-project-detail-shell .mb-project-command-grid {
+    display: flex !important;
+    flex-direction: column;
     height: auto !important;
-    align-items: start;
-    align-content: start;
+    align-items: stretch;
+    gap: 0.6rem;
   }
 
   .mb-project-main-scroll {
