@@ -5,6 +5,7 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { getProjectById } from "@/lib/project-store";
 import { formatShortDate } from "@/lib/date-format";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
+import { syncEnvironmentThemes } from "@/lib/environment-store";
 import { surface, text, severity } from "@/lib/design-tokens";
 import { ProjectIdentityEditor } from "@/components/projects/project-identity-editor";
 import { AISynthesisButton } from "@/components/projects/ai-synthesis-button";
@@ -33,6 +34,7 @@ export default async function ProjectDetailPage({
   searchParams: Promise<{ workspace?: string }>;
 }) {
   const [{ id }, sp] = await Promise.all([params, searchParams]);
+  await syncEnvironmentThemes();
   const project = await getProjectById(id);
   if (!project) notFound();
 

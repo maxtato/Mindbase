@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 import { Topbar } from "@/components/layout/topbar";
 import { getProjectsForWorkspace } from "@/lib/project-store";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
+import { syncEnvironmentThemes } from "@/lib/environment-store";
 import { flattenProjectTasks, isTaskOverdue, type FlattenedProjectTask } from "@/lib/project-insights";
 import { deriveTaskStatus } from "@/lib/project-plan";
 import { surface, text, error as errorTokens, statusColor } from "@/lib/design-tokens";
@@ -34,6 +35,9 @@ export default async function DashboardPage({
   searchParams: Promise<{ workspace?: string }>;
 }) {
   const sp = await searchParams;
+  // Enregistre les thèmes des environnements custom AVANT de lire le thème
+  // (sinon repli violet « Personnel » pour un env perso).
+  await syncEnvironmentThemes();
   const workspace = getWorkspace(sp.workspace);
   const theme = workspaceTheme[workspace];
   const qs = `workspace=${workspace}`;

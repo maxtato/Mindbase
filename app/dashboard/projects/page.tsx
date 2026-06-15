@@ -3,6 +3,7 @@ import { Topbar } from "@/components/layout/topbar";
 import { ProjectsGrid } from "@/components/projects/projects-grid";
 import { getProjectsForWorkspace } from "@/lib/project-store";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
+import { syncEnvironmentThemes } from "@/lib/environment-store";
 
 export default async function ProjectsPage({
   searchParams,
@@ -10,6 +11,7 @@ export default async function ProjectsPage({
   searchParams: Promise<{ workspace?: string }>;
 }) {
   const sp = await searchParams;
+  await syncEnvironmentThemes();
   const workspace = getWorkspace(sp.workspace);
   const theme = workspaceTheme[workspace];
   const qs = `workspace=${workspace}`;
