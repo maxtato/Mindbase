@@ -13,11 +13,12 @@ import {
   normalizeHexColor,
   type ProjectPriority,
 } from "@/lib/project-taxonomy";
-import { workspaceTheme, type Workspace } from "@/lib/workspace";
+import { workspaceTheme, BUILTIN_WORKSPACES, ALL_WORKSPACE, type Workspace } from "@/lib/workspace";
 import { stepStatusLabels, taskStatusLabels } from "@/lib/project-plan";
 import type { StepStatus, TaskStatus } from "@/lib/mock-data";
 import { ProjectCategoryIcon } from "@/components/projects/project-taxonomy-ui";
 import { AIProjectCreator, AIProjectCreatorTrigger } from "@/components/projects/ai-project-creator";
+import { useEnvironments } from "@/components/environments/environments-provider";
 
 const TASK_STATUS_ORDER: TaskStatus[] = ["todo", "in_progress", "waiting", "blocked", "done"];
 const STEP_STATUS_ORDER: StepStatus[] = ["todo", "in_progress", "waiting", "done"];
@@ -51,13 +52,18 @@ interface CustomProjectFormProps {
 
 export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
   const router = useRouter();
-  const theme = workspaceTheme[workspace];
+  const environments = useEnvironments();
+  const isAll = workspace === ALL_WORKSPACE;
+  // En vue « Tous », on demande dans quel environnement créer le projet.
+  const [targetWorkspace, setTargetWorkspace] = useState<Workspace>(isAll ? "personal" : workspace);
+  const effectiveWorkspace = isAll ? targetWorkspace : workspace;
+  const theme = workspaceTheme[effectiveWorkspace];
   const [state, formAction, pending] = useActionState(createProjectAction, initialCreateProjectFormState);
-  const [subcategory, setSubcategory] = useState<string>(getSubcategoryOptions(workspace)[0]?.key ?? "other");
+  const [subcategory, setSubcategory] = useState<string>(getSubcategoryOptions(effectiveWorkspace)[0]?.key ?? "other");
   const [priority, setPriority] = useState<ProjectPriority>("medium");
   const [customSubcategoryLabel, setCustomSubcategoryLabel] = useState("");
   const [customSubcategoryColor, setCustomSubcategoryColor] = useState<string>(
-    getSubcategoryOption(workspace, "other")?.color ?? CUSTOM_SUBCATEGORY_DEFAULT_COLOR,
+    getSubcategoryOption(effectiveWorkspace, "other")?.color ?? CUSTOM_SUBCATEGORY_DEFAULT_COLOR,
   );
   const [taskStatuses, setTaskStatuses] = useState<Array<EditableStatus<TaskStatus>>>(() =>
     TASK_STATUS_ORDER.map((status) => ({
@@ -111,7 +117,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
             ← Retour
           </button>
           <AIProjectCreatorTrigger
-            workspace={workspace}
+            workspace={effectiveWorkspace}
             active={aiOpen}
             onToggle={() => setAiOpen((current) => !current)}
           />
@@ -124,11 +130,31 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
       <main className="mb-mobile-scroll flex-1 overflow-y-auto px-3 sm:px-6 py-4 sm:py-7">
         {aiOpen && (
           <div className="mx-auto mb-5 w-full max-w-[1480px]">
-            <AIProjectCreator workspace={workspace} open={aiOpen} onOpenChange={setAiOpen} />
+            <AIProjectCreator workspace={effectiveWorkspace} open={aiOpen} onOpenChange={setAiOpen} />
           </div>
         )}
         <form action={formAction} className="mx-auto grid w-full max-w-[1480px] gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.82fr)_minmax(340px,0.9fr)]">
-          <input type="hidden" name="workspace" value={workspace} />
+          <input type="hidden" name="workspace" value={effectiveWorkspace} />
+          {isAll && (
+            <div className="xl:col-span-3" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <label className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
+                Environnement
+              </label>
+              <select
+                value={targetWorkspace}
+                onChange={(event) => setTargetWorkspace(event.target.value)}
+                className="rounded-xl px-3 py-2.5 text-sm outline-none"
+                style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.border}`, maxWidth: 320 }}
+              >
+                {BUILTIN_WORKSPACES.map((ws) => (
+                  <option key={ws} value={ws}>{workspaceTheme[ws].label}</option>
+                ))}
+                {environments.map((env) => (
+                  <option key={env.id} value={env.id}>{env.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <input type="hidden" name="mode" value="custom" />
           <input type="hidden" name="status" value="preparing" />
           <input type="hidden" name="projectType" value="execution" />
@@ -203,7 +229,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
             <div className="mt-5 grid gap-4">
               <Field label="Catégorie" errorMessage={state.errors?.subcategory}>
                 <div className="grid grid-cols-2 gap-2">
-                  {getSubcategoryOptions(workspace).map((option) => {
+                  {getSubcategoryOptions(effectiveWorkspace).map((option) => {
                     const selected = subcategory === option.key;
                     return (
                       <button

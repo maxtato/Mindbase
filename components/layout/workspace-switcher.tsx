@@ -6,7 +6,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { workspaceTheme, BUILTIN_WORKSPACES } from "@/lib/workspace";
+import { workspaceTheme, BUILTIN_WORKSPACES, ALL_WORKSPACE } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { broadcastWorkspace } from "@/lib/workspace-client";
 import { useEnvironments } from "@/components/environments/environments-provider";
@@ -34,7 +34,7 @@ export function WorkspaceSwitcher({ workspace }: WorkspaceSwitcherProps) {
     return `${pathname}?${next.toString()}`;
   }
 
-  const items: Workspace[] = [...BUILTIN_WORKSPACES, ...environments.map((e) => e.id)];
+  const items: Workspace[] = [...BUILTIN_WORKSPACES, ...environments.map((e) => e.id), ALL_WORKSPACE];
 
   return (
     <>
