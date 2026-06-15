@@ -2777,7 +2777,7 @@ function AddStepForm({ projectId, workspace }: { projectId: string; workspace: W
         style={{
           background: surface.s2,
           color: theme.accent,
-          border: `1px dashed ${surface.border}`,
+          border: `1px solid ${surface.border}`,
           cursor: "pointer",
         }}
       >
@@ -2791,8 +2791,8 @@ function AddStepForm({ projectId, workspace }: { projectId: string; workspace: W
   return (
     <form
       action={addStepToProjectAction}
-      className="rounded-xl p-3"
-      style={{ background: surface.s2, border: `1px dashed ${surface.border}` }}
+      className="mb-card-premium rounded-2xl p-3"
+      style={{ background: surface.s1 }}
     >
       <input type="hidden" name="projectId" value={projectId} />
       <input type="hidden" name="workspace" value={workspace} />
@@ -2840,7 +2840,7 @@ function AddTaskForm({ projectId, workspace, stepId }: { projectId: string; work
         style={{
           background: surface.s2,
           color: theme.accent,
-          border: `1px dashed ${surface.borderSubtle}`,
+          border: `1px solid ${surface.border}`,
           cursor: "pointer",
         }}
       >
