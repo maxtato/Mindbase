@@ -26,26 +26,26 @@ export function MindLayWordmark({
         ...style,
       }}
     >
-      <span className="mb-wordmark-mind" style={{ fontWeight: 800, letterSpacing: "-0.02em", fontSize }}>
+      <span className="mb-wordmark-mind" style={{ fontWeight: 500, letterSpacing: "-0.01em", fontSize }}>
         Mind
       </span>
+      {/* « lay » est un sibling inline avec alignItems:baseline sur le parent →
+          sa ligne de base s'aligne sur celle de « Mind » (pas de décalage
+          manuel, qui désalignait). */}
       <span
         style={{
           position: "relative",
           display: "inline-block",
           marginLeft: fontSize * 0.06,
-          paddingRight: fontSize * 0.18,
+          paddingRight: fontSize * 0.16,
           color: LAY_COLOR,
-          // On abaisse tout le groupe « lay » (texte + trait) pour que les
-          // lettres de « lay » reposent au même niveau que « Mind ».
-          transform: `translateY(${fontSize * 0.14}px)`,
         }}
       >
-        {/* « lay » légèrement plus grand que « Mind ». */}
-        <span className="mb-script" style={{ fontSize: fontSize * 1.24, lineHeight: 1 }}>
+        {/* « lay » à peine plus grand que « Mind ». */}
+        <span className="mb-script" style={{ fontSize: fontSize * 1.06, lineHeight: 1 }}>
           lay
         </span>
-        {/* Trait « brush » sous le mot (même violet), abaissé. */}
+        {/* Trait « brush » sous le mot (même violet). */}
         <svg
           aria-hidden
           viewBox="0 0 120 18"
@@ -53,9 +53,9 @@ export function MindLayWordmark({
           style={{
             position: "absolute",
             left: "-4%",
-            bottom: -fontSize * 0.3,
+            bottom: -fontSize * 0.16,
             width: "112%",
-            height: fontSize * 0.4,
+            height: fontSize * 0.36,
             overflow: "visible",
           }}
         >
