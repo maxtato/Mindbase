@@ -25,13 +25,14 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
         // Barre plus épaisse (présence + premium).
         minHeight: "clamp(74px, 9vw, 86px)",
         padding: "15px clamp(12px, 3vw, 24px)",
-        // Voile d'accent très léger en haut → on « sent » l'environnement
-        // (Perso violet / Pro bleu) sans bandeau coloré. Re-rendu par page.
-        background: `linear-gradient(180deg, color-mix(in srgb, ${theme.accent} 7%, ${surface.s1}) 0%, ${surface.s1} 72%)`,
+        // Fond uni (plus de voile dégradé) — la signature d'environnement reste
+        // portée par le fin filet de couleur en haut.
+        background: surface.s1,
         borderBottom: `1px solid ${surface.borderSubtle}`,
       }}
     >
-      {/* Filet de couleur thème en haut : signature visuelle du workspace. */}
+      {/* Filet de couleur thème en haut : signature visuelle du workspace
+          (couleur unie, sans dégradé). */}
       <span
         aria-hidden
         style={{
@@ -39,7 +40,7 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
           insetInline: 0,
           top: 0,
           height: 2,
-          background: theme.gradient,
+          background: theme.accent,
           opacity: 0.9,
         }}
       />
