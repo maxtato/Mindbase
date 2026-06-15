@@ -1,10 +1,10 @@
-import Image from "next/image";
 import { workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { surface, text } from "@/lib/design-tokens";
 import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
 import { CommandTrigger } from "@/components/search/command-trigger";
 import { FlatmindWordmark } from "@/components/branding/mindlay-wordmark";
+import { FlatmindLogoMark } from "@/components/branding/flatmind-logo-mark";
 
 interface TopbarProps {
   title: string;
@@ -87,14 +87,7 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
 
         {/* iPhone : logo (cerveau Flatmind) + wordmark « Flatmind » à droite du titre. */}
         <span className="flex shrink-0 items-center gap-2 sm:hidden">
-          <Image
-            src="/flatmind-logo.png"
-            alt="Flatmind"
-            width={912}
-            height={706}
-            priority
-            style={{ display: "block", height: 26, width: "auto", objectFit: "contain" }}
-          />
+          <FlatmindLogoMark height={26} style={{ color: text.primary }} />
           <FlatmindWordmark fontSize={28} style={{ color: text.primary }} />
         </span>
       </div>

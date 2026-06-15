@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { cx, decorativeStyles, textStyles } from "@/components/ui/theme";
+import { FlatmindLogoMark } from "@/components/branding/flatmind-logo-mark";
 
 type FlatmindLogoProps = {
   className?: string;
@@ -20,16 +20,8 @@ export function FlatmindLogo({
         className
       )}
     >
-      {/* Logo Flatmind (image fournie). */}
-      <Image
-        src="/flatmind-logo.png"
-        alt="Flatmind"
-        width={912}
-        height={706}
-        priority
-        className="shrink-0"
-        style={{ display: "block", height: compact ? 52 : 72, width: "auto", objectFit: "contain" }}
-      />
+      {/* Logo Flatmind (image fournie) — suit la couleur du texte (blanc en sombre). */}
+      <FlatmindLogoMark height={compact ? 52 : 72} style={{ color: "var(--mb-text-primary)" }} />
 
       <div className="min-w-0">
         <div
