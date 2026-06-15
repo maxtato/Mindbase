@@ -120,6 +120,18 @@ export function ProjectCategoryIcon({ icon, color = "currentColor", size = 14 }:
           <ellipse cx="15.6" cy="14.5" rx="2.4" ry="2" {...common} />
         </>
       )}
+      {icon === "gamepad" && (
+        // Manette de jeux vidéo : corps arrondi, croix directionnelle à gauche,
+        // deux boutons à droite.
+        <>
+          <path
+            d="M8 8.5h8a5 5 0 0 1 5 5c0 1.7-.4 3.4-1 4.4-.6 1-1.8 1.1-2.6.4l-1.5-1.3a2 2 0 0 0-1.3-.5H9.4a2 2 0 0 0-1.3.5l-1.5 1.3c-.8.7-2 .6-2.6-.4-.6-1-1-2.7-1-4.4a5 5 0 0 1 5-5Z"
+            {...common}
+          />
+          <path d="M7 12v2.4M5.8 13.2h2.4" {...common} />
+          <path d="M15.8 12.4h.01M17.6 14.2h.01" {...common} />
+        </>
+      )}
       {icon === "plane" && (
         // Avion (vue de dessus, nez vers le haut), symétrique et centré.
         <path

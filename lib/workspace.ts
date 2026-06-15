@@ -30,22 +30,6 @@ export type BuiltinWorkspace = (typeof BUILTIN_WORKSPACES)[number];
 // Vue agrégée : tous les environnements à la fois.
 export const ALL_WORKSPACE = "all";
 
-// Vue « Tous » : vert foncé légèrement bleu (teal).
-const ALL_COLOR = "#0f766e";
-const allTheme: WorkspaceTheme = {
-  accent: ALL_COLOR,
-  accentHover: `color-mix(in srgb, ${ALL_COLOR} 85%, #000)`,
-  accentBg: `color-mix(in srgb, ${ALL_COLOR} 14%, transparent)`,
-  accentText: `color-mix(in srgb, ${ALL_COLOR} 70%, #000)`,
-  accentSoft: `color-mix(in srgb, ${ALL_COLOR} 18%, transparent)`,
-  accentBorder: `color-mix(in srgb, ${ALL_COLOR} 40%, transparent)`,
-  solidDark: `color-mix(in srgb, ${ALL_COLOR} 80%, #000)`,
-  solidMid: ALL_COLOR,
-  label: "Tous",
-  initial: "T",
-  gradient: `linear-gradient(135deg, ${ALL_COLOR}, color-mix(in srgb, ${ALL_COLOR} 70%, #000))`,
-};
-
 const builtinTheme: Record<BuiltinWorkspace, WorkspaceTheme> = {
   personal: {
     accent: "var(--mb-personal-accent)",
@@ -95,22 +79,33 @@ export function themeFromColor(color: string, name: string): WorkspaceTheme {
   };
 }
 
-// Registre des thèmes custom (id -> thème). Alimenté au rendu (SSR + client)
-// par EnvironmentsProvider, pour que `workspaceTheme[id]` résolve partout.
+// Couleur UNIQUE des environnements : le violet (thème "personal"). Quel que
+// soit l'environnement (Perso, Pro, custom, « Tous »), on garde la même couleur
+// violette — seuls le NOM et l'initiale varient. Décision produit : un seul
+// accent pour toute l'app, la couleur ne dépend plus de l'environnement.
+function violetThemeWith(label: string, initial: string): WorkspaceTheme {
+  return { ...builtinTheme.personal, label, initial };
+}
+
+// Registre des environnements custom (id -> thème violet + libellé). Alimenté
+// au rendu (SSR + client) par EnvironmentsProvider, pour que
+// `workspaceTheme[id]` résolve partout.
 const customThemes = new Map<string, WorkspaceTheme>();
 
 export function registerCustomEnvironments(envs: CustomEnvironment[]) {
   customThemes.clear();
   for (const e of envs) {
-    if (e && typeof e.id === "string" && typeof e.color === "string" && e.color) {
-      customThemes.set(e.id, themeFromColor(e.color, e.name || "Environnement"));
+    if (e && typeof e.id === "string") {
+      const name = e.name || "Environnement";
+      customThemes.set(e.id, violetThemeWith(name, (name.trim().charAt(0) || "E").toUpperCase()));
     }
   }
 }
 
 export function resolveWorkspaceTheme(workspace: string): WorkspaceTheme {
-  if (workspace === "personal" || workspace === "professional") return builtinTheme[workspace];
-  if (workspace === ALL_WORKSPACE) return allTheme;
+  if (workspace === "personal") return builtinTheme.personal;
+  if (workspace === "professional") return violetThemeWith("Pro", "W");
+  if (workspace === ALL_WORKSPACE) return violetThemeWith("Tous", "T");
   return customThemes.get(workspace) ?? builtinTheme.personal;
 }
 

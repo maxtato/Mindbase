@@ -6,16 +6,14 @@ import { surface, text } from "@/lib/design-tokens";
 import { broadcastWorkspace } from "@/lib/workspace-client";
 import { createEnvironmentAction } from "@/app/dashboard/environment-actions";
 
-const PRESET_COLORS = [
-  "#5e17eb", "#7c3aed", "#2563eb", "#0ea5e9", "#0d9488",
-  "#16a34a", "#ca8a04", "#ea580c", "#dc2626", "#db2777",
-  "#475569", "#111827",
-];
+// Tous les environnements partagent la même couleur (violet). On ne propose
+// donc plus de sélecteur de couleur : seul le NOM varie.
+const ENV_COLOR = "var(--mb-personal-accent)";
+const ENV_COLOR_HEX = "#7c3aed";
 
 export function CreateEnvironmentDialog({ onClose }: { onClose: () => void }) {
   const pathname = usePathname();
   const [name, setName] = useState("");
-  const [color, setColor] = useState(PRESET_COLORS[0]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -34,7 +32,7 @@ export function CreateEnvironmentDialog({ onClose }: { onClose: () => void }) {
     setBusy(true);
     setError(null);
     try {
-      const { id } = await createEnvironmentAction({ name: cleaned, color });
+      const { id } = await createEnvironmentAction({ name: cleaned, color: ENV_COLOR_HEX });
       broadcastWorkspace(id);
       const params = new URLSearchParams({ workspace: id });
       // Rechargement COMPLET (et non navigation douce) : le thème des
@@ -93,53 +91,14 @@ export function CreateEnvironmentDialog({ onClose }: { onClose: () => void }) {
             />
           </div>
 
-          <div>
-            <label className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
-              Couleur
-            </label>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              {PRESET_COLORS.map((preset) => {
-                const active = preset === color;
-                return (
-                  <button
-                    key={preset}
-                    type="button"
-                    onClick={() => setColor(preset)}
-                    aria-label={preset}
-                    className="h-7 w-7 rounded-full"
-                    style={{
-                      background: preset,
-                      border: active ? `2px solid ${text.primary}` : `2px solid transparent`,
-                      boxShadow: active ? "0 0 0 2px var(--mb-s1)" : "none",
-                      cursor: "pointer",
-                    }}
-                  />
-                );
-              })}
-              <label
-                className="inline-flex h-7 w-7 items-center justify-center rounded-full"
-                style={{ border: `1px dashed ${surface.border}`, cursor: "pointer", overflow: "hidden", position: "relative" }}
-                title="Couleur personnalisée"
-              >
-                <span style={{ fontSize: 12, color: text.muted }}>+</span>
-                <input
-                  type="color"
-                  value={color}
-                  onChange={(event) => setColor(event.target.value)}
-                  style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer" }}
-                />
-              </label>
-            </div>
-          </div>
-
-          {/* Aperçu */}
+          {/* Aperçu — tous les environnements partagent la couleur violette. */}
           <div
             className="flex items-center gap-2 rounded-xl px-3 py-2.5"
-            style={{ background: `color-mix(in srgb, ${color} 12%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 38%, transparent)` }}
+            style={{ background: `color-mix(in srgb, ${ENV_COLOR} 12%, transparent)`, border: `1px solid color-mix(in srgb, ${ENV_COLOR} 38%, transparent)` }}
           >
             <span
               className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white"
-              style={{ background: color }}
+              style={{ background: ENV_COLOR }}
             >
               {(name.trim().charAt(0) || "E").toUpperCase()}
             </span>
@@ -165,7 +124,7 @@ export function CreateEnvironmentDialog({ onClose }: { onClose: () => void }) {
               disabled={busy || !name.trim()}
               className="rounded-xl px-4 py-2.5 text-xs font-semibold"
               style={{
-                background: name.trim() ? color : surface.s3,
+                background: name.trim() ? ENV_COLOR : surface.s3,
                 color: name.trim() ? "#FFFFFF" : text.dim,
                 border: "none",
                 cursor: busy || !name.trim() ? "not-allowed" : "pointer",

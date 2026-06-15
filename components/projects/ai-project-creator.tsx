@@ -270,7 +270,7 @@ export function AIProjectCreatorTrigger({ workspace, active, onToggle }: AIProje
         color: "#FFFFFF",
         border: "none",
         cursor: "pointer",
-        boxShadow: active ? "none" : `0 6px 14px -10px ${theme.accent}`,
+        boxShadow: active ? "none" : "0 2px 8px -2px rgba(16, 24, 40, 0.16)",
         opacity: active ? 0.85 : 1,
       }}
     >
