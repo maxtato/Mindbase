@@ -32,7 +32,7 @@ export default async function SettingsPage({
             className="text-xs font-semibold uppercase tracking-[0.22em]"
             style={{ color: theme.accentText }}
           >
-            Mindbase
+            MindLay
           </p>
           <h1 className="mt-3 text-3xl font-bold tracking-tight" style={{ color: text.primary }}>
             Préférences de l’espace {theme.label.toLowerCase()}

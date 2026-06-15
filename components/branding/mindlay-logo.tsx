@@ -1,16 +1,16 @@
 import { cx, decorativeStyles, textStyles } from "@/components/ui/theme";
 
-type MindbaseLogoProps = {
+type MindLayLogoProps = {
   className?: string;
   compact?: boolean;
   showTagline?: boolean;
 };
 
-export function MindbaseLogo({
+export function MindLayLogo({
   className,
   compact = false,
   showTagline = false,
-}: MindbaseLogoProps) {
+}: MindLayLogoProps) {
   return (
     <div
       className={cx(
@@ -25,7 +25,7 @@ export function MindbaseLogo({
         className={compact ? "h-14 w-14 shrink-0" : "h-20 w-20 shrink-0"}
       >
         <defs>
-          <linearGradient id="mindbase-gradient" x1="18" y1="18" x2="154" y2="154">
+          <linearGradient id="mindlay-gradient" x1="18" y1="18" x2="154" y2="154">
             <stop offset="0%" stopColor="#A855F7" />
             <stop offset="100%" stopColor="#59A8FF" />
           </linearGradient>
@@ -33,7 +33,7 @@ export function MindbaseLogo({
 
         <g
           fill="none"
-          stroke="url(#mindbase-gradient)"
+          stroke="url(#mindlay-gradient)"
           strokeWidth="10"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -47,7 +47,7 @@ export function MindbaseLogo({
         </g>
 
         <path
-          fill="url(#mindbase-gradient)"
+          fill="url(#mindlay-gradient)"
           d="M103 34c4-2 10-2 14 0l38 23c8 5 8 17 0 22l-38 23c-9 6-21-1-21-12V46c0-11 12-18 21-12Z"
         />
         <rect
@@ -56,7 +56,7 @@ export function MindbaseLogo({
           width="61"
           height="16"
           rx="8"
-          fill="url(#mindbase-gradient)"
+          fill="url(#mindlay-gradient)"
         />
         <rect
           x="96"
@@ -64,7 +64,7 @@ export function MindbaseLogo({
           width="61"
           height="16"
           rx="8"
-          fill="url(#mindbase-gradient)"
+          fill="url(#mindlay-gradient)"
         />
       </svg>
 
@@ -76,7 +76,9 @@ export function MindbaseLogo({
           )}
         >
           <span style={textStyles.strong}>Mind</span>
-          <span style={decorativeStyles.gradientText}>base</span>
+          <span className="mb-script" style={{ ...decorativeStyles.gradientText, fontSize: "1.05em" }}>
+            Lay
+          </span>
         </div>
 
         {showTagline ? (

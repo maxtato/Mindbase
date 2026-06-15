@@ -15,7 +15,7 @@ export async function POST() {
   await Promise.allSettled(
     subscriptions.map(async (sub) => {
       const alive = await sendPush(sub, {
-        title: "Mindbase",
+        title: "MindLay",
         body: "Les notifications fonctionnent 🎉",
         url: "/dashboard",
         tag: "mindbase-test",

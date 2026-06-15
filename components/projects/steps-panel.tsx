@@ -820,7 +820,7 @@ function ProjectCompletionCelebration({
                 Bravo, {projectName} est à 100%.
               </h3>
               <p className="text-sm mt-2 leading-relaxed" style={{ color: text.secondary }}>
-                Toutes les tâches sont cochées. Mindbase peut maintenant t&apos;aider à faire le résumé final, capitaliser les décisions ou préparer la suite.
+                Toutes les tâches sont cochées. MindLay peut maintenant t&apos;aider à faire le résumé final, capitaliser les décisions ou préparer la suite.
               </p>
             </div>
           </div>
