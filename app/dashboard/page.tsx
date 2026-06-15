@@ -118,7 +118,7 @@ export default async function DashboardPage({
             <Link
               href={`/dashboard/projects/new?${qs}`}
               className="inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-[13px] font-semibold whitespace-nowrap"
-              style={{ background: theme.accent, color: "#FFFFFF", border: "none", boxShadow: `0 6px 16px -8px ${theme.accent}` }}
+              style={{ background: theme.accent, color: "#FFFFFF", border: "none", boxShadow: "0 2px 8px -2px rgba(16, 24, 40, 0.16)" }}
             >
               <span aria-hidden style={{ fontSize: 15, lineHeight: 1 }}>
                 +
