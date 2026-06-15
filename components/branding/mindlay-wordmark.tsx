@@ -1,11 +1,8 @@
 import type { CSSProperties } from "react";
 
-// Couleur de marque MindLay : violet « lay » + trait souligné.
-const LAY_COLOR = "#5e17eb";
-
 // Wordmark « MindLay » : « Mind » en League Spartan + « lay » en brush-script
-// Yellowtail (violet), légèrement plus grand, avec un trait souligné effilé
-// (même violet) abaissé sous le mot.
+// Yellowtail, légèrement plus grand, avec un trait souligné effilé. Monochrome :
+// tout hérite de `color` (donc même teinte que « Mind » / le contexte).
 export function MindLayWordmark({
   fontSize = 24,
   className,
@@ -38,14 +35,13 @@ export function MindLayWordmark({
           display: "inline-block",
           marginLeft: fontSize * 0.06,
           paddingRight: fontSize * 0.16,
-          color: LAY_COLOR,
         }}
       >
         {/* « lay » légèrement plus grand que « Mind ». */}
         <span className="mb-script" style={{ fontSize: fontSize * 1.1, lineHeight: 1 }}>
           lay
         </span>
-        {/* Trait « brush » sous le mot (même violet). */}
+        {/* Trait « brush » sous le mot (même teinte que le texte). */}
         <svg
           aria-hidden
           viewBox="0 0 120 18"

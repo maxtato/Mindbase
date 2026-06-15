@@ -76,7 +76,7 @@ export function MindLayLogo({
           )}
         >
           <span className="mb-wordmark-mind" style={{ ...textStyles.strong, fontWeight: 700 }}>Mind</span>
-          <span className="mb-script" style={{ color: "#5e17eb", fontSize: "1.2em" }}>
+          <span className="mb-script" style={{ ...textStyles.strong, fontSize: "1.2em" }}>
             lay
           </span>
         </div>
