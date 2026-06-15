@@ -77,7 +77,7 @@ export function MindLayLogo({
         >
           <span style={textStyles.strong}>Mind</span>
           <span className="mb-script" style={{ ...decorativeStyles.gradientText, fontSize: "1.05em" }}>
-            Lay
+            lay
           </span>
         </div>
 

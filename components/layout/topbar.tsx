@@ -46,18 +46,22 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
       />
       <div className="flex items-center gap-2 min-w-0 sm:gap-3">
         {/* iPhone uniquement : logo MindLay devant le titre du menu. Sur
-            desktop la sidebar porte déjà le logo → on le masque (sm:hidden). */}
-        <Image
-          src="/mindbase-iphone.png"
-          alt="MindLay"
-          // Logo agrandi + intrinsèque 3× (net sur retina iPhone).
-          width={120}
-          height={120}
-          quality={95}
-          priority
-          className="shrink-0 sm:hidden"
-          style={{ display: "block", width: 40, height: 40, objectFit: "contain", borderRadius: 9 }}
-        />
+            desktop la sidebar porte déjà le logo → on masque via le WRAPPER
+            (sm:hidden). Important : on ne met PAS sm:hidden sur l'<Image> car
+            son style inline `display:block` l'emporterait sur la classe et le
+            logo resterait visible sur desktop. */}
+        <span className="shrink-0 sm:hidden">
+          <Image
+            src="/mindbase-iphone.png"
+            alt="MindLay"
+            // Logo agrandi + intrinsèque 3× (net sur retina iPhone).
+            width={120}
+            height={120}
+            quality={95}
+            priority
+            style={{ display: "block", width: 40, height: 40, objectFit: "contain", borderRadius: 9 }}
+          />
+        </span>
         {breadcrumb ?? (
           <div className="min-w-0">
             <h1

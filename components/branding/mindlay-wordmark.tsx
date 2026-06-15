@@ -33,7 +33,7 @@ export function MindLayWordmark({
         }}
       >
         <span className="mb-script" style={{ fontSize: fontSize * 1.1, lineHeight: 1 }}>
-          Lay
+          lay
         </span>
         {/* Trait « brush » sous le mot, effilé vers la droite. */}
         <svg
