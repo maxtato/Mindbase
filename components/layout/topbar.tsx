@@ -1,9 +1,9 @@
-import Image from "next/image";
 import { workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { surface, text } from "@/lib/design-tokens";
 import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
 import { CommandTrigger } from "@/components/search/command-trigger";
+import { MindLayWordmark } from "@/components/branding/mindlay-wordmark";
 
 interface TopbarProps {
   title: string;
@@ -46,24 +46,10 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
           opacity: 0.9,
         }}
       />
-      <div className="flex w-full items-center gap-2 min-w-0 sm:w-auto sm:gap-3">
-        {/* iPhone uniquement : logo MindLay devant le titre du menu. Sur
-            desktop la sidebar porte déjà le logo → on masque via le WRAPPER
-            (sm:hidden). Important : on ne met PAS sm:hidden sur l'<Image> car
-            son style inline `display:block` l'emporterait sur la classe et le
-            logo resterait visible sur desktop. */}
-        <span className="shrink-0 sm:hidden">
-          <Image
-            src="/mindbase-iphone.png"
-            alt="MindLay"
-            // Logo agrandi + intrinsèque 3× (net sur retina iPhone).
-            width={120}
-            height={120}
-            quality={95}
-            priority
-            style={{ display: "block", width: 40, height: 40, objectFit: "contain", borderRadius: 9 }}
-          />
-        </span>
+      {/* Ligne 1 : titre du menu à GAUCHE, et sur iPhone le wordmark « MindLay »
+          à DROITE. Sur desktop la sidebar porte déjà le logo → wordmark masqué
+          (sm:hidden). */}
+      <div className="flex w-full items-center justify-between gap-2 min-w-0 sm:w-auto sm:justify-start sm:gap-3">
         {breadcrumb ?? (
           <div className="min-w-0">
             <h1
@@ -97,6 +83,11 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
             ) : null}
           </div>
         )}
+
+        {/* iPhone : wordmark « MindLay » à droite du titre. */}
+        <span className="shrink-0 sm:hidden">
+          <MindLayWordmark fontSize={22} style={{ color: text.primary }} />
+        </span>
       </div>
 
       <div className="flex w-full shrink-0 flex-wrap items-center justify-start gap-2 sm:w-auto sm:justify-end">

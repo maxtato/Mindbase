@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { surface, text } from "@/lib/design-tokens";
 import { broadcastWorkspace } from "@/lib/workspace-client";
 import { createEnvironmentAction } from "@/app/dashboard/environment-actions";
@@ -13,7 +13,6 @@ const PRESET_COLORS = [
 ];
 
 export function CreateEnvironmentDialog({ onClose }: { onClose: () => void }) {
-  const router = useRouter();
   const pathname = usePathname();
   const [name, setName] = useState("");
   const [color, setColor] = useState(PRESET_COLORS[0]);
@@ -38,11 +37,12 @@ export function CreateEnvironmentDialog({ onClose }: { onClose: () => void }) {
       const { id } = await createEnvironmentAction({ name: cleaned, color });
       broadcastWorkspace(id);
       const params = new URLSearchParams({ workspace: id });
-      // On bascule sur le nouvel environnement et on rafraîchit pour que le
-      // layout relise le cookie (liste des environnements + thème).
-      router.push(`${pathname}?${params.toString()}`);
-      router.refresh();
-      onClose();
+      // Rechargement COMPLET (et non navigation douce) : le thème des
+      // environnements est enregistré dans un registre module-global lu par
+      // ~30 composants qui ne se re-rendent pas tous sur un simple refresh →
+      // certains gardaient l'ancienne couleur (violet). Un reload garantit que
+      // TOUTE l'app démarre avec la nouvelle couleur enregistrée.
+      window.location.assign(`${pathname}?${params.toString()}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Création impossible.");
       setBusy(false);
