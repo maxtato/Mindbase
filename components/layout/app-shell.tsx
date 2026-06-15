@@ -43,14 +43,15 @@ export async function AppShell({ children, accountName }: AppShellProps) {
         className="flex flex-col flex-1 min-w-0 overflow-hidden"
         style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
       >
-        {children}
-      </div>
+        <div className="flex flex-1 min-h-0 flex-col overflow-hidden">{children}</div>
 
-      {/* Bottom nav mobile — rendu direct sans Suspense pour assurer la
-          présence de tous les handlers tactiles dès le premier paint.
-          On lui donne le workspace initial pour que la couleur active
-          soit correcte dès le SSR (sinon flash violet→bleu en pro). */}
-      <MobileBottomNav initialWorkspace={initialWorkspace} />
+        {/* Bottom nav mobile — DANS le flux (et non position:fixed) : elle est
+            le dernier enfant de la colonne haute de 100dvh, donc toujours
+            collée au bas de la zone visible. Cela évite le bug iOS où une nav
+            `position:fixed; bottom:0` se cale au-dessus de la barre du
+            navigateur au chargement puis « saute » en bas au premier scroll. */}
+        <MobileBottomNav initialWorkspace={initialWorkspace} />
+      </div>
 
       {/* Palette de recherche globale (⌘K ou bouton loupe topbar). Rendue une
           fois au niveau du shell → disponible sur toutes les pages. */}

@@ -132,7 +132,7 @@ export function MobileBottomNav({ initialWorkspace }: MobileBottomNavProps = {})
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 flex items-stretch justify-around sm:hidden"
+      className="z-50 flex w-full shrink-0 items-stretch justify-around sm:hidden"
       style={{
         background: surface.s1,
         borderTop: `1px solid ${surface.borderSubtle}`,

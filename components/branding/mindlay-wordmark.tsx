@@ -41,17 +41,18 @@ export function MindLayWordmark({
         <span className="mb-script" style={{ fontSize: fontSize * 1.0, lineHeight: 1 }}>
           lay
         </span>
-        {/* Trait « brush » sous le mot (même teinte que le texte). */}
+        {/* Trait « brush » sous le mot (même teinte que le texte) : fin et
+            détaché du texte. */}
         <svg
           aria-hidden
           viewBox="0 0 120 18"
           preserveAspectRatio="none"
           style={{
             position: "absolute",
-            left: "-4%",
-            bottom: -fontSize * 0.16,
-            width: "112%",
-            height: fontSize * 0.36,
+            left: "-3%",
+            bottom: -fontSize * 0.28,
+            width: "110%",
+            height: fontSize * 0.2,
             overflow: "visible",
           }}
         >
