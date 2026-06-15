@@ -1,7 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const WORKSPACE_COOKIE = "mindbase-workspace";
-const VALID_WORKSPACES = new Set(["personal", "professional"]);
+// Environnements valides : les deux intégrés + tout id personnalisé (env_*) ou
+// la vue agrégée "all".
+function isValidWorkspace(value: string | undefined): value is string {
+  return !!value && (value === "personal" || value === "professional" || value === "all" || value.startsWith("env_"));
+}
 
 // Edge middleware minimal :
 // - normalise /dashboard* sans ?workspace= via le cookie
@@ -13,7 +17,7 @@ export function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
   if (pathname.startsWith("/dashboard") && !searchParams.has("workspace")) {
     const cookie = request.cookies.get(WORKSPACE_COOKIE)?.value;
-    const workspace = cookie && VALID_WORKSPACES.has(cookie) ? cookie : "personal";
+    const workspace = isValidWorkspace(cookie) ? cookie : "personal";
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.searchParams.set("workspace", workspace);
     return NextResponse.redirect(redirectUrl);

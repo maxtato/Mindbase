@@ -3,7 +3,7 @@
 // suggère également la sous-catégorie ("thème") la plus pertinente.
 
 import { getOpenAIClient, AI_MODEL } from "./client";
-import { subcategoriesByWorkspace } from "@/lib/project-taxonomy";
+import { getSubcategoryOptions } from "@/lib/project-taxonomy";
 import type { Workspace } from "@/lib/workspace";
 
 export interface AIProjectSuggestion {
@@ -48,7 +48,7 @@ const SUBCATEGORY_EXAMPLES: Record<Workspace, string> = {
 };
 
 function buildSystemPrompt(workspace: Workspace) {
-  const validKeys = subcategoriesByWorkspace[workspace].map((option) => option.key).join(", ");
+  const validKeys = getSubcategoryOptions(workspace).map((option) => option.key).join(", ");
   return `Tu aides à structurer un projet à partir d'une description libre.
 Réponds en JSON strict, en français.
 Règles :
@@ -60,7 +60,7 @@ Règles :
 - Le contexte explique en 2 phrases ce qui pilote le projet
 - Le champ "subcategory" doit être l'une de ces clés exactes : ${validKeys}
   Choisis la plus pertinente selon la description. Exemples :
-  - ${SUBCATEGORY_EXAMPLES[workspace]}
+  - ${SUBCATEGORY_EXAMPLES[workspace as "personal" | "professional"] ?? SUBCATEGORY_EXAMPLES.personal}
   Si vraiment rien ne colle, utilise "other".`;
 }
 
@@ -129,7 +129,7 @@ export async function generateProjectSuggestion(
   try {
     const parsed = JSON.parse(content) as AIProjectSuggestion;
     // Garde-fou : si l'IA renvoie une clé inconnue, on retombe sur "other".
-    const validKeys = new Set<string>(subcategoriesByWorkspace[workspace].map((option) => option.key));
+    const validKeys = new Set<string>(getSubcategoryOptions(workspace).map((option) => option.key));
     if (!validKeys.has(parsed.subcategory)) {
       parsed.subcategory = "other";
     }
