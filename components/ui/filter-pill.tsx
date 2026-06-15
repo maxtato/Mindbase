@@ -117,29 +117,9 @@ export function FilterPill<T extends string>({
     };
   }, [open, align]);
 
-  useEffect(() => {
-    if (!open) return;
-
-    function handleOutsidePointerDown(event: PointerEvent) {
-      const target = event.target as Node;
-      const insideButton = buttonRef.current?.contains(target);
-      const insideMenu = menuRef.current?.contains(target);
-      if (!insideButton && !insideMenu) {
-        setOpen(false);
-      }
-    }
-
-    // Délai 0 — le pointerdown qui a ouvert le menu finit son cycle d'event
-    // avant que le listener s'attache, sinon il fermerait immédiatement.
-    const timer = window.setTimeout(() => {
-      document.addEventListener("pointerdown", handleOutsidePointerDown);
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timer);
-      document.removeEventListener("pointerdown", handleOutsidePointerDown);
-    };
-  }, [open]);
+  // Fermeture au clic extérieur : gérée uniquement par le backdrop plein écran
+  // (onClick) ci-dessous — plus de listener `pointerdown` global (qui, sur iOS,
+  // pouvait intercepter / désynchroniser le tap de sélection d'une option).
 
   function handleSelect(nextValue: T) {
     setOptimisticValue(nextValue);
@@ -209,16 +189,10 @@ export function FilterPill<T extends string>({
             aria-hidden
             tabIndex={-1}
             onClick={() => setOpen(false)}
-            onPointerDown={(event) => {
-              // Empêche le focus de quitter le bouton de filtre et le
-              // click synthétique de se propager au layer du dessous.
-              event.preventDefault();
-              setOpen(false);
-            }}
             style={{
               position: "fixed",
               inset: 0,
-              zIndex: 1199,
+              zIndex: 2000,
               background: "transparent",
               border: "none",
               cursor: "default",
@@ -240,6 +214,9 @@ export function FilterPill<T extends string>({
               left: menuPosition.left,
               width: menuPosition.width || undefined,
               minWidth: Math.max(180, menuPosition.width),
+              // Au-dessus du backdrop (2000) pour que les options reçoivent
+              // bien les taps.
+              zIndex: 2001,
               ["--mb-filter-accent" as string]: accent,
             } as React.CSSProperties}
           >
