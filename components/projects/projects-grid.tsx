@@ -9,7 +9,7 @@ import type { Workspace } from "@/lib/workspace";
 import { workspaceTheme } from "@/lib/workspace";
 import { surface, text, error, statusColor } from "@/lib/design-tokens";
 import {
-  ProjectMetaRow,
+  ProjectPriorityBadge,
 } from "@/components/projects/project-taxonomy-ui";
 import { ProjectIdentityEditor } from "@/components/projects/project-identity-editor";
 import { resolveProjectSubcategoryDisplay } from "@/lib/project-taxonomy";
@@ -207,19 +207,16 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
 
                   <div className="p-3.5 sm:p-5" style={{ background: surface.s1 }}>
                     <div className="mb-3">
-                      <ProjectMetaRow project={project} compact />
+                      <ProjectPriorityBadge priority={project.priority} compact />
                     </div>
 
                     <div
                       className="mb-3"
                       style={{
                         paddingLeft: "0.75rem",
-                        borderLeft: `3px solid ${project.subcategoryColor}`,
+                        borderLeft: `3px solid ${theme.accent}`,
                       }}
                     >
-                      <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: project.subcategoryColor }}>
-                        Objectif
-                      </p>
                       <p className="text-sm line-clamp-3" style={{ color: text.primary, fontWeight: 500, lineHeight: 1.55 }}>
                         {project.objective}
                       </p>
