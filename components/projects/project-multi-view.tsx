@@ -1,5 +1,5 @@
 import type { Project } from "@/lib/mock-data";
-import type { Workspace } from "@/lib/workspace";
+import { workspaceTheme, type Workspace } from "@/lib/workspace";
 import { StepsPanel } from "@/components/projects/steps-panel";
 
 interface ProjectMultiViewProps {
@@ -19,7 +19,9 @@ export function ProjectMultiView({ project, workspace }: ProjectMultiViewProps) 
       projectName={project.name}
       workspace={workspace}
       initialSteps={steps}
-      accentColor={project.subcategoryColor}
+      // Tout l'intérieur (numéros d'étape, boutons, accents…) suit la couleur de
+      // l'ENVIRONNEMENT. Seul le pictogramme du projet garde sa couleur de thème.
+      accentColor={workspaceTheme[workspace].accent}
       projectPeople={project.people ?? []}
       projectTeams={project.teams ?? []}
       statusSettings={project.statusSettings}

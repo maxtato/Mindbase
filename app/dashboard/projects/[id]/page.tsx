@@ -90,7 +90,7 @@ export default async function ProjectDetailPage({
                     <p className="mb-project-rail-title">Synthèse</p>
                     <AISynthesisButton projectId={project.id} accentColor={theme.accent} />
                   </div>
-                  <ProjectRailCard title="Objectif" accentColor={project.subcategoryColor} icon="target">
+                  <ProjectRailCard title="Objectif" accentColor={theme.accent} icon="target">
                     <ExpandableText className="text-xs leading-relaxed" style={{ color: text.secondary }}>
                       {railSynthesis.objective}
                     </ExpandableText>
@@ -164,7 +164,9 @@ function ProjectPilotHeader({
   workspace: Project["workspace"];
 }) {
   const theme = workspaceTheme[workspace];
-  const projectAccent = resolveProjectSubcategoryDisplay(project).color || theme.accent;
+  // Seul le pictogramme du projet garde la couleur de thème (sous-catégorie).
+  // Tout le reste (filet, boutons d'action, vue étapes…) suit l'ENVIRONNEMENT.
+  const envAccent = theme.accent;
 
   // Top bar premium calm : surface neutre + filet de couleur fin (4px) signant
   // l'identité projet, plutôt qu'un grand bandeau plein. Plus aéré, plus calme.
@@ -186,7 +188,7 @@ function ProjectPilotHeader({
           insetInline: 0,
           top: 0,
           height: 3,
-          background: projectAccent,
+          background: envAccent,
         }}
       />
       <div className="mb-project-pilotbar-inner" style={{ padding: "16px 20px" }}>
@@ -223,21 +225,21 @@ function ProjectPilotHeader({
             workspace={workspace}
             people={project.people ?? []}
             teams={project.teams ?? []}
-            accentColor={projectAccent}
+            accentColor={envAccent}
           />
-          <ProjectFilesLauncher projectId={project.id} workspace={workspace} files={project.files ?? []} accentColor={projectAccent} />
+          <ProjectFilesLauncher projectId={project.id} workspace={workspace} files={project.files ?? []} accentColor={envAccent} />
           <ProjectTeamChatLauncher
             projectId={project.id}
             people={project.people ?? []}
             messages={project.teamMessages ?? []}
-            accentColor={projectAccent}
+            accentColor={envAccent}
           />
           <ProjectSettingsMenu
             projectId={project.id}
             workspace={workspace}
             currentStatus={project.status}
             statusSettings={project.statusSettings}
-            accentColor={projectAccent}
+            accentColor={envAccent}
             steps={project.steps ?? []}
           />
         </div>
@@ -260,7 +262,7 @@ function ProjectPilotHeader({
             <div style={{ width: 90, flexShrink: 0 }}>
               <ProgressBar
                 value={project.progress}
-                color={projectAccent}
+                color={envAccent}
                 height={6}
                 trackColor={surface.s2}
                 borderColor={surface.borderSubtle}
