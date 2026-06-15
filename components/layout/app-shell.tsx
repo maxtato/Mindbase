@@ -3,7 +3,6 @@ import { Sidebar } from "./sidebar";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 import { CommandPalette } from "@/components/search/command-palette";
 import { EnvironmentsProvider } from "@/components/environments/environments-provider";
-import { ViewportLock } from "@/components/layout/viewport-lock";
 import { surface } from "@/lib/design-tokens";
 import { getSidebarStatsByWorkspace } from "@/lib/project-store";
 import { getCustomEnvironments } from "@/lib/environment-store";
@@ -14,10 +13,7 @@ import { getWorkspace, registerCustomEnvironments } from "@/lib/workspace";
 // globale pour ne pas masquer leurs derniers items derrière la nav.
 // IMPORTANT : Sidebar et MobileBottomNav lisent le workspace via
 // window.location au lieu de useSearchParams — ainsi aucun Suspense boundary
-// n'est introduit au niveau du shell (qui, en streaming SSR + iOS Safari,
-// rendait tout le contenu de la page dans un <div hidden>). Pour que la
-// couleur active soit correcte AU PREMIER RENDU (et pas après hydration),
-// on injecte le workspace lu via le cookie côté server.
+// n'est introduit au niveau du shell.
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -26,9 +22,7 @@ interface AppShellProps {
 
 export async function AppShell({ children, accountName }: AppShellProps) {
   const environments = await getCustomEnvironments();
-  // Enregistre les thèmes custom côté serveur AVANT le rendu des enfants
-  // (sinon les pages serveur résoudraient un thème par défaut pour un env
-  // personnalisé → flash + mismatch d'hydratation).
+  // Enregistre les thèmes custom côté serveur avant le rendu des enfants.
   registerCustomEnvironments(environments);
   const sidebarStats = await getSidebarStatsByWorkspace(environments.map((e) => e.id));
   const cookieStore = await cookies();
@@ -36,49 +30,27 @@ export async function AppShell({ children, accountName }: AppShellProps) {
 
   return (
     <EnvironmentsProvider initial={environments}>
-    <ViewportLock />
-    <div
-      className="flex overflow-hidden"
-      style={{
-        background: surface.bg,
-        // On ancre le shell aux 4 bords (top+bottom+left+right) SANS hauteur
-        // explicite : il s'étire jusqu'au bas PHYSIQUE de l'écran (viewport-fit
-        // cover), donc la bottom nav touche le bas. Toute `height` explicite
-        // (100dvh, visualViewport…) annulerait `bottom:0` et pouvait laisser
-        // une bande grise dessous.
-        position: "fixed",
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0,
-      }}
-    >
-      {/* Sidebar — masquée < sm via Tailwind, plus de Suspense boundary.
-          On lui passe initialWorkspace pour que les liens SSR pointent
-          déjà vers le bon workspace, sans dépendre de l'hydratation. */}
-      <Sidebar stats={sidebarStats} initialWorkspace={initialWorkspace} accountName={accountName} />
-
-      {/* Main area — on réserve la safe-area haute de l'iPhone (horloge /
-          batterie / Dynamic Island) UNE seule fois ici, pour toutes les pages
-          de l'app : aucun contenu ne démarre sous le bandeau d'état iOS. */}
       <div
-        className="flex flex-col flex-1 min-w-0 overflow-hidden"
-        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+        className="flex overflow-hidden"
+        style={{ background: surface.bg, height: "100dvh" }}
       >
-        <div className="flex flex-1 min-h-0 flex-col overflow-hidden">{children}</div>
+        {/* Sidebar — masquée < sm via Tailwind. */}
+        <Sidebar stats={sidebarStats} initialWorkspace={initialWorkspace} accountName={accountName} />
 
-        {/* Bottom nav mobile — DANS le flux (et non position:fixed) : elle est
-            le dernier enfant de la colonne haute de 100dvh, donc toujours
-            collée au bas de la zone visible. Cela évite le bug iOS où une nav
-            `position:fixed; bottom:0` se cale au-dessus de la barre du
-            navigateur au chargement puis « saute » en bas au premier scroll. */}
+        {/* Zone principale — on réserve la safe-area haute (Dynamic Island). */}
+        <div
+          className="flex flex-col flex-1 min-w-0 overflow-hidden"
+          style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+        >
+          {children}
+        </div>
+
+        {/* Bottom nav mobile — position:fixed, flotte au-dessus du contenu. */}
         <MobileBottomNav initialWorkspace={initialWorkspace} />
-      </div>
 
-      {/* Palette de recherche globale (⌘K ou bouton loupe topbar). Rendue une
-          fois au niveau du shell → disponible sur toutes les pages. */}
-      <CommandPalette initialWorkspace={initialWorkspace} />
-    </div>
+        {/* Palette de recherche globale (⌘K). */}
+        <CommandPalette initialWorkspace={initialWorkspace} />
+      </div>
     </EnvironmentsProvider>
   );
 }

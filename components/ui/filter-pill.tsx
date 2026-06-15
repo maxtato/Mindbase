@@ -117,27 +117,34 @@ export function FilterPill<T extends string>({
     };
   }, [open, align]);
 
-  // Fermeture au clic extérieur : gérée uniquement par le backdrop plein écran
-  // (onClick) ci-dessous — plus de listener `pointerdown` global (qui, sur iOS,
-  // pouvait intercepter / désynchroniser le tap de sélection d'une option).
+  useEffect(() => {
+    if (!open) return;
+
+    function handleOutsidePointerDown(event: PointerEvent) {
+      const target = event.target as Node;
+      const insideButton = buttonRef.current?.contains(target);
+      const insideMenu = menuRef.current?.contains(target);
+      if (!insideButton && !insideMenu) {
+        setOpen(false);
+      }
+    }
+
+    // Délai 0 — le pointerdown qui a ouvert le menu finit son cycle d'event
+    // avant que le listener s'attache, sinon il fermerait immédiatement.
+    const timer = window.setTimeout(() => {
+      document.addEventListener("pointerdown", handleOutsidePointerDown);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("pointerdown", handleOutsidePointerDown);
+    };
+  }, [open]);
 
   function handleSelect(nextValue: T) {
     setOptimisticValue(nextValue);
     onChange(nextValue);
     setOpen(false);
-    // iOS : supprime UNIQUEMENT le prochain clic synthétique (ghost click) pour
-    // qu'il n'atteigne pas la carte sous le menu — sans bloquer l'écran (un
-    // ancien bouclier plein écran rendait les filtres « non sélectionnables »
-    // car il avalait les taps suivants). Sur pointeur fin (souris) : inutile.
-    if (typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches) {
-      const suppress = (event: MouseEvent) => {
-        event.preventDefault();
-        event.stopPropagation();
-        document.removeEventListener("click", suppress, true);
-      };
-      document.addEventListener("click", suppress, true);
-      window.setTimeout(() => document.removeEventListener("click", suppress, true), 400);
-    }
   }
 
   return (
@@ -179,27 +186,34 @@ export function FilterPill<T extends string>({
         </span>
       </button>
 
-      {mounted && open && createPortal(
+      {mounted && open && menuPosition && createPortal(
         <>
-          {/* Backdrop transparent : capture les taps hors menu pour fermer la
-              popover. (Le ghost-click iOS est neutralisé par un suppresseur de
-              clic one-shot dans handleSelect — pas par un bouclier persistant.) */}
+          {/* Backdrop transparent : capture tous les taps hors menu pour
+              fermer la popover. Sans ça, sur iOS Safari un "ghost click"
+              synthétique tombe sur la carte sous le menu (kanban tâche,
+              cellule calendrier…) juste après le démontage, ce qui ouvre
+              une carte par erreur quand on sélectionne un filtre. */}
           <button
             type="button"
             aria-hidden
             tabIndex={-1}
             onClick={() => setOpen(false)}
+            onPointerDown={(event) => {
+              // Empêche le focus de quitter le bouton de filtre et le
+              // click synthétique de se propager au layer du dessous.
+              event.preventDefault();
+              setOpen(false);
+            }}
             style={{
               position: "fixed",
               inset: 0,
-              zIndex: 2000,
+              zIndex: 1199,
               background: "transparent",
               border: "none",
               cursor: "default",
               padding: 0,
             }}
           />
-          {open && menuPosition && (
           <div
             ref={menuRef}
             role="listbox"
@@ -214,9 +228,6 @@ export function FilterPill<T extends string>({
               left: menuPosition.left,
               width: menuPosition.width || undefined,
               minWidth: Math.max(180, menuPosition.width),
-              // Au-dessus du backdrop (2000) pour que les options reçoivent
-              // bien les taps.
-              zIndex: 2001,
               ["--mb-filter-accent" as string]: accent,
             } as React.CSSProperties}
           >
@@ -265,7 +276,6 @@ export function FilterPill<T extends string>({
             );
           })}
           </div>
-          )}
         </>,
         document.body,
       )}
