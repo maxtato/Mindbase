@@ -30,8 +30,8 @@ export type BuiltinWorkspace = (typeof BUILTIN_WORKSPACES)[number];
 // Vue agrégée : tous les environnements à la fois.
 export const ALL_WORKSPACE = "all";
 
-// Vue « Tous » : mauve clair.
-const ALL_COLOR = "#a78bfa";
+// Vue « Tous » : vert foncé légèrement bleu (teal).
+const ALL_COLOR = "#0f766e";
 const allTheme: WorkspaceTheme = {
   accent: ALL_COLOR,
   accentHover: `color-mix(in srgb, ${ALL_COLOR} 85%, #000)`,

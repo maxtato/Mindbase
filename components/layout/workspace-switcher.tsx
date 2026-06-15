@@ -34,7 +34,43 @@ export function WorkspaceSwitcher({ workspace }: WorkspaceSwitcherProps) {
     return `${pathname}?${next.toString()}`;
   }
 
-  const items: Workspace[] = [...BUILTIN_WORKSPACES, ...environments.map((e) => e.id), ALL_WORKSPACE];
+  // Les environnements sélectionnables (Perso/Pro + custom). « Tous » est traité
+  // à part (vue globale, pas un environnement) → après un séparateur.
+  const items: Workspace[] = [...BUILTIN_WORKSPACES, ...environments.map((e) => e.id)];
+
+  function renderPill(item: Workspace) {
+    const itemTheme = workspaceTheme[item];
+    const active = item === workspace;
+    return (
+      <Link
+        key={item}
+        href={hrefFor(item)}
+        onClick={() => broadcastWorkspace(item)}
+        role="tab"
+        aria-selected={active}
+        title={itemTheme.label}
+        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors"
+        style={{
+          background: active ? itemTheme.accentBg : "transparent",
+          color: active ? itemTheme.accentText : "var(--mb-text-muted)",
+          border: `1px solid ${active ? itemTheme.accentBorder : "transparent"}`,
+        }}
+      >
+        <span
+          aria-hidden
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            background: itemTheme.accent,
+            display: "inline-block",
+            opacity: active ? 1 : 0.5,
+          }}
+        />
+        {itemTheme.label}
+      </Link>
+    );
+  }
 
   return (
     <>
@@ -44,39 +80,7 @@ export function WorkspaceSwitcher({ workspace }: WorkspaceSwitcherProps) {
         className="inline-flex items-center gap-0.5 rounded-full p-0.5"
         style={{ background: "var(--mb-s2)", border: "1px solid var(--mb-border-subtle)" }}
       >
-        {items.map((item) => {
-          const itemTheme = workspaceTheme[item];
-          const active = item === workspace;
-          return (
-            <Link
-              key={item}
-              href={hrefFor(item)}
-              onClick={() => broadcastWorkspace(item)}
-              role="tab"
-              aria-selected={active}
-              title={itemTheme.label}
-              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors"
-              style={{
-                background: active ? itemTheme.accentBg : "transparent",
-                color: active ? itemTheme.accentText : "var(--mb-text-muted)",
-                border: `1px solid ${active ? itemTheme.accentBorder : "transparent"}`,
-              }}
-            >
-              <span
-                aria-hidden
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: itemTheme.accent,
-                  display: "inline-block",
-                  opacity: active ? 1 : 0.5,
-                }}
-              />
-              {itemTheme.label}
-            </Link>
-          );
-        })}
+        {items.map(renderPill)}
 
         <button
           type="button"
@@ -90,6 +94,10 @@ export function WorkspaceSwitcher({ workspace }: WorkspaceSwitcherProps) {
             <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
           </svg>
         </button>
+
+        {/* Séparateur + vue globale « Tous » (à part des environnements). */}
+        <span aria-hidden style={{ width: 1, alignSelf: "stretch", margin: "2px 2px", background: "var(--mb-border-subtle)" }} />
+        {renderPill(ALL_WORKSPACE)}
       </div>
 
       {creating && <CreateEnvironmentDialog onClose={() => setCreating(false)} />}

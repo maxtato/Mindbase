@@ -3,6 +3,7 @@ import { Sidebar } from "./sidebar";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 import { CommandPalette } from "@/components/search/command-palette";
 import { EnvironmentsProvider } from "@/components/environments/environments-provider";
+import { ViewportLock } from "@/components/layout/viewport-lock";
 import { surface } from "@/lib/design-tokens";
 import { getSidebarStatsByWorkspace } from "@/lib/project-store";
 import { getCustomEnvironments } from "@/lib/environment-store";
@@ -35,6 +36,7 @@ export async function AppShell({ children, accountName }: AppShellProps) {
 
   return (
     <EnvironmentsProvider initial={environments}>
+    <ViewportLock />
     <div
       className="flex overflow-hidden"
       style={{ background: surface.bg, height: "100dvh" }}

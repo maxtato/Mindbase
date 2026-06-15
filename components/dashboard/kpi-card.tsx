@@ -117,8 +117,8 @@ export function KpiCard({ label, value, hint, tone = "neutral", href, tasks, emp
         </p>
         <span
           aria-hidden
-          className="inline-block h-1.5 w-1.5 rounded-full"
-          style={{ background: palette.dot, boxShadow: `0 0 0 3px ${palette.ring}` }}
+          className="block shrink-0 rounded-full"
+          style={{ width: 6, height: 6, aspectRatio: "1 / 1", background: palette.dot, boxShadow: `0 0 0 3px ${palette.ring}` }}
         />
       </div>
       <p
