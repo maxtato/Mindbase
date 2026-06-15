@@ -13,6 +13,7 @@ import {
   type ExpectedRefineResult,
 } from "@/lib/ai/task-expected";
 import { generateTaskChecklist } from "@/lib/ai/task-checklist";
+import { splitTaskRealization } from "@/lib/ai/task-realization";
 import { generateProjectSynthesis, type AIProjectSynthesis } from "@/lib/ai/project-synthesis";
 import {
   analyzeProjectEvolution,
@@ -167,6 +168,18 @@ export async function suggestTaskChecklistAction(input: {
   const items = await generateTaskChecklist({ project, step: normalizedStep, task });
 
   return { items };
+}
+
+// 3b) Organisation IA du champ Réalisation : sépare le texte saisi en actions
+// distinctes (une par ligne). Aucune mutation : on renvoie juste les lignes au
+// client qui les applique dans le champ.
+export async function organizeTaskRealizationAction(input: {
+  text: string;
+}): Promise<{ lines: string[] }> {
+  const cleaned = input.text.trim();
+  if (!cleaned) throw new Error("Ajoute d'abord ce qui a été fait avant de demander à l'IA.");
+  const lines = await splitTaskRealization(cleaned);
+  return { lines };
 }
 
 // 4) Mise à jour de la synthèse projet — toutes les cartes du rail sont

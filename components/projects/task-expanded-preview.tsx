@@ -9,6 +9,7 @@ import { addTaskDiscussionMessageAction } from "@/app/dashboard/projects/[id]/ac
 import {
   suggestTaskChecklistAction,
   applyAIChecklistAction,
+  organizeTaskRealizationAction,
 } from "@/app/dashboard/projects/ai-actions";
 import { ExpectedAssistant } from "@/components/projects/expected-assistant";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import { formatTaskScheduleDate } from "@/lib/date-format";
 import { deriveTaskDisplayPriority, deriveTaskStatus, taskStatusLabels } from "@/lib/project-plan";
 import { priorityVisuals, type ProjectPriority } from "@/lib/project-taxonomy";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
+import { useAccountName } from "@/components/account/account-context";
 
 interface TaskExpandedPreviewProps {
   task: Task;
@@ -95,7 +97,7 @@ export function TaskExpandedPreview({
             projectId={projectId}
             stepId={stepId}
           />
-          <RealizationField task={task} onUpdate={onUpdate} accentColor={accentColor} bulletAccent={aiAccent} />
+          <RealizationField task={task} onUpdate={onUpdate} accentColor={accentColor} bulletAccent={aiAccent} aiAccent={aiAccent} />
         </TaskPreviewPane>
 
         <TaskPreviewPane>
@@ -563,11 +565,13 @@ function RealizationField({
   onUpdate,
   accentColor,
   bulletAccent,
+  aiAccent,
 }: {
   task: Task;
   onUpdate?: TaskExpandedPreviewProps["onUpdate"];
   accentColor: string;
   bulletAccent: string;
+  aiAccent: string;
 }) {
   const initialRows = useMemo(
     () => parseBulletRows(task.realization ?? task.completionDetails ?? ""),
@@ -579,8 +583,44 @@ function RealizationField({
   const dirty = !rowsEqual(rows, initialRows);
   const editable = Boolean(onUpdate);
 
+  const [aiPending, setAiPending] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const hasText = rows.some((row) => row.trim());
+
+  // Assistant IA : sépare le texte saisi en actions distinctes (une par ligne).
+  async function handleOrganize() {
+    if (!editable || aiPending) return;
+    const text = rowsToString(rows);
+    if (!text.trim()) {
+      setAiError("Écris d'abord ce qui a été fait.");
+      return;
+    }
+    setAiError(null);
+    setAiPending(true);
+    try {
+      const { lines } = await organizeTaskRealizationAction({ text });
+      if (lines.length > 0) setRows(lines);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : "Erreur IA.");
+    } finally {
+      setAiPending(false);
+    }
+  }
+
   return (
-    <FieldShell title="Réalisation" icon="realization" iconColor={statusColor.green.text}>
+    <FieldShell
+      title="Réalisation"
+      icon="realization"
+      iconColor={statusColor.green.text}
+      rightSlot={
+        <AIChip
+          label={aiPending ? "IA…" : "Assistant IA"}
+          accentColor={aiAccent}
+          onClick={handleOrganize}
+          disabled={aiPending || !editable || !hasText}
+        />
+      }
+    >
       <BulletListEditor
         rows={rows}
         onChange={setRows}
@@ -589,6 +629,11 @@ function RealizationField({
         minHeight={200}
         editable={editable}
       />
+      {aiError && (
+        <p className="mt-1.5 text-[11px]" style={{ color: errorTokens.text }}>
+          {aiError}
+        </p>
+      )}
       <FieldActions
         dirty={dirty}
         onSave={() => onUpdate?.({ realization: rowsToString(rows) })}
@@ -1254,8 +1299,12 @@ function QuickInfos({
   onUpdate?: TaskExpandedPreviewProps["onUpdate"];
   statusSettings?: ProjectStatusSettings;
 }) {
+  const accountName = useAccountName();
   const fileCount = task.files?.length ?? 0;
   const owner = task.owner?.trim() || task.assignees?.[0] || linkedTeams[0]?.name || "";
+  const meFirst = accountName.trim().toLowerCase().split(" ")[0] ?? "";
+  // Affiche « Moi » quand la tâche est assignée au compte courant.
+  const ownerLabel = owner && meFirst && owner.trim().toLowerCase().split(" ")[0] === meFirst ? "Moi" : owner;
   const editable = Boolean(onUpdate);
   const [editing, setEditing] = useState<"calendar" | "person" | "file" | null>(null);
   const [showCompletionBlocked, setShowCompletionBlocked] = useState(false);
@@ -1281,7 +1330,7 @@ function QuickInfos({
           active={editing === "person"}
           onClick={editable ? () => setEditing(editing === "person" ? null : "person") : undefined}
         >
-          {owner || (editable ? "Assigner" : "—")}
+          {ownerLabel || (editable ? "Assigner" : "—")}
         </QuickInfoTile>
         <QuickInfoTile
           icon="file"
@@ -1933,9 +1982,18 @@ function PersonEditor({
   onSave: (owner: string) => void;
   onCancel: () => void;
 }) {
+  const accountName = useAccountName();
   const [value, setValue] = useState(task.owner ?? "");
   const dirty = value.trim() !== (task.owner?.trim() ?? "");
   const hasOwner = (task.owner?.trim() ?? "") !== "";
+
+  const firstName = (name: string) => name.trim().toLowerCase().split(" ")[0] ?? "";
+  const meFirst = firstName(accountName);
+  const isMe = (name: string) => Boolean(meFirst) && firstName(name) === meFirst;
+  const meSelected = isMe(value);
+  // On évite d'afficher le compte courant deux fois : la puce « Moi » couvre
+  // déjà l'attribution à soi-même.
+  const otherPeople = projectPeople.filter((person) => !isMe(person.name));
 
   return (
     <div
@@ -1952,30 +2010,43 @@ function PersonEditor({
       <p style={{ fontSize: 10.5, fontWeight: 600, color: text.muted, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>
         Personne assignée
       </p>
-      {projectPeople.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {projectPeople.map((person) => {
-            const selected = value.trim() === person.name;
-            return (
-              <button
-                key={person.id}
-                type="button"
-                // Reclic sur la personne déjà sélectionnée = on la retire.
-                onClick={() => setValue(selected ? "" : person.name)}
-                className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
-                style={{
-                  background: selected ? accentColor : surface.s2,
-                  color: selected ? "#FFFFFF" : text.secondary,
-                  border: `1px solid ${selected ? accentColor : surface.borderSubtle}`,
-                  cursor: "pointer",
-                }}
-              >
-                {person.name}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      <div className="flex flex-wrap gap-1">
+        {/* « Moi » : assigne la tâche au compte courant → elle apparaît avec
+            le filtre « Moi » des vues Kanban / Calendrier. */}
+        <button
+          type="button"
+          onClick={() => setValue(meSelected ? "" : accountName)}
+          className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
+          style={{
+            background: meSelected ? accentColor : surface.s2,
+            color: meSelected ? "#FFFFFF" : text.secondary,
+            border: `1px solid ${meSelected ? accentColor : surface.borderSubtle}`,
+            cursor: "pointer",
+          }}
+        >
+          Moi
+        </button>
+        {otherPeople.map((person) => {
+          const selected = value.trim() === person.name;
+          return (
+            <button
+              key={person.id}
+              type="button"
+              // Reclic sur la personne déjà sélectionnée = on la retire.
+              onClick={() => setValue(selected ? "" : person.name)}
+              className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
+              style={{
+                background: selected ? accentColor : surface.s2,
+                color: selected ? "#FFFFFF" : text.secondary,
+                border: `1px solid ${selected ? accentColor : surface.borderSubtle}`,
+                cursor: "pointer",
+              }}
+            >
+              {person.name}
+            </button>
+          );
+        })}
+      </div>
       <input
         type="text"
         value={value}
