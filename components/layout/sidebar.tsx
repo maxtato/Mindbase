@@ -5,6 +5,7 @@
 // tout le contenu de la page dans un <div hidden> et bloquer les taps).
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getWorkspace, workspaceTheme, BUILTIN_WORKSPACES, ALL_WORKSPACE } from "@/lib/workspace";
@@ -12,7 +13,6 @@ import type { Workspace } from "@/lib/workspace";
 import { error, surface, text } from "@/lib/design-tokens";
 import { broadcastWorkspace, WORKSPACE_EVENT } from "@/lib/workspace-client";
 import { FlatmindWordmark } from "@/components/branding/mindlay-wordmark";
-import { FlatmindMark } from "@/components/branding/flatmind-mark";
 import { useEnvironments } from "@/components/environments/environments-provider";
 
 const WIDE = 212;
@@ -202,8 +202,16 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
             justifyContent: collapsed ? "center" : "flex-start",
           }}
         >
-          {/* Icône (cerveau Flatmind) + wordmark agrandi quand la sidebar est dépliée. */}
-          <FlatmindMark size={brandLogoSize} className="shrink-0" style={{ color: text.sidebar }} />
+          {/* Logo Flatmind + wordmark agrandi quand la sidebar est dépliée. */}
+          <Image
+            src="/flatmind-logo.png"
+            alt="Flatmind"
+            width={912}
+            height={706}
+            priority
+            className="shrink-0"
+            style={{ display: "block", height: brandLogoSize, width: "auto", objectFit: "contain" }}
+          />
           {!collapsed && (
             <FlatmindWordmark fontSize={34} style={{ color: text.sidebar }} />
           )}
