@@ -9,6 +9,7 @@ import type { TaskStatus } from "@/lib/mock-data";
 import type { ProjectPriority } from "@/lib/project-taxonomy";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
 import { FilterPill, FilterPillGroup, type FilterPillOption } from "@/components/ui/filter-pill";
+import { PERSON_FILTER_ALL, PERSON_FILTER_ME } from "@/lib/project-access";
 
 type StatusFilter = "open" | "all" | TaskStatus;
 type PriorityFilter = "all" | ProjectPriority;
@@ -38,6 +39,12 @@ interface BoardFilterControlsProps {
   showPriority?: boolean;
   ownerFilter?: OwnerFilter;
   showOwner?: boolean;
+  /** Filtre « Personne » (réservé au créateur du projet). Valeur = "all",
+   *  "__me", ou un nom de personne. `people` liste les collaborateurs
+   *  disponibles. Affiché seulement si showPerson. */
+  personFilter?: string;
+  showPerson?: boolean;
+  people?: string[];
   month?: string;
 }
 
@@ -76,10 +83,19 @@ export function BoardFilterControls({
   showPriority = false,
   ownerFilter = "all",
   showOwner = false,
+  personFilter = PERSON_FILTER_ALL,
+  showPerson = false,
+  people = [],
   month,
 }: BoardFilterControlsProps) {
   const router = useRouter();
   const theme = workspaceTheme[workspace];
+
+  const personOptions: FilterPillOption<string>[] = [
+    { value: PERSON_FILTER_ALL, label: "Toutes les personnes" },
+    { value: PERSON_FILTER_ME, label: "Moi" },
+    ...people.map((name) => ({ value: name, label: name })),
+  ];
 
   const projectOptions: FilterPillOption<string>[] = [
     { value: "all", label: "Tous les projets" },
@@ -91,12 +107,13 @@ export function BoardFilterControls({
     ...steps.map((step) => ({ value: step.id, label: step.title })),
   ];
 
-  function navigate(next: { projectId?: string; stepId?: string; statusFilter?: StatusFilter; priorityFilter?: PriorityFilter; ownerFilter?: OwnerFilter }) {
+  function navigate(next: { projectId?: string; stepId?: string; statusFilter?: StatusFilter; priorityFilter?: PriorityFilter; ownerFilter?: OwnerFilter; personFilter?: string }) {
     const nextProjectId = next.projectId ?? projectId;
     const nextStepId = nextProjectId !== projectId ? "all" : next.stepId ?? stepId;
     const nextStatus = next.statusFilter ?? statusFilter;
     const nextPriority = next.priorityFilter ?? priorityFilter;
     const nextOwner = next.ownerFilter ?? ownerFilter;
+    const nextPerson = next.personFilter ?? personFilter;
 
     const params = new URLSearchParams({ workspace });
     if (nextProjectId !== "all") params.set("project", nextProjectId);
@@ -104,6 +121,7 @@ export function BoardFilterControls({
     if (showStatus && nextStatus !== "open") params.set("status", nextStatus);
     if (showPriority && nextPriority !== "all") params.set("priority", nextPriority);
     if (showOwner && nextOwner !== "all") params.set("owner", nextOwner);
+    if (showPerson && nextPerson !== PERSON_FILTER_ALL) params.set("person", nextPerson);
     if (month) params.set("month", month);
     router.push(`${basePath}?${params.toString()}`);
   }
@@ -151,16 +169,30 @@ export function BoardFilterControls({
           minWidth={142}
         />
       )}
-      {showOwner && (
+      {/* Filtre Personne (créateur du projet) : prend la place du simple
+          « Mes tâches » et permet de cibler n'importe quel collaborateur. */}
+      {showPerson ? (
         <FilterPill
-          label="Tâches"
-          value={ownerFilter}
-          options={OWNER_FILTERS}
-          onChange={(nextOwner) => navigate({ ownerFilter: nextOwner })}
+          label="Personne"
+          value={personFilter}
+          options={personOptions}
+          onChange={(nextPerson) => navigate({ personFilter: nextPerson })}
           accentColor={theme.accent}
-          active={ownerFilter !== "all"}
-          minWidth={142}
+          active={personFilter !== PERSON_FILTER_ALL}
+          minWidth={170}
         />
+      ) : (
+        showOwner && (
+          <FilterPill
+            label="Tâches"
+            value={ownerFilter}
+            options={OWNER_FILTERS}
+            onChange={(nextOwner) => navigate({ ownerFilter: nextOwner })}
+            accentColor={theme.accent}
+            active={ownerFilter !== "all"}
+            minWidth={142}
+          />
+        )
       )}
     </FilterPillGroup>
   );

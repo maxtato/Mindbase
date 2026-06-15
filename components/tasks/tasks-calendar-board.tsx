@@ -41,6 +41,7 @@ export function TasksCalendarBoard({
   month,
   projectId,
   stepId = "all",
+  person,
   basePath = "/dashboard/calendar",
 }: {
   tasks: TaskItem[];
@@ -52,6 +53,8 @@ export function TasksCalendarBoard({
   month: string;
   projectId: string;
   stepId?: string;
+  /** Filtre personne courant (préservé lors de la navigation entre mois). */
+  person?: string;
   /** Base URL for prev/next month navigation links. Defaults to /dashboard/calendar. */
   basePath?: string;
 }) {
@@ -169,7 +172,7 @@ export function TasksCalendarBoard({
       <section className="mb-soft-shadow min-w-0 rounded-[26px] p-3 xl:flex xl:min-h-0 xl:flex-1 xl:flex-col xl:overflow-hidden" style={{ background: surface.s1 }}>
         <div className="mb-3 flex items-center justify-between gap-3 xl:shrink-0">
           <Link
-            href={buildBoardHref({ basePath, workspace, view, sort, status: statusFilter, priority: priorityFilter, projectId, stepId, month: previousMonth })}
+            href={buildBoardHref({ basePath, workspace, view, sort, status: statusFilter, priority: priorityFilter, projectId, stepId, person, month: previousMonth })}
             className="rounded-full px-3 py-2 text-[11px] font-semibold"
             style={{ background: surface.s3, color: text.secondary, border: `1px solid ${surface.borderSubtle}` }}
           >
@@ -179,7 +182,7 @@ export function TasksCalendarBoard({
             {monthStart.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
           </p>
           <Link
-            href={buildBoardHref({ basePath, workspace, view, sort, status: statusFilter, priority: priorityFilter, projectId, stepId, month: nextMonth })}
+            href={buildBoardHref({ basePath, workspace, view, sort, status: statusFilter, priority: priorityFilter, projectId, stepId, person, month: nextMonth })}
             className="rounded-full px-3 py-2 text-[11px] font-semibold"
             style={{ background: surface.s3, color: text.secondary, border: `1px solid ${surface.borderSubtle}` }}
           >
@@ -751,6 +754,7 @@ function buildBoardHref(input: {
   priority: PriorityFilter;
   projectId: string;
   stepId?: string;
+  person?: string;
   month?: Date;
 }) {
   const params = new URLSearchParams({ workspace: input.workspace });
@@ -760,6 +764,7 @@ function buildBoardHref(input: {
   if (input.priority !== "all") params.set("priority", input.priority);
   if (input.projectId !== "all") params.set("project", input.projectId);
   if (input.stepId && input.stepId !== "all") params.set("step", input.stepId);
+  if (input.person && input.person !== "all") params.set("person", input.person);
   if (input.month) params.set("month", formatMonthParam(input.month));
   return `${input.basePath}?${params.toString()}`;
 }
