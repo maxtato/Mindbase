@@ -1128,6 +1128,7 @@ function StepCard({
                 stepDescription={step.description}
                 task={task}
                 accentColor={accentColor}
+                projectColor={projectColor}
                 isDragging={draggingTaskId === task.id}
                 dropPosition={taskDropTarget?.taskId === task.id ? taskDropTarget.position : null}
                 projectPeople={projectPeople}
@@ -1276,6 +1277,7 @@ function TaskCard({
   stepDescription,
   task,
   accentColor,
+  projectColor,
   isDragging,
   dropPosition,
   projectPeople,
@@ -1298,6 +1300,7 @@ function TaskCard({
   stepDescription?: string;
   task: Task;
   accentColor: string;
+  projectColor: string;
   isDragging: boolean;
   dropPosition: DropPosition | null;
   projectPeople: ProjectPerson[];
@@ -1387,7 +1390,9 @@ function TaskCard({
       stepTitle={stepTitle}
       stepDescription={stepDescription}
       task={task}
-      accentColor={accentColor}
+      // La tâche ouverte utilise la couleur de THÈME du projet (comme depuis
+      // le Kanban / Calendrier), pas l'accent d'environnement.
+      accentColor={projectColor}
       projectPeople={projectPeople}
       projectTeams={projectTeams}
       statusSettings={statusSettings}
