@@ -84,7 +84,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
 
   const brandWidth = collapsed ? 52 : 188;
   const brandHeight = collapsed ? 52 : 72;
-  const brandLogoSize = collapsed ? 46 : 42;
+  const brandLogoSize = collapsed ? 46 : 36;
 
   const isActive = (href: string, exact = false) =>
     exact ? pathname === href : pathname.startsWith(href);
@@ -200,25 +200,24 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
           style={{
             width: brandWidth,
             height: brandHeight,
-            gap: collapsed ? 0 : 10,
+            gap: collapsed ? 0 : 8,
             justifyContent: collapsed ? "center" : "flex-start",
           }}
         >
-          {collapsed ? (
-            <Image
-              src="/mindbase-iphone.png"
-              alt="MindLay"
-              // Intrinsèque 3× la taille d'affichage → net sur écrans retina.
-              width={brandLogoSize * 3}
-              height={brandLogoSize * 3}
-              quality={95}
-              priority
-              className="shrink-0"
-              style={{ display: "block", width: brandLogoSize, height: brandLogoSize, objectFit: "contain", borderRadius: 10 }}
-            />
-          ) : (
-            // Déplié : le wordmark seul, agrandi pour remplir la largeur de la sidebar.
-            <MindLayWordmark fontSize={40} style={{ color: text.sidebar }} />
+          {/* Icône carrée (logo) + wordmark agrandi quand la sidebar est dépliée. */}
+          <Image
+            src="/mindbase-iphone.png"
+            alt="MindLay"
+            // Intrinsèque 3× la taille d'affichage → net sur écrans retina.
+            width={brandLogoSize * 3}
+            height={brandLogoSize * 3}
+            quality={95}
+            priority
+            className="shrink-0"
+            style={{ display: "block", width: brandLogoSize, height: brandLogoSize, objectFit: "contain", borderRadius: 10 }}
+          />
+          {!collapsed && (
+            <MindLayWordmark fontSize={34} style={{ color: text.sidebar }} />
           )}
         </Link>
 
