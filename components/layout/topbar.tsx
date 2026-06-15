@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { surface, text } from "@/lib/design-tokens";
@@ -84,9 +85,18 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
           </div>
         )}
 
-        {/* iPhone : wordmark « MindLay » à droite du titre. */}
-        <span className="shrink-0 sm:hidden">
-          <MindLayWordmark fontSize={22} style={{ color: text.primary }} />
+        {/* iPhone : logo (icône « M ») + wordmark « MindLay » à droite du titre. */}
+        <span className="flex shrink-0 items-center gap-2 sm:hidden">
+          <Image
+            src="/mindbase-iphone.png"
+            alt="MindLay"
+            width={108}
+            height={108}
+            quality={95}
+            priority
+            style={{ display: "block", width: 32, height: 32, objectFit: "contain", borderRadius: 8 }}
+          />
+          <MindLayWordmark fontSize={28} style={{ color: text.primary }} />
         </span>
       </div>
 

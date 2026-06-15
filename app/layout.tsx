@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { MobileTapGuard } from "@/components/layout/mobile-tap-guard";
+import { getCustomEnvironments } from "@/lib/environment-store";
+import { registerCustomEnvironments } from "@/lib/workspace";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -50,6 +52,12 @@ function isResolvedTheme(value: string | undefined): value is "light" | "dark" {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Enregistre les thèmes des environnements custom AU PLUS TÔT (avant tout
+  // rendu de page) pour que workspaceTheme[env] résolve la bonne couleur côté
+  // serveur — sinon certains composants serveur rendaient la couleur de repli
+  // (violet) figée dans le HTML.
+  registerCustomEnvironments(await getCustomEnvironments());
+
   const cookieStore = await cookies();
   const cookieMode = cookieStore.get("mindbase-theme-mode")?.value;
   const cookieResolved = cookieStore.get("mindbase-theme-resolved")?.value;
