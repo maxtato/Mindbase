@@ -52,8 +52,8 @@ export function ProjectIdentityEditor({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const options = getSubcategoryOptions(workspace);
-  const dimension = size === "lg" ? 56 : size === "sm" ? 28 : 38;
-  const iconSize = size === "lg" ? 24 : size === "sm" ? 14 : 16;
+  const dimension = size === "lg" ? 42 : size === "sm" ? 26 : 34;
+  const iconSize = size === "lg" ? 20 : size === "sm" ? 13 : 15;
   const menuWidth = 320;
 
   function updateMenuPosition() {
