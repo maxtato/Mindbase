@@ -11,6 +11,7 @@
 // car sur iOS la séquence touch→mouse synthétique peut désynchroniser
 // l'ordre des events et faire fermer le menu juste après l'avoir ouvert.
 
+import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
@@ -28,6 +29,9 @@ interface FilterPillProps<T extends string> {
   value: T;
   options: FilterPillOption<T>[];
   onChange: (value: T) => void;
+  /** Si fourni, les options sont des <Link> (navigation native fiable sur iOS).
+   *  onChange reste utilisé pour l'état optimiste/fermeture. */
+  buildHref?: (value: T) => string;
   /** Quand `true`, le bouton bascule en solide accent (workspace). */
   active?: boolean;
   /** Couleur d'accent solide (utilisée pour l'état actif et l'item sélectionné). */
@@ -43,6 +47,7 @@ export function FilterPill<T extends string>({
   value,
   options,
   onChange,
+  buildHref,
   active = false,
   accentColor,
   align = "start",
@@ -233,16 +238,8 @@ export function FilterPill<T extends string>({
           >
           {options.map((option) => {
             const isSelected = option.value === currentValue;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                role="option"
-                aria-selected={isSelected}
-                onClick={() => handleSelect(option.value)}
-                className="mb-filter-pill-item"
-                data-selected={isSelected ? "true" : undefined}
-              >
+            const inner = (
+              <>
                 <span className="mb-filter-pill-item-dot" aria-hidden>
                   {option.dot ? (
                     <span
@@ -272,6 +269,43 @@ export function FilterPill<T extends string>({
                     />
                   </svg>
                 )}
+              </>
+            );
+
+            // Navigation native via <Link> quand un href est fourni : fiable sur
+            // iOS (le MobileTapGuard laisse les ancres à la navigation native) et
+            // déclenche un vrai re-rendu serveur — contrairement à un
+            // router.push() appelé hors du flux d'événements React.
+            if (buildHref) {
+              return (
+                <Link
+                  key={option.value}
+                  href={buildHref(option.value)}
+                  role="option"
+                  aria-selected={isSelected}
+                  className="mb-filter-pill-item"
+                  data-selected={isSelected ? "true" : undefined}
+                  onClick={() => {
+                    setOptimisticValue(option.value);
+                    setOpen(false);
+                  }}
+                >
+                  {inner}
+                </Link>
+              );
+            }
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={isSelected}
+                onClick={() => handleSelect(option.value)}
+                className="mb-filter-pill-item"
+                data-selected={isSelected ? "true" : undefined}
+              >
+                {inner}
               </button>
             );
           })}

@@ -107,7 +107,7 @@ export function BoardFilterControls({
     ...steps.map((step) => ({ value: step.id, label: step.title })),
   ];
 
-  function navigate(next: { projectId?: string; stepId?: string; statusFilter?: StatusFilter; priorityFilter?: PriorityFilter; ownerFilter?: OwnerFilter; personFilter?: string }) {
+  function urlFor(next: { projectId?: string; stepId?: string; statusFilter?: StatusFilter; priorityFilter?: PriorityFilter; ownerFilter?: OwnerFilter; personFilter?: string }) {
     const nextProjectId = next.projectId ?? projectId;
     const nextStepId = nextProjectId !== projectId ? "all" : next.stepId ?? stepId;
     const nextStatus = next.statusFilter ?? statusFilter;
@@ -123,10 +123,13 @@ export function BoardFilterControls({
     if (showOwner && nextOwner !== "all") params.set("owner", nextOwner);
     if (showPerson && nextPerson !== PERSON_FILTER_ALL) params.set("person", nextPerson);
     if (month) params.set("month", month);
-    router.push(`${basePath}?${params.toString()}`);
-    // Force le re-rendu serveur : sans ça, une navigation qui ne change que les
-    // searchParams peut être servie depuis le Router Cache → la liste de tâches
-    // ne reflète pas le filtre choisi.
+    return `${basePath}?${params.toString()}`;
+  }
+
+  // Fallback (desktop / sans Link) : navigation programmée. Les pills passent
+  // surtout par `buildHref` (ancres natives, fiables sur iOS).
+  function navigate(next: Parameters<typeof urlFor>[0]) {
+    router.push(urlFor(next));
     router.refresh();
   }
 
@@ -137,6 +140,7 @@ export function BoardFilterControls({
         value={projectId}
         options={projectOptions}
         onChange={(nextProjectId) => navigate({ projectId: nextProjectId })}
+        buildHref={(nextProjectId) => urlFor({ projectId: nextProjectId })}
         accentColor={theme.accent}
         active={projectId !== "all"}
         minWidth={180}
@@ -147,6 +151,7 @@ export function BoardFilterControls({
           value={stepId}
           options={stepOptions}
           onChange={(nextStepId) => navigate({ stepId: nextStepId })}
+          buildHref={(nextStepId) => urlFor({ stepId: nextStepId })}
           accentColor={theme.accent}
           active={stepId !== "all"}
           minWidth={170}
@@ -158,6 +163,7 @@ export function BoardFilterControls({
           value={statusFilter}
           options={STATUS_FILTERS}
           onChange={(nextStatus) => navigate({ statusFilter: nextStatus })}
+          buildHref={(nextStatus) => urlFor({ statusFilter: nextStatus })}
           accentColor={theme.accent}
           active={statusFilter !== "open"}
         />
@@ -168,6 +174,7 @@ export function BoardFilterControls({
           value={priorityFilter}
           options={PRIORITY_FILTERS}
           onChange={(nextPriority) => navigate({ priorityFilter: nextPriority })}
+          buildHref={(nextPriority) => urlFor({ priorityFilter: nextPriority })}
           accentColor={theme.accent}
           active={priorityFilter !== "all"}
           minWidth={142}
@@ -181,6 +188,7 @@ export function BoardFilterControls({
           value={personFilter}
           options={personOptions}
           onChange={(nextPerson) => navigate({ personFilter: nextPerson })}
+          buildHref={(nextPerson) => urlFor({ personFilter: nextPerson })}
           accentColor={theme.accent}
           active={personFilter !== PERSON_FILTER_ALL}
           minWidth={170}
@@ -192,6 +200,7 @@ export function BoardFilterControls({
             value={ownerFilter}
             options={OWNER_FILTERS}
             onChange={(nextOwner) => navigate({ ownerFilter: nextOwner })}
+            buildHref={(nextOwner) => urlFor({ ownerFilter: nextOwner })}
             accentColor={theme.accent}
             active={ownerFilter !== "all"}
             minWidth={142}

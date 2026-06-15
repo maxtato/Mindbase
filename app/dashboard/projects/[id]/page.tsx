@@ -191,7 +191,7 @@ function ProjectPilotHeader({
           background: envAccent,
         }}
       />
-      <div className="mb-project-pilotbar-inner" style={{ padding: "16px 20px" }}>
+      <div className="mb-project-pilotbar-inner" style={{ padding: "8px 20px" }}>
         <div className="mb-project-pilotbar-identity min-w-0" style={{ gap: 12 }}>
           <ProjectIdentityEditor
             key={`${project.id}-${project.subcategory}-pilot`}
