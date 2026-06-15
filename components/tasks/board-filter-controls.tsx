@@ -124,6 +124,10 @@ export function BoardFilterControls({
     if (showPerson && nextPerson !== PERSON_FILTER_ALL) params.set("person", nextPerson);
     if (month) params.set("month", month);
     router.push(`${basePath}?${params.toString()}`);
+    // Force le re-rendu serveur : sans ça, une navigation qui ne change que les
+    // searchParams peut être servie depuis le Router Cache → la liste de tâches
+    // ne reflète pas le filtre choisi.
+    router.refresh();
   }
 
   return (
