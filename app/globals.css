@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;700;800&family=Yellowtail&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;700;800&family=Pacifico&display=swap');
 @import "tailwindcss";
 
 @theme inline {
@@ -14,7 +14,7 @@
 }
 
 .mb-script {
-  font-family: "Yellowtail", "Segoe Script", "Brush Script MT", cursive;
+  font-family: "Pacifico", "Segoe Script", "Brush Script MT", cursive;
   font-weight: 400;
   font-style: normal;
 }
