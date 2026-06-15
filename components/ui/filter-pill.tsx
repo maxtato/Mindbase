@@ -57,14 +57,6 @@ export function FilterPill<T extends string>({
   // pilotée par le parent — navigation/state serveur — ne soit propagée), pour
   // que le clic « sélectionne » visuellement sans délai.
   const [optimisticValue, setOptimisticValue] = useState<T | null>(null);
-  // Bouclier anti « ghost click » iOS : reste monté un court instant après la
-  // sélection pour absorber le clic synthétique différé (sinon il tombe sur la
-  // carte/élément sous le menu et ouvre une tâche/réglage par erreur).
-  const [shield, setShield] = useState(false);
-  const shieldTimer = useRef<number | null>(null);
-  useEffect(() => () => {
-    if (shieldTimer.current) window.clearTimeout(shieldTimer.current);
-  }, []);
   const currentValue = optimisticValue ?? value;
   const selected = options.find((option) => option.value === currentValue);
   const accent = accentColor ?? "var(--mb-mauve)";
@@ -153,9 +145,19 @@ export function FilterPill<T extends string>({
     setOptimisticValue(nextValue);
     onChange(nextValue);
     setOpen(false);
-    setShield(true);
-    if (shieldTimer.current) window.clearTimeout(shieldTimer.current);
-    shieldTimer.current = window.setTimeout(() => setShield(false), 450);
+    // iOS : supprime UNIQUEMENT le prochain clic synthétique (ghost click) pour
+    // qu'il n'atteigne pas la carte sous le menu — sans bloquer l'écran (un
+    // ancien bouclier plein écran rendait les filtres « non sélectionnables »
+    // car il avalait les taps suivants). Sur pointeur fin (souris) : inutile.
+    if (typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches) {
+      const suppress = (event: MouseEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+        document.removeEventListener("click", suppress, true);
+      };
+      document.addEventListener("click", suppress, true);
+      window.setTimeout(() => document.removeEventListener("click", suppress, true), 400);
+    }
   }
 
   return (
@@ -197,18 +199,16 @@ export function FilterPill<T extends string>({
         </span>
       </button>
 
-      {mounted && (open || shield) && createPortal(
+      {mounted && open && createPortal(
         <>
-          {/* Backdrop transparent plein écran : capture les taps hors menu pour
-              fermer la popover ET reste ~450ms après une sélection (shield) pour
-              absorber le "ghost click" iOS synthétique — sinon il tombe sur la
-              carte/élément sous le menu (kanban tâche, cellule calendrier,
-              réglage…) et l'ouvre par erreur. */}
+          {/* Backdrop transparent : capture les taps hors menu pour fermer la
+              popover. (Le ghost-click iOS est neutralisé par un suppresseur de
+              clic one-shot dans handleSelect — pas par un bouclier persistant.) */}
           <button
             type="button"
             aria-hidden
             tabIndex={-1}
-            onClick={() => { setOpen(false); setShield(false); }}
+            onClick={() => setOpen(false)}
             onPointerDown={(event) => {
               // Empêche le focus de quitter le bouton de filtre et le
               // click synthétique de se propager au layer du dessous.

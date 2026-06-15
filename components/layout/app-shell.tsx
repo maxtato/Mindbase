@@ -41,14 +41,16 @@ export async function AppShell({ children, accountName }: AppShellProps) {
       className="flex overflow-hidden"
       style={{
         background: surface.bg,
-        // Hauteur = zone visible RÉELLE mesurée en JS (--mb-app-height, cf.
-        // ViewportLock), repli 100dvh avant hydratation. Épinglé en haut →
-        // la bottom nav touche exactement le bas de l'écran, sans bande grise.
+        // On ancre le shell aux 4 bords (top+bottom+left+right) SANS hauteur
+        // explicite : il s'étire jusqu'au bas PHYSIQUE de l'écran (viewport-fit
+        // cover), donc la bottom nav touche le bas. Toute `height` explicite
+        // (100dvh, visualViewport…) annulerait `bottom:0` et pouvait laisser
+        // une bande grise dessous.
         position: "fixed",
         top: 0,
-        left: 0,
         right: 0,
-        height: "var(--mb-app-height, 100dvh)",
+        bottom: 0,
+        left: 0,
       }}
     >
       {/* Sidebar — masquée < sm via Tailwind, plus de Suspense boundary.
