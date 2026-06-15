@@ -12,7 +12,7 @@ import type { Workspace } from "@/lib/workspace";
 import { error, surface, text } from "@/lib/design-tokens";
 import { broadcastWorkspace, WORKSPACE_EVENT } from "@/lib/workspace-client";
 import { FlatmindWordmark } from "@/components/branding/mindlay-wordmark";
-import { FlatmindMark } from "@/components/branding/flatmind-mark";
+import { FlatmindLogoMark } from "@/components/branding/flatmind-logo-mark";
 import { useEnvironments } from "@/components/environments/environments-provider";
 
 const WIDE = 212;
@@ -202,8 +202,8 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
             justifyContent: collapsed ? "center" : "flex-start",
           }}
         >
-          {/* Icône (cerveau Flatmind) + wordmark agrandi quand la sidebar est dépliée. */}
-          <FlatmindMark size={brandLogoSize} className="shrink-0" style={{ color: text.sidebar }} />
+          {/* Logo Flatmind + wordmark agrandi quand la sidebar est dépliée. */}
+          <FlatmindLogoMark height={brandLogoSize} className="shrink-0" style={{ color: text.sidebar }} />
           {!collapsed && (
             <FlatmindWordmark fontSize={34} style={{ color: text.sidebar }} />
           )}

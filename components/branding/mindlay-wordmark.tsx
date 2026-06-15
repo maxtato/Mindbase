@@ -35,7 +35,7 @@ export function FlatmindWordmark({
           paddingRight: fontSize * 0.16,
         }}
       >
-        <span className="mb-script" style={{ fontSize: fontSize * 1.0, lineHeight: 1 }}>
+        <span className="mb-script" style={{ fontSize: fontSize * 0.9, lineHeight: 1 }}>
           mind
         </span>
         {/* Trait « brush » sous « mind » (même teinte) : fin et détaché. */}

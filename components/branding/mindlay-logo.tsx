@@ -1,4 +1,5 @@
 import { cx, decorativeStyles, textStyles } from "@/components/ui/theme";
+import { FlatmindLogoMark } from "@/components/branding/flatmind-logo-mark";
 
 type FlatmindLogoProps = {
   className?: string;
@@ -19,33 +20,8 @@ export function FlatmindLogo({
         className
       )}
     >
-      {/* Logo Flatmind : cerveau en boucles dans un cadre arrondi, en dégradé. */}
-      <svg
-        viewBox="0 0 64 64"
-        fill="none"
-        aria-hidden="true"
-        className={compact ? "h-14 w-14 shrink-0" : "h-20 w-20 shrink-0"}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <defs>
-          <linearGradient id="mindlay-gradient" x1="7" y1="11" x2="57" y2="53">
-            <stop offset="0%" stopColor="#A855F7" />
-            <stop offset="100%" stopColor="#59A8FF" />
-          </linearGradient>
-        </defs>
-
-        <g stroke="url(#mindlay-gradient)" strokeWidth="3.4">
-          {/* Cadre arrondi */}
-          <rect x="7" y="11" width="50" height="42" rx="9" />
-          {/* Cerveau en boucles : trois lobes qui se chevauchent */}
-          <circle cx="24" cy="31" r="7.2" />
-          <circle cx="40" cy="31" r="7.2" />
-          <circle cx="32" cy="26.5" r="6.4" />
-          {/* Tronc qui descend vers le bas du cadre */}
-          <path d="M32 38.5 L32 45 Q32 47 34 47 L41 47" />
-        </g>
-      </svg>
+      {/* Logo Flatmind (image fournie) — suit la couleur du texte (blanc en sombre). */}
+      <FlatmindLogoMark height={compact ? 52 : 72} style={{ color: "var(--mb-text-primary)" }} />
 
       <div className="min-w-0">
         <div
