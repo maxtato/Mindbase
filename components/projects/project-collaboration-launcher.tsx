@@ -4,6 +4,7 @@ import { useState, useTransition, type FormEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   addProjectPersonAction,
+  removeProjectPersonAction,
   addProjectTeamAction,
   updateProjectTeamAction,
 } from "@/app/dashboard/projects/[id]/actions";
@@ -57,6 +58,13 @@ export function ProjectCollaborationLauncher({
       setPersonName("");
       setPersonEmail("");
       setPersonRole("");
+      router.refresh();
+    });
+  }
+
+  function removePerson(personId: string) {
+    startTransition(async () => {
+      await removeProjectPersonAction(projectId, personId);
       router.refresh();
     });
   }
@@ -177,8 +185,21 @@ export function ProjectCollaborationLauncher({
                   ) : (
                     <div className="flex flex-wrap gap-1.5">
                       {people.map((person) => (
-                        <span key={person.id} className="rounded-full px-2.5 py-1 text-[11px] font-semibold" style={{ background: surface.s2, color: text.secondary }}>
+                        <span key={person.id} className="inline-flex items-center gap-1.5 rounded-full py-1 pl-2.5 pr-1 text-[11px] font-semibold" style={{ background: surface.s2, color: text.secondary }}>
                           {person.name}{person.role ? ` · ${person.role}` : ""}
+                          <button
+                            type="button"
+                            onClick={() => removePerson(person.id)}
+                            disabled={isPending}
+                            aria-label={`Retirer ${person.name}`}
+                            title="Retirer du projet"
+                            className="inline-flex h-4 w-4 items-center justify-center rounded-full"
+                            style={{ background: surface.s1, color: text.muted, border: "none", cursor: "pointer", lineHeight: 0 }}
+                          >
+                            <svg width="9" height="9" viewBox="0 0 16 16" fill="none">
+                              <path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                          </button>
                         </span>
                       ))}
                     </div>
