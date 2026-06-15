@@ -6,6 +6,7 @@ import { EnvironmentsManager } from "@/components/environments/environments-mana
 import { getProfile } from "@/lib/account-store";
 import { surface, text } from "@/lib/design-tokens";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
+import { syncEnvironmentThemes } from "@/lib/environment-store";
 
 export default async function SettingsPage({
   searchParams,
@@ -13,6 +14,7 @@ export default async function SettingsPage({
   searchParams: Promise<{ workspace?: string }>;
 }) {
   const sp = await searchParams;
+  await syncEnvironmentThemes();
   const workspace = getWorkspace(sp.workspace);
   const theme = workspaceTheme[workspace];
   const profile = await getProfile();
