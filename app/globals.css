@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Kaushan+Script&display=swap');
 @import "tailwindcss";
 
 @theme inline {
@@ -5,6 +6,13 @@
   --color-foreground: var(--fg);
   --font-sans: "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono", monospace;
+}
+
+/* Écriture « brush script » du wordmark MindLay (le « Lay »). */
+.mb-script {
+  font-family: "Kaushan Script", "Segoe Script", "Brush Script MT", cursive;
+  font-weight: 400;
+  font-style: normal;
 }
 
 :root {

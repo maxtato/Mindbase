@@ -5,21 +5,21 @@ import { MobileTapGuard } from "@/components/layout/mobile-tap-guard";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Mindbase — Think. Structure. Create.",
+  title: "MindLay — Think. Structure. Create.",
   description: "Reliez vos projets, tâches, fichiers et décisions en un seul endroit.",
-  applicationName: "Mindbase",
+  applicationName: "MindLay",
   // Active le mode PWA / standalone sur iOS quand l'app est ajoutée à l'écran
   // d'accueil : pas de barre Safari, status bar adaptée au thème sombre.
   appleWebApp: {
     capable: true,
-    title: "Mindbase",
+    title: "MindLay",
     statusBarStyle: "black-translucent",
   },
   // Hint Apple : tuile par défaut Win/Edge (PWA installable côté desktop).
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-title": "Mindbase",
+    "apple-mobile-web-app-title": "MindLay",
   },
 };
 

@@ -83,7 +83,7 @@ const REFINE_SCHEMA = {
   additionalProperties: false,
 } as const;
 
-const REFINE_SYSTEM_PROMPT = `Tu es l'assistant IA de Mindbase. Tu aides l'utilisateur à rédiger / réécrire le champ "Attendu" d'une tâche (ce qu'il faut concrètement accomplir), en cohérence avec l'ensemble du projet, EN DIALOGUANT avec lui.
+const REFINE_SYSTEM_PROMPT = `Tu es l'assistant IA de MindLay. Tu aides l'utilisateur à rédiger / réécrire le champ "Attendu" d'une tâche (ce qu'il faut concrètement accomplir), en cohérence avec l'ensemble du projet, EN DIALOGUANT avec lui.
 
 Tu réponds UNIQUEMENT en JSON strict, en français, selon deux modes :
 • mode="question" — si tu as besoin d'une précision pour bien cerner l'attendu (objectif, livrable, périmètre, contrainte). Mets ta question dans "reply", expected=null.

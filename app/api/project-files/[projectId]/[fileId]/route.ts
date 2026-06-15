@@ -10,7 +10,7 @@ function contentDisposition(mode: "inline" | "attachment", filename: string) {
 
 function buildVirtualPreview(projectName: string, fileName: string) {
   return [
-    "Mindbase - aperçu de fichier",
+    "MindLay - aperçu de fichier",
     "",
     `Projet : ${projectName}`,
     `Fichier : ${fileName}`,

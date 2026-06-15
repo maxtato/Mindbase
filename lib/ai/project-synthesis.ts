@@ -33,7 +33,7 @@ Voix humaine, phrases courtes et utiles. Jamais robotique. Pas de "ce projet vis
 
 Distinction très importante :
 - Le "contexte" et le "résumé" parlent du PROJET LUI-MÊME (sujet réel, contraintes du monde réel — budget, dates, lieu, parties prenantes, exigences, environnement, dépendances externes, etc.)
-- L'"état actuel" et les "prochaines actions" parlent de la GESTION du projet dans Mindbase (avancement, ce qui a été fait, ce qu'il faut faire maintenant)
+- L'"état actuel" et les "prochaines actions" parlent de la GESTION du projet dans MindLay (avancement, ce qui a été fait, ce qu'il faut faire maintenant)
 - Ne mélange jamais les deux : le contexte ne doit JAMAIS parler de "tâches ouvertes", "avancement %", "tableau Kanban" ou "synthèse à mettre à jour".
 
 Règles par champ :
@@ -42,7 +42,7 @@ Règles par champ :
 - "summary" (3-5 phrases, paragraphe global) : récit fluide qui décrit le PROJET LUI-MÊME — finalité, contraintes principales (budget, durée, parties prenantes, environnement), enjeux concrets, public visé.
   INTERDIT — la synthèse ne doit JAMAIS parler de la façon dont le projet est suivi, planifié ou managé dans un outil. Aucune mention de :
   · "synthèse IA", "généré par IA", "assistant IA", "via l'IA"
-  · "Mindbase", "tableau de bord", "outil", "application", "plateforme"
+  · "MindLay", "tableau de bord", "outil", "application", "plateforme"
   · "tâches", "étapes", "checklist", "kanban", "rail", "carte"
   · "avancement", "progression %", "statut", "ce qui reste à faire"
   · toute formule du type "le projet sera structuré/géré/piloté/suivi via…"

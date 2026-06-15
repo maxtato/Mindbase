@@ -12,6 +12,7 @@ import { getWorkspace, workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { error, surface, text } from "@/lib/design-tokens";
 import { broadcastWorkspace, WORKSPACE_EVENT } from "@/lib/workspace-client";
+import { MindLayWordmark } from "@/components/branding/mindlay-wordmark";
 
 const WIDE = 212;
 const COLLAPSED = 62;
@@ -191,7 +192,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
         <Link
           href={makeHref("/dashboard")}
           className="flex items-center shrink-0"
-          title="Mindbase"
+          title="MindLay"
           style={{
             width: brandWidth,
             height: brandHeight,
@@ -201,7 +202,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
         >
           <Image
             src="/mindbase-iphone.png"
-            alt="Mindbase"
+            alt="MindLay"
             // Intrinsèque 3× la taille d'affichage → net sur écrans retina.
             width={brandLogoSize * 3}
             height={brandLogoSize * 3}
@@ -211,17 +212,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
             style={{ display: "block", width: brandLogoSize, height: brandLogoSize, objectFit: "contain", borderRadius: 10 }}
           />
           {!collapsed && (
-            <span
-              style={{
-                fontSize: 24,
-                fontWeight: 700,
-                letterSpacing: "-0.02em",
-                lineHeight: 1,
-                color: text.sidebar,
-              }}
-            >
-              Mindbase
-            </span>
+            <MindLayWordmark fontSize={24} style={{ color: text.sidebar }} />
           )}
         </Link>
 

@@ -45,11 +45,11 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
         }}
       />
       <div className="flex items-center gap-2 min-w-0 sm:gap-3">
-        {/* iPhone uniquement : logo Mindbase devant le titre du menu. Sur
+        {/* iPhone uniquement : logo MindLay devant le titre du menu. Sur
             desktop la sidebar porte déjà le logo → on le masque (sm:hidden). */}
         <Image
           src="/mindbase-iphone.png"
-          alt="Mindbase"
+          alt="MindLay"
           // Logo agrandi + intrinsèque 3× (net sur retina iPhone).
           width={120}
           height={120}
