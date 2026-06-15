@@ -17,6 +17,7 @@ import { formatTaskScheduleDate } from "@/lib/date-format";
 import { deriveTaskDisplayPriority, deriveTaskStatus, taskStatusLabels } from "@/lib/project-plan";
 import { priorityVisuals, type ProjectPriority } from "@/lib/project-taxonomy";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
+import { useAccountName } from "@/components/account/account-context";
 
 interface TaskExpandedPreviewProps {
   task: Task;
@@ -1298,8 +1299,12 @@ function QuickInfos({
   onUpdate?: TaskExpandedPreviewProps["onUpdate"];
   statusSettings?: ProjectStatusSettings;
 }) {
+  const accountName = useAccountName();
   const fileCount = task.files?.length ?? 0;
   const owner = task.owner?.trim() || task.assignees?.[0] || linkedTeams[0]?.name || "";
+  const meFirst = accountName.trim().toLowerCase().split(" ")[0] ?? "";
+  // Affiche « Moi » quand la tâche est assignée au compte courant.
+  const ownerLabel = owner && meFirst && owner.trim().toLowerCase().split(" ")[0] === meFirst ? "Moi" : owner;
   const editable = Boolean(onUpdate);
   const [editing, setEditing] = useState<"calendar" | "person" | "file" | null>(null);
   const [showCompletionBlocked, setShowCompletionBlocked] = useState(false);
@@ -1325,7 +1330,7 @@ function QuickInfos({
           active={editing === "person"}
           onClick={editable ? () => setEditing(editing === "person" ? null : "person") : undefined}
         >
-          {owner || (editable ? "Assigner" : "—")}
+          {ownerLabel || (editable ? "Assigner" : "—")}
         </QuickInfoTile>
         <QuickInfoTile
           icon="file"
@@ -1977,9 +1982,18 @@ function PersonEditor({
   onSave: (owner: string) => void;
   onCancel: () => void;
 }) {
+  const accountName = useAccountName();
   const [value, setValue] = useState(task.owner ?? "");
   const dirty = value.trim() !== (task.owner?.trim() ?? "");
   const hasOwner = (task.owner?.trim() ?? "") !== "";
+
+  const firstName = (name: string) => name.trim().toLowerCase().split(" ")[0] ?? "";
+  const meFirst = firstName(accountName);
+  const isMe = (name: string) => Boolean(meFirst) && firstName(name) === meFirst;
+  const meSelected = isMe(value);
+  // On évite d'afficher le compte courant deux fois : la puce « Moi » couvre
+  // déjà l'attribution à soi-même.
+  const otherPeople = projectPeople.filter((person) => !isMe(person.name));
 
   return (
     <div
@@ -1996,30 +2010,43 @@ function PersonEditor({
       <p style={{ fontSize: 10.5, fontWeight: 600, color: text.muted, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>
         Personne assignée
       </p>
-      {projectPeople.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {projectPeople.map((person) => {
-            const selected = value.trim() === person.name;
-            return (
-              <button
-                key={person.id}
-                type="button"
-                // Reclic sur la personne déjà sélectionnée = on la retire.
-                onClick={() => setValue(selected ? "" : person.name)}
-                className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
-                style={{
-                  background: selected ? accentColor : surface.s2,
-                  color: selected ? "#FFFFFF" : text.secondary,
-                  border: `1px solid ${selected ? accentColor : surface.borderSubtle}`,
-                  cursor: "pointer",
-                }}
-              >
-                {person.name}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      <div className="flex flex-wrap gap-1">
+        {/* « Moi » : assigne la tâche au compte courant → elle apparaît avec
+            le filtre « Moi » des vues Kanban / Calendrier. */}
+        <button
+          type="button"
+          onClick={() => setValue(meSelected ? "" : accountName)}
+          className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
+          style={{
+            background: meSelected ? accentColor : surface.s2,
+            color: meSelected ? "#FFFFFF" : text.secondary,
+            border: `1px solid ${meSelected ? accentColor : surface.borderSubtle}`,
+            cursor: "pointer",
+          }}
+        >
+          Moi
+        </button>
+        {otherPeople.map((person) => {
+          const selected = value.trim() === person.name;
+          return (
+            <button
+              key={person.id}
+              type="button"
+              // Reclic sur la personne déjà sélectionnée = on la retire.
+              onClick={() => setValue(selected ? "" : person.name)}
+              className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
+              style={{
+                background: selected ? accentColor : surface.s2,
+                color: selected ? "#FFFFFF" : text.secondary,
+                border: `1px solid ${selected ? accentColor : surface.borderSubtle}`,
+                cursor: "pointer",
+              }}
+            >
+              {person.name}
+            </button>
+          );
+        })}
+      </div>
       <input
         type="text"
         value={value}
