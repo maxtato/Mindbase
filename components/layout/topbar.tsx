@@ -74,7 +74,10 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
                 color: text.primary,
                 margin: 0,
                 letterSpacing: "-0.02em",
-                lineHeight: 1.15,
+                // line-height + petit padding bas : sinon le jambage du « j »
+                // (Projets) est rogné par l'overflow:hidden de .truncate.
+                lineHeight: 1.3,
+                paddingBottom: 2,
               }}
             >
               {title}
