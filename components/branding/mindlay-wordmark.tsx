@@ -1,8 +1,8 @@
 import type { CSSProperties } from "react";
 
-// Wordmark « MindLay » : « Mind » en sans-serif gras + « Lay » en écriture
-// brush-script avec un trait souligné effilé. Monochrome (hérite de `color`),
-// donc s'adapte au thème clair/sombre et au contexte (sidebar, etc.).
+// Wordmark « MindLay » : « Mind » en League Spartan + « lay » en brush-script
+// Yellowtail, légèrement plus grand, avec un trait souligné effilé. Monochrome :
+// tout hérite de `color` (donc même teinte que « Mind » / le contexte).
 export function MindLayWordmark({
   fontSize = 24,
   className,
@@ -23,19 +23,25 @@ export function MindLayWordmark({
         ...style,
       }}
     >
-      <span style={{ fontWeight: 800, letterSpacing: "-0.02em", fontSize }}>Mind</span>
+      <span className="mb-wordmark-mind" style={{ fontWeight: 700, letterSpacing: "-0.02em", fontSize }}>
+        Mind
+      </span>
+      {/* « lay » est un sibling inline avec alignItems:baseline sur le parent →
+          sa ligne de base s'aligne sur celle de « Mind » (pas de décalage
+          manuel, qui désalignait). */}
       <span
         style={{
           position: "relative",
           display: "inline-block",
-          marginLeft: fontSize * 0.05,
-          paddingRight: fontSize * 0.12,
+          marginLeft: fontSize * 0.06,
+          paddingRight: fontSize * 0.16,
         }}
       >
+        {/* « lay » légèrement plus grand que « Mind ». */}
         <span className="mb-script" style={{ fontSize: fontSize * 1.1, lineHeight: 1 }}>
-          Lay
+          lay
         </span>
-        {/* Trait « brush » sous le mot, effilé vers la droite. */}
+        {/* Trait « brush » sous le mot (même teinte que le texte). */}
         <svg
           aria-hidden
           viewBox="0 0 120 18"
@@ -43,9 +49,9 @@ export function MindLayWordmark({
           style={{
             position: "absolute",
             left: "-4%",
-            bottom: -fontSize * 0.14,
+            bottom: -fontSize * 0.16,
             width: "112%",
-            height: fontSize * 0.4,
+            height: fontSize * 0.36,
             overflow: "visible",
           }}
         >

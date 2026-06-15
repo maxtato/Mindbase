@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Kaushan+Script&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;700;800&family=Yellowtail&display=swap');
 @import "tailwindcss";
 
 @theme inline {
@@ -8,9 +8,13 @@
   --font-mono: "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono", monospace;
 }
 
-/* Écriture « brush script » du wordmark MindLay (le « Lay »). */
+/* Wordmark MindLay : « Mind » en League Spartan, « lay » en brush-script Yellowtail. */
+.mb-wordmark-mind {
+  font-family: "League Spartan", var(--font-sans);
+}
+
 .mb-script {
-  font-family: "Kaushan Script", "Segoe Script", "Brush Script MT", cursive;
+  font-family: "Yellowtail", "Segoe Script", "Brush Script MT", cursive;
   font-weight: 400;
   font-style: normal;
 }
