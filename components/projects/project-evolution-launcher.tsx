@@ -131,7 +131,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
           color: "#FFFFFF",
           border: "none",
           cursor: "pointer",
-          boxShadow: `0 8px 20px -8px ${accentColor}`,
+          boxShadow: "0 2px 8px -2px rgba(16, 24, 40, 0.16)",
           whiteSpace: "nowrap",
         }}
         title="Discuter avec l'IA pour faire évoluer le projet"
