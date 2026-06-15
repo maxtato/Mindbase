@@ -14,7 +14,6 @@ import { error, surface, text } from "@/lib/design-tokens";
 import { broadcastWorkspace, WORKSPACE_EVENT } from "@/lib/workspace-client";
 import { MindLayWordmark } from "@/components/branding/mindlay-wordmark";
 import { useEnvironments } from "@/components/environments/environments-provider";
-import { CreateEnvironmentDialog } from "@/components/environments/create-environment-dialog";
 
 const WIDE = 212;
 const COLLAPSED = 62;
@@ -37,7 +36,6 @@ interface SidebarProps {
 
 export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const [creatingEnv, setCreatingEnv] = useState(false);
   const environments = useEnvironments();
   const pathname = usePathname();
   // Lit le workspace depuis l'URL côté client uniquement (pas de useSearchParams).
@@ -84,7 +82,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
 
   const brandWidth = collapsed ? 52 : 188;
   const brandHeight = collapsed ? 52 : 72;
-  const brandLogoSize = collapsed ? 46 : 42;
+  const brandLogoSize = collapsed ? 46 : 36;
 
   const isActive = (href: string, exact = false) =>
     exact ? pathname === href : pathname.startsWith(href);
@@ -200,25 +198,24 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
           style={{
             width: brandWidth,
             height: brandHeight,
-            gap: collapsed ? 0 : 10,
+            gap: collapsed ? 0 : 8,
             justifyContent: collapsed ? "center" : "flex-start",
           }}
         >
-          {collapsed ? (
-            <Image
-              src="/mindbase-iphone.png"
-              alt="MindLay"
-              // Intrinsèque 3× la taille d'affichage → net sur écrans retina.
-              width={brandLogoSize * 3}
-              height={brandLogoSize * 3}
-              quality={95}
-              priority
-              className="shrink-0"
-              style={{ display: "block", width: brandLogoSize, height: brandLogoSize, objectFit: "contain", borderRadius: 10 }}
-            />
-          ) : (
-            // Déplié : le wordmark seul, agrandi pour remplir la largeur de la sidebar.
-            <MindLayWordmark fontSize={40} style={{ color: text.sidebar }} />
+          {/* Icône carrée (logo) + wordmark agrandi quand la sidebar est dépliée. */}
+          <Image
+            src="/mindbase-iphone.png"
+            alt="MindLay"
+            // Intrinsèque 3× la taille d'affichage → net sur écrans retina.
+            width={brandLogoSize * 3}
+            height={brandLogoSize * 3}
+            quality={95}
+            priority
+            className="shrink-0"
+            style={{ display: "block", width: brandLogoSize, height: brandLogoSize, objectFit: "contain", borderRadius: 10 }}
+          />
+          {!collapsed && (
+            <MindLayWordmark fontSize={34} style={{ color: text.sidebar }} />
           )}
         </Link>
 
@@ -277,18 +274,6 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
                 </Link>
               );
             })}
-            <button
-              type="button"
-              onClick={() => setCreatingEnv(true)}
-              title="Créer un environnement"
-              aria-label="Créer un environnement"
-              className="w-8 h-8 rounded-full flex items-center justify-center"
-              style={{ background: surface.sidebarPanel, color: text.sidebarMuted, border: `1px dashed ${surface.sidebarBorder}`, cursor: "pointer" }}
-            >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
-            </button>
           </div>
         ) : (
           <div
@@ -331,27 +316,9 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
                 </Link>
               );
             })}
-            <button
-              type="button"
-              onClick={() => setCreatingEnv(true)}
-              className="h-9 rounded-xl flex items-center gap-2 px-2.5 text-[11px] font-semibold"
-              style={{ background: surface.sidebarPanel, color: text.sidebarMuted, border: `1px dashed ${surface.sidebarBorder}`, cursor: "pointer" }}
-            >
-              <span
-                className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
-                style={{ background: surface.sidebarPanelActive, border: `1px solid ${surface.sidebarBorder}` }}
-              >
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                  <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                </svg>
-              </span>
-              <span className="truncate leading-none">Nouvel environnement</span>
-            </button>
           </div>
         )}
       </div>
-
-      {creatingEnv && <CreateEnvironmentDialog onClose={() => setCreatingEnv(false)} />}
 
       {/* Divider */}
       <div className="mx-3 mb-3" style={{ height: 1, background: surface.sidebarBorder }} />
