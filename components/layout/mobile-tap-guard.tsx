@@ -101,35 +101,22 @@ export function MobileTapGuard() {
     // peut suivre notre appel direct. Au-delà, c'est un nouveau tap utilisateur.
     const SUPPRESS_WINDOW_MS = 350;
 
-    // One-shot suppression : on s'attend à AU PLUS un click natif tardif par
-    // tap déclenché manuellement. Une fois consommé, on retire l'entrée — sinon
-    // on bloquerait par erreur le prochain tap utilisateur sur un descendant.
-    let suppressedEntry: { target: HTMLElement; expiresAt: number } | null = null;
+    // One-shot suppression PAR LE TEMPS (et non par cible) : après avoir
+    // déclenché manuellement un onClick, on s'attend à AU PLUS un click natif
+    // fantôme. On le neutralise quelle que soit sa cible — crucial quand le
+    // handler a démonté l'élément tapé (ex. une option de filtre qui ferme le
+    // menu) : sinon le click fantôme tombe sur la carte exposée en dessous et
+    // l'ouvre par erreur.
+    let suppressUntil = 0;
 
-    function markSuppressed(target: HTMLElement) {
-      suppressedEntry = { target, expiresAt: window.performance.now() + SUPPRESS_WINDOW_MS };
-    }
-
-    function consumeSuppressedIfMatch(target: Element | null): boolean {
-      if (!suppressedEntry || !target) return false;
-      if (window.performance.now() > suppressedEntry.expiresAt) {
-        suppressedEntry = null;
-        return false;
-      }
-      const matches = suppressedEntry.target === target || suppressedEntry.target.contains(target);
-      if (matches) {
-        suppressedEntry = null;
-        return true;
-      }
-      return false;
+    function markSuppressed() {
+      suppressUntil = window.performance.now() + SUPPRESS_WINDOW_MS;
     }
 
     function handleNativeClick(event: MouseEvent) {
       if (!event.isTrusted) return;
-      const target = getElementTarget(event.target);
-      if (!target) return;
-
-      if (consumeSuppressedIfMatch(target)) {
+      if (window.performance.now() <= suppressUntil) {
+        suppressUntil = 0; // one-shot
         event.preventDefault();
         event.stopImmediatePropagation();
       }
@@ -154,7 +141,7 @@ export function MobileTapGuard() {
       if (!onClickEntry) return;
 
       preventDefault();
-      markSuppressed(tap.target);
+      markSuppressed();
       try {
         onClickEntry.handler({
           preventDefault: () => {},
