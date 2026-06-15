@@ -356,12 +356,12 @@ export async function applyProjectEvolutionAction(input: {
     } else if (op.newStepTitle?.trim()) {
       stepId = stepIdByTitle.get(normTitle(op.newStepTitle)) ?? (await addStep(op.newStepTitle, null));
     }
-    // Repli : aucune étape ciblée valide → on rattache à la dernière étape
-    // existante, ou on crée une étape « Nouvelles tâches ».
+    // Repli : aucune étape ciblée valide. On NE rattache PLUS à la dernière
+    // étape (rattachement incohérent : la tâche atterrissait dans une étape
+    // sans rapport). On range plutôt dans une étape dédiée « À trier », créée
+    // une seule fois, pour que l'utilisateur la replace ensuite au bon endroit.
     if (!stepId) {
-      const fresh = await getProjectById(projectId);
-      const last = fresh?.steps?.[fresh.steps.length - 1];
-      stepId = last?.id ?? (await addStep("Nouvelles tâches", null));
+      stepId = await addStep("À trier", "Tâches créées par l'assistant sans étape évidente — à reclasser.");
     }
     if (!stepId) continue;
 
