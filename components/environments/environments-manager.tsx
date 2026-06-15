@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { surface, text } from "@/lib/design-tokens";
 import { useEnvironments } from "@/components/environments/environments-provider";
 import { updateEnvironmentAction, deleteEnvironmentAction } from "@/app/dashboard/environment-actions";
@@ -12,29 +11,28 @@ const PRESET_COLORS = [
 ];
 
 export function EnvironmentsManager() {
-  const router = useRouter();
   const environments = useEnvironments();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
+  // Rechargement complet après modification : le thème (couleur) des
+  // environnements est lu via un registre module-global par de nombreux
+  // composants qui ne se re-rendent pas tous sur un simple refresh. Un reload
+  // garantit que la nouvelle couleur s'applique partout.
   async function rename(id: string, name: string) {
     setBusyId(id);
     await updateEnvironmentAction({ id, name });
-    router.refresh();
-    setBusyId(null);
+    window.location.reload();
   }
   async function recolor(id: string, color: string) {
     setBusyId(id);
     await updateEnvironmentAction({ id, color });
-    router.refresh();
-    setBusyId(null);
+    window.location.reload();
   }
   async function remove(id: string) {
     setBusyId(id);
     await deleteEnvironmentAction(id);
-    setConfirmDelete(null);
-    router.refresh();
-    setBusyId(null);
+    window.location.reload();
   }
 
   return (

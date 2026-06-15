@@ -57,6 +57,14 @@ export function FilterPill<T extends string>({
   // pilotée par le parent — navigation/state serveur — ne soit propagée), pour
   // que le clic « sélectionne » visuellement sans délai.
   const [optimisticValue, setOptimisticValue] = useState<T | null>(null);
+  // Bouclier anti « ghost click » iOS : reste monté un court instant après la
+  // sélection pour absorber le clic synthétique différé (sinon il tombe sur la
+  // carte/élément sous le menu et ouvre une tâche/réglage par erreur).
+  const [shield, setShield] = useState(false);
+  const shieldTimer = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (shieldTimer.current) window.clearTimeout(shieldTimer.current);
+  }, []);
   const currentValue = optimisticValue ?? value;
   const selected = options.find((option) => option.value === currentValue);
   const accent = accentColor ?? "var(--mb-mauve)";
@@ -145,6 +153,9 @@ export function FilterPill<T extends string>({
     setOptimisticValue(nextValue);
     onChange(nextValue);
     setOpen(false);
+    setShield(true);
+    if (shieldTimer.current) window.clearTimeout(shieldTimer.current);
+    shieldTimer.current = window.setTimeout(() => setShield(false), 450);
   }
 
   return (
@@ -186,18 +197,18 @@ export function FilterPill<T extends string>({
         </span>
       </button>
 
-      {mounted && open && menuPosition && createPortal(
+      {mounted && (open || shield) && createPortal(
         <>
-          {/* Backdrop transparent : capture tous les taps hors menu pour
-              fermer la popover. Sans ça, sur iOS Safari un "ghost click"
-              synthétique tombe sur la carte sous le menu (kanban tâche,
-              cellule calendrier…) juste après le démontage, ce qui ouvre
-              une carte par erreur quand on sélectionne un filtre. */}
+          {/* Backdrop transparent plein écran : capture les taps hors menu pour
+              fermer la popover ET reste ~450ms après une sélection (shield) pour
+              absorber le "ghost click" iOS synthétique — sinon il tombe sur la
+              carte/élément sous le menu (kanban tâche, cellule calendrier,
+              réglage…) et l'ouvre par erreur. */}
           <button
             type="button"
             aria-hidden
             tabIndex={-1}
-            onClick={() => setOpen(false)}
+            onClick={() => { setOpen(false); setShield(false); }}
             onPointerDown={(event) => {
               // Empêche le focus de quitter le bouton de filtre et le
               // click synthétique de se propager au layer du dessous.
@@ -214,6 +225,7 @@ export function FilterPill<T extends string>({
               padding: 0,
             }}
           />
+          {open && menuPosition && (
           <div
             ref={menuRef}
             role="listbox"
@@ -276,6 +288,7 @@ export function FilterPill<T extends string>({
             );
           })}
           </div>
+          )}
         </>,
         document.body,
       )}
