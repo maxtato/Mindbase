@@ -36,10 +36,13 @@ export function MindLayWordmark({
           marginLeft: fontSize * 0.06,
           paddingRight: fontSize * 0.18,
           color: LAY_COLOR,
+          // On abaisse tout le groupe « lay » (texte + trait) pour que les
+          // lettres de « lay » reposent au même niveau que « Mind ».
+          transform: `translateY(${fontSize * 0.14}px)`,
         }}
       >
-        {/* « lay » un peu plus grand que « Mind ». */}
-        <span className="mb-script" style={{ fontSize: fontSize * 1.35, lineHeight: 1 }}>
+        {/* « lay » légèrement plus grand que « Mind ». */}
+        <span className="mb-script" style={{ fontSize: fontSize * 1.24, lineHeight: 1 }}>
           lay
         </span>
         {/* Trait « brush » sous le mot (même violet), abaissé. */}
