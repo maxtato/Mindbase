@@ -353,9 +353,13 @@ function isStepStatus(value: string | null | undefined): value is StepStatus {
 }
 
 function normalizeProject(raw: Partial<Project> & Pick<Project, "id" | "name" | "description" | "objective" | "status" | "progress" | "context" | "currentPriority" | "nextStep" | "decisions" | "risks" | "blockers" | "actions" | "updatedAt" | "color">): Project {
+  // On accepte les deux environnements intégrés ET les environnements
+  // personnalisés (id "env_*"). Les projets hérités sans workspace valide
+  // retombent sur une inférence par mots-clés.
+  const rawWorkspace = typeof raw.workspace === "string" ? raw.workspace.trim() : "";
   const workspace: Workspace =
-    raw.workspace === "personal" || raw.workspace === "professional"
-      ? raw.workspace
+    rawWorkspace === "personal" || rawWorkspace === "professional" || rawWorkspace.startsWith("env_")
+      ? rawWorkspace
       : inferWorkspaceFromLegacyProject(raw.name, raw.description);
 
   const mode: ProjectMode = raw.mode === "assisted" ? "assisted" : "custom";
@@ -797,13 +801,17 @@ export async function getProjectById(id: string) {
   return projects.find((project) => project.id === id);
 }
 
-export async function getSidebarStatsByWorkspace() {
+export async function getSidebarStatsByWorkspace(extraWorkspaces: string[] = []) {
   const projects = await getAllProjects();
 
-  return {
+  const stats: Record<string, ReturnType<typeof buildWorkspaceSidebarStats>> = {
     personal: buildWorkspaceSidebarStats(projects, "personal"),
     professional: buildWorkspaceSidebarStats(projects, "professional"),
-  } as const;
+  };
+  for (const workspace of extraWorkspaces) {
+    stats[workspace] = buildWorkspaceSidebarStats(projects, workspace);
+  }
+  return stats;
 }
 
 function buildWorkspaceSidebarStats(projects: Project[], workspace: Workspace) {

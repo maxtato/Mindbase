@@ -250,7 +250,13 @@ export const chromeStyles = {
   } satisfies CSSProperties,
 };
 
-export type WorkspaceTheme = (typeof workspaceThemes)[WorkspaceType];
+export type WorkspaceTheme = (typeof workspaceThemes)[keyof typeof workspaceThemes];
+
+// Les environnements personnalisés (id "env_*") n'ont pas d'entrée ici (ce thème
+// UI sert surtout aux pages d'auth) : on retombe sur "personal".
+function resolveUiWorkspaceTheme(workspace: WorkspaceType) {
+  return workspaceThemes[workspace as "personal" | "professional"] ?? workspaceThemes.personal;
+}
 
 export function cx(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(" ");
@@ -263,7 +269,7 @@ export function mergeStyles(
 }
 
 export function getWorkspaceTheme(workspace: WorkspaceType): WorkspaceTheme {
-  return workspaceThemes[workspace];
+  return resolveUiWorkspaceTheme(workspace);
 }
 
 export function getSurfaceToneClass(tone: SurfaceTone) {
@@ -287,7 +293,7 @@ export function getButtonToneClass(
   workspace: WorkspaceType = "personal"
 ) {
   if (tone === "workspace") {
-    return workspaceThemes[workspace].buttonClassName;
+    return resolveUiWorkspaceTheme(workspace).buttonClassName;
   }
 
   return buttonToneClasses[tone];
@@ -298,7 +304,7 @@ export function getButtonToneStyle(
   workspace: WorkspaceType = "personal"
 ) {
   if (tone === "workspace") {
-    return workspaceThemes[workspace].buttonStyle;
+    return resolveUiWorkspaceTheme(workspace).buttonStyle;
   }
 
   return buttonToneStyles[tone];

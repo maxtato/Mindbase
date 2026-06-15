@@ -2,9 +2,11 @@ import { cookies } from "next/headers";
 import { Sidebar } from "./sidebar";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 import { CommandPalette } from "@/components/search/command-palette";
+import { EnvironmentsProvider } from "@/components/environments/environments-provider";
 import { surface } from "@/lib/design-tokens";
 import { getSidebarStatsByWorkspace } from "@/lib/project-store";
-import { getWorkspace } from "@/lib/workspace";
+import { getCustomEnvironments } from "@/lib/environment-store";
+import { getWorkspace, registerCustomEnvironments } from "@/lib/workspace";
 
 // Padding-bottom mobile retiré du wrapper : la bottom nav (position:fixed)
 // flotte au-dessus du contenu. Les pages s'auto-padent via une règle CSS
@@ -22,11 +24,17 @@ interface AppShellProps {
 }
 
 export async function AppShell({ children, accountName }: AppShellProps) {
-  const sidebarStats = await getSidebarStatsByWorkspace();
+  const environments = await getCustomEnvironments();
+  // Enregistre les thèmes custom côté serveur AVANT le rendu des enfants
+  // (sinon les pages serveur résoudraient un thème par défaut pour un env
+  // personnalisé → flash + mismatch d'hydratation).
+  registerCustomEnvironments(environments);
+  const sidebarStats = await getSidebarStatsByWorkspace(environments.map((e) => e.id));
   const cookieStore = await cookies();
   const initialWorkspace = getWorkspace(cookieStore.get("mindbase-workspace")?.value);
 
   return (
+    <EnvironmentsProvider initial={environments}>
     <div
       className="flex overflow-hidden"
       style={{ background: surface.bg, height: "100dvh" }}
@@ -57,5 +65,6 @@ export async function AppShell({ children, accountName }: AppShellProps) {
           fois au niveau du shell → disponible sur toutes les pages. */}
       <CommandPalette initialWorkspace={initialWorkspace} />
     </div>
+    </EnvironmentsProvider>
   );
 }

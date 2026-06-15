@@ -155,7 +155,9 @@ export function normalizeHexColor(value: string | null | undefined, fallback: st
 }
 
 export function getSubcategoryOptions(workspace: Workspace) {
-  return subcategoriesByWorkspace[workspace];
+  // Les environnements personnalisés (et tout id inconnu) réutilisent le jeu de
+  // sous-catégories "personal" par défaut.
+  return subcategoriesByWorkspace[workspace as "personal" | "professional"] ?? subcategoriesByWorkspace.personal;
 }
 
 export function getSubcategoryOption(workspace: Workspace, key: string) {
@@ -188,7 +190,7 @@ export interface ProjectTaxonomyDisplayInput {
 }
 
 export function resolveProjectSubcategoryDisplay(input: ProjectTaxonomyDisplayInput) {
-  const fallback = getSubcategoryOption(input.workspace, "other") ?? subcategoriesByWorkspace[input.workspace][0];
+  const fallback = getSubcategoryOption(input.workspace, "other") ?? getSubcategoryOptions(input.workspace)[0];
 
   if (input.isCustomSubcategory) {
     const label = input.customSubcategoryLabel?.trim() || "Autre";
