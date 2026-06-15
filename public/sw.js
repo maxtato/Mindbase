@@ -1,4 +1,4 @@
-/* Service worker Mindbase — notifications push.
+/* Service worker MindLay — notifications push.
  * Reçoit les push (même app fermée), affiche la notif, et ouvre l'app au bon
  * endroit au clic. Volontairement minimal : pas de cache offline ici. */
 
@@ -15,10 +15,10 @@ self.addEventListener("push", (event) => {
   try {
     payload = event.data ? event.data.json() : {};
   } catch {
-    payload = { title: "Mindbase", body: event.data ? event.data.text() : "" };
+    payload = { title: "MindLay", body: event.data ? event.data.text() : "" };
   }
 
-  const title = payload.title || "Mindbase";
+  const title = payload.title || "MindLay";
   const options = {
     body: payload.body || "",
     icon: payload.icon || "/icons/icon-192.png",
