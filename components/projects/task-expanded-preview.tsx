@@ -794,13 +794,21 @@ function ChecklistField({
           }}
         >
           <p style={{ fontSize: 10.5, fontWeight: 600, color: accentColor, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-            Suggestion IA
+            Suggestion IA · {aiSuggestions.length} sous-action{aiSuggestions.length > 1 ? "s" : ""}
           </p>
-          <ul style={{ fontSize: 11.5, color: text.secondary, margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 2 }}>
+          {/* Une puce devant chaque sous-action proposée : on voit d'un coup
+              d'œil combien de tâches l'IA suggère et où chacune commence. */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {aiSuggestions.map((item, index) => (
-              <li key={index}>{item}</li>
+              <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                <span
+                  aria-hidden
+                  style={{ width: 6, height: 6, borderRadius: "50%", background: accentColor, flexShrink: 0, marginTop: 5 }}
+                />
+                <span style={{ fontSize: 11.5, color: text.secondary, lineHeight: 1.4 }}>{item}</span>
+              </div>
             ))}
-          </ul>
+          </div>
           <div className="flex items-center gap-1.5">
             <Button
               variant="primary"

@@ -214,6 +214,11 @@ export interface Project {
   steps?: Step[];
   activity?: ProjectActivityItem[];
   deleted?: boolean;
+  /** Nom du compte ayant créé le projet. Le créateur voit toutes les tâches
+   *  (et peut filtrer par personne dans Kanban/Calendrier) ; les autres
+   *  collaborateurs ne voient que les leurs. Optionnel pour compat avec les
+   *  projets historiques (traités comme appartenant au lecteur courant). */
+  createdBy?: string;
 }
 
 export const projects: Project[] = [

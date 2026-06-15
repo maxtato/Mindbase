@@ -29,6 +29,7 @@ import {
 import { guessProjectFileExt } from "@/lib/project-files";
 import { getProjectTemplateByKey } from "@/lib/project-templates";
 import { getActiveAccountName } from "@/lib/current-account";
+import { getProfile } from "@/lib/account-store";
 
 const PROJECTS_FILE_PATH = path.join(process.cwd(), "data", "projects.json");
 const STORE_VERSION = 1;
@@ -844,6 +845,9 @@ export async function createProject(input: CreateProjectInput) {
   const customColor = normalizeHexColor(input.customSubcategoryColor, standardOption.color);
   const subcategoryColor = isCustomSubcategory ? customColor : normalizeHexColor(standardOption.color, standardOption.color);
   const now = new Date().toISOString();
+  // Le compte courant devient le créateur du projet (droits de filtrage par
+  // personne dans Kanban/Calendrier).
+  const createdBy = (await getProfile().catch(() => null))?.name?.trim() || getActiveAccountName();
   const template = getProjectTemplateByKey(input.templateKey);
   const templateSteps = template && template.workspace === input.workspace ? buildTemplateSteps(template.key, now) : [];
   const templateActivity = template && template.workspace === input.workspace
@@ -887,6 +891,7 @@ export async function createProject(input: CreateProjectInput) {
     customSubcategoryColor: isCustomSubcategory ? customColor : undefined,
     templateKey: template?.workspace === input.workspace ? template.key : undefined,
     statusSettings: input.statusSettings,
+    createdBy,
   });
 
   await queueWrite(async () => {

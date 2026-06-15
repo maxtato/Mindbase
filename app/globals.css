@@ -1661,6 +1661,14 @@ summary {
   min-width: 0;
 }
 
+/* La grappe d'avatars « participants » (sous le titre) fait doublon sur
+   desktop avec la colonne dédiée « assigné » (mb-task-assignee). On la
+   masque donc par défaut (desktop) et on ne la réaffiche qu'en ≤ 980px,
+   là où la colonne assigné est cachée. */
+.mb-task-participants {
+  display: none !important;
+}
+
 .mb-task-expanded {
   grid-column: 1 / -1;
   background: var(--mb-s1);
@@ -2006,6 +2014,12 @@ textarea::placeholder {
   .mb-task-assignee,
   .mb-task-counters {
     display: none !important;
+  }
+
+  /* Colonne assigné cachée ici → on réaffiche les avatars participants
+     sous le titre pour conserver l'info sur mobile/tablette. */
+  .mb-task-participants {
+    display: inline-flex !important;
   }
 
   /* Card mobile : padding resserré, plus de barre priorité visible

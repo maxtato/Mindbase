@@ -9,20 +9,24 @@ import { getDisplayStepTitle } from "@/lib/project-display";
 import { deriveTaskStatus } from "@/lib/project-plan";
 import { getWorkspace } from "@/lib/workspace";
 import { getProfile } from "@/lib/account-store";
-import { taskBelongsToUser } from "@/lib/task-filters";
+import {
+  collectAssignablePeople,
+  isProjectCreator,
+  taskVisibleToViewer,
+  PERSON_FILTER_ALL,
+  PERSON_FILTER_ME,
+} from "@/lib/project-access";
 
 type StatusFilter = "open" | "all" | TaskStatus;
-type OwnerFilter = "all" | "mine";
 
 export default async function KanbanPage({
   searchParams,
 }: {
-  searchParams: Promise<{ workspace?: string; project?: string; step?: string; status?: string; owner?: string }>;
+  searchParams: Promise<{ workspace?: string; project?: string; step?: string; status?: string; person?: string }>;
 }) {
   const sp = await searchParams;
   const workspace = getWorkspace(sp.workspace);
   const statusFilter = parseStatusFilter(sp.status);
-  const ownerFilter: OwnerFilter = sp.owner === "mine" ? "mine" : "all";
   const me = (await getProfile()).name;
   const projects = (await getProjectsForWorkspace(workspace)).filter(
     (project) => project.status !== "archived" && !project.deleted,
@@ -39,6 +43,16 @@ export default async function KanbanPage({
       ? sp.step
       : "all";
 
+  // Filtre « Personne » : réservé au créateur des projets en vue. On agrège
+  // les collaborateurs des projets dont je suis le créateur (selon le projet
+  // sélectionné), et on valide la valeur reçue.
+  const peopleScopeProjects = (selectedProject ? [selectedProject] : projects).filter((project) =>
+    isProjectCreator(project, me),
+  );
+  const people = collectAssignablePeople(peopleScopeProjects, me);
+  const showPerson = peopleScopeProjects.length > 0;
+  const personFilter = parsePersonFilter(sp.person, people, showPerson);
+
   const allTasks = projects.flatMap((project) =>
     flattenProjectTasks(project).map((entry) => ({ project, entry })),
   );
@@ -46,7 +60,7 @@ export default async function KanbanPage({
     .filter(({ project }) => selectedProjectId === "all" || project.id === selectedProjectId)
     .filter(({ entry }) => selectedStepId === "all" || entry.stepId === selectedStepId)
     .filter(({ entry }) => matchStatusFilter(deriveTaskStatus(entry.task), statusFilter))
-    .filter(({ entry }) => ownerFilter === "all" || taskBelongsToUser(entry.task, me));
+    .filter(({ project, entry }) => taskVisibleToViewer(project, entry.task, me, personFilter));
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -63,8 +77,9 @@ export default async function KanbanPage({
             stepId={selectedStepId}
             statusFilter={statusFilter}
             showStatus
-            ownerFilter={ownerFilter}
-            showOwner
+            personFilter={personFilter}
+            showPerson={showPerson}
+            people={people}
           />
 
           {scopedTasks.length === 0 ? (
@@ -89,6 +104,12 @@ function EmptyState() {
       </p>
     </section>
   );
+}
+
+function parsePersonFilter(value: string | undefined, people: string[], showPerson: boolean): string {
+  if (!showPerson || typeof value !== "string") return PERSON_FILTER_ALL;
+  if (value === PERSON_FILTER_ALL || value === PERSON_FILTER_ME) return value;
+  return people.some((name) => name.toLowerCase() === value.toLowerCase()) ? value : PERSON_FILTER_ALL;
 }
 
 function parseStatusFilter(value: string | undefined): StatusFilter {

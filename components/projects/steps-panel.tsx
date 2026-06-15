@@ -1755,7 +1755,7 @@ function TaskNameInsights({
   return (
     <div className="mt-1 flex min-w-0 max-w-full flex-wrap items-center gap-1.5 overflow-hidden" style={{ color: text.muted }}>
       {participantNames.length > 0 && (
-        <span className="inline-flex items-center gap-1" title={`${participantNames.length} participant${participantNames.length > 1 ? "s" : ""}`}>
+        <span className="mb-task-participants inline-flex items-center gap-1" title={`${participantNames.length} participant${participantNames.length > 1 ? "s" : ""}`}>
           <span className="flex items-center">
             {participantNames.slice(0, 3).map((name, index) => (
               <span

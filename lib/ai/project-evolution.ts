@@ -101,7 +101,12 @@ function buildSnapshotWithIds(project: Project): string {
   }
 
   for (const step of steps) {
-    lines.push(`▸ ÉTAPE [stepId=${step.id}] « ${step.title} »`);
+    // On inclut la DESCRIPTION de l'étape : sans elle, l'IA ne dispose que
+    // du titre pour décider où rattacher une nouvelle tâche, ce qui mène à
+    // des rattachements incohérents. La description (+ les tâches listées
+    // dessous) donne le contexte thématique de chaque étape.
+    const stepDesc = step.description?.trim() ? ` — ${clamp(step.description, 160)}` : "";
+    lines.push(`▸ ÉTAPE [stepId=${step.id}] « ${step.title} »${stepDesc}`);
     if (step.tasks.length === 0) {
       lines.push("    (aucune tâche)");
     }
@@ -156,7 +161,8 @@ En mode="plan", chaque opération est l'une de :
 Règles importantes :
 - N'invente RIEN qui ne soit pas étayé par le texte. Si le texte ne justifie aucun changement, renvoie une liste vide.
 - Pour faire avancer une tâche déjà existante, utilise update_task avec son taskId — NE crée PAS de doublon.
-- En revanche, si le texte évoque un travail, une action ou un livrable PERTINENT qui ne correspond à AUCUNE tâche existante, NE L'IGNORE PAS : crée une nouvelle tâche (add_task). Rattache-la à l'étape existante la plus pertinente (targetStepId), ou crée une nouvelle étape (add_step) si aucune ne convient et range-la dedans (newStepTitle). Le fait qu'un point ne fasse pas avancer une tâche actuelle n'est pas une raison de l'écarter.
+- En revanche, si le texte évoque un travail, une action ou un livrable PERTINENT qui ne correspond à AUCUNE tâche existante, NE L'IGNORE PAS : crée une nouvelle tâche (add_task). Le fait qu'un point ne fasse pas avancer une tâche actuelle n'est pas une raison de l'écarter.
+- RATTACHEMENT D'UNE NOUVELLE TÂCHE (très important) : avant de choisir, lis le TITRE **et la description** de CHAQUE étape existante, ainsi que les tâches qu'elle contient déjà, pour trouver celle dont le THÈME correspond vraiment à la nouvelle tâche. Renseigne targetStepId avec le stepId EXACT de cette étape. Ne te rabats PAS sur la dernière étape ni sur une étape au hasard : un mauvais rattachement est une erreur. Ne crée une nouvelle étape (newStepTitle) QUE si AUCUNE étape existante ne traite ce sujet. En cas d'hésitation réelle entre plusieurs étapes, demande en mode="question" plutôt que de deviner.
 - CHANGEMENT D'ORIENTATION : quand la direction du projet change, ne te contente pas d'ajouter. Regarde les tâches existantes devenues caduques et propose de les ANNULER (remove_task) ou de les CLÔTURER (update_task newStatus="done") avec une note. L'objectif est que le plan reste cohérent, pas qu'il accumule des tâches sans objet.
 - Ne supprime/ne clôture une tâche que si le texte ou le dialogue le justifie clairement (orientation changée, doublon, abandon explicite). Dans le doute, demande en mode="question".
 - Ne repasse pas une tâche à un statut antérieur sans raison explicite dans le texte.

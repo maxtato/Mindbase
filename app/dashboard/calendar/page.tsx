@@ -8,18 +8,23 @@ import { getDisplayStepTitle } from "@/lib/project-display";
 import { deriveTaskDisplayPriority, deriveTaskStatus } from "@/lib/project-plan";
 import type { ProjectPriority } from "@/lib/project-taxonomy";
 import type { TaskStatus } from "@/lib/mock-data";
-import { taskBelongsToUser } from "@/lib/task-filters";
 import { getWorkspace } from "@/lib/workspace";
 import { getProfile } from "@/lib/account-store";
+import {
+  collectAssignablePeople,
+  isProjectCreator,
+  taskVisibleToViewer,
+  PERSON_FILTER_ALL,
+  PERSON_FILTER_ME,
+} from "@/lib/project-access";
 
 type StatusFilter = "open" | "all" | TaskStatus;
 type PriorityFilter = "all" | ProjectPriority;
-type OwnerFilter = "all" | "mine";
 
 export default async function CalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ workspace?: string; project?: string; step?: string; month?: string; status?: string; priority?: string; owner?: string }>;
+  searchParams: Promise<{ workspace?: string; project?: string; step?: string; month?: string; status?: string; priority?: string; person?: string }>;
 }) {
   const sp = await searchParams;
   const workspace = getWorkspace(sp.workspace);
@@ -27,7 +32,6 @@ export default async function CalendarPage({
   const monthParam = formatMonthParam(monthStart);
   const statusFilter = parseStatusFilter(sp.status);
   const priorityFilter = parsePriorityFilter(sp.priority);
-  const ownerFilter: OwnerFilter = sp.owner === "mine" ? "mine" : "all";
   const me = (await getProfile()).name;
 
   const projects = (await getProjectsForWorkspace(workspace)).filter(
@@ -45,6 +49,14 @@ export default async function CalendarPage({
       ? sp.step
       : "all";
 
+  // Filtre « Personne » : réservé au créateur des projets en vue.
+  const peopleScopeProjects = (selectedProject ? [selectedProject] : projects).filter((project) =>
+    isProjectCreator(project, me),
+  );
+  const people = collectAssignablePeople(peopleScopeProjects, me);
+  const showPerson = peopleScopeProjects.length > 0;
+  const personFilter = parsePersonFilter(sp.person, people, showPerson);
+
   const allTasks = projects.flatMap((project) =>
     flattenProjectTasks(project).map((entry) => ({ project, entry })),
   );
@@ -53,7 +65,7 @@ export default async function CalendarPage({
     .filter(({ entry }) => selectedStepId === "all" || entry.stepId === selectedStepId)
     .filter(({ entry }) => matchStatusFilter(deriveTaskStatus(entry.task), statusFilter))
     .filter(({ entry }) => priorityFilter === "all" || deriveTaskDisplayPriority(entry.task) === priorityFilter)
-    .filter(({ entry }) => ownerFilter === "all" || taskBelongsToUser(entry.task, me));
+    .filter(({ project, entry }) => taskVisibleToViewer(project, entry.task, me, personFilter));
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -72,8 +84,9 @@ export default async function CalendarPage({
             showStatus
             priorityFilter={priorityFilter}
             showPriority
-            ownerFilter={ownerFilter}
-            showOwner
+            personFilter={personFilter}
+            showPerson={showPerson}
+            people={people}
             month={monthParam}
           />
 
@@ -90,6 +103,7 @@ export default async function CalendarPage({
               month={monthParam}
               projectId={selectedProjectId}
               stepId={selectedStepId}
+              person={personFilter}
               basePath="/dashboard/calendar"
             />
           )}
@@ -139,6 +153,12 @@ function parseStatusFilter(value: string | undefined): StatusFilter {
     return value;
   }
   return "open";
+}
+
+function parsePersonFilter(value: string | undefined, people: string[], showPerson: boolean): string {
+  if (!showPerson || typeof value !== "string") return PERSON_FILTER_ALL;
+  if (value === PERSON_FILTER_ALL || value === PERSON_FILTER_ME) return value;
+  return people.some((name) => name.toLowerCase() === value.toLowerCase()) ? value : PERSON_FILTER_ALL;
 }
 
 function parsePriorityFilter(value: string | undefined): PriorityFilter {
