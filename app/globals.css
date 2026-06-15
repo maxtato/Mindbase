@@ -155,15 +155,15 @@
   --mb-mauve-text: #6d28d9;
   --mb-mauve-on: #ffffff;
 
-  --mb-personal-accent: #f97316;
-  --mb-personal-accent-hover: #ea580c;
-  --mb-personal-accent-bg: #fff1e6;
-  --mb-personal-accent-text: #c2410c;
-  --mb-personal-accent-soft: #fff7ed;
-  --mb-personal-accent-border: #fdba74;
-  --mb-personal-solid-dark: #fff1e6;
-  --mb-personal-solid-mid: #fdba74;
-  --mb-personal-gradient: linear-gradient(135deg, #fb923c 0%, #f97316 56%, #ea580c 100%);
+  --mb-personal-accent: #7c3aed;
+  --mb-personal-accent-hover: #6d28d9;
+  --mb-personal-accent-bg: #efe9ff;
+  --mb-personal-accent-text: #5b21b6;
+  --mb-personal-accent-soft: #f6f3ff;
+  --mb-personal-accent-border: #c9b6f5;
+  --mb-personal-solid-dark: #efe9ff;
+  --mb-personal-solid-mid: #cbb6f7;
+  --mb-personal-gradient: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 56%, #6d28d9 100%);
 
   --mb-professional-accent: #2563eb;
   --mb-professional-accent-hover: #1d4ed8;
@@ -257,15 +257,15 @@
   --mb-mauve-text: #d8c7ff;
   --mb-mauve-on: #1a1228;
 
-  --mb-personal-accent: #fb923c;
-  --mb-personal-accent-hover: #f97316;
-  --mb-personal-accent-bg: #43250f;
-  --mb-personal-accent-text: #fed7aa;
-  --mb-personal-accent-soft: #33200f;
-  --mb-personal-accent-border: #ea580c;
-  --mb-personal-solid-dark: #3a230f;
-  --mb-personal-solid-mid: #623a18;
-  --mb-personal-gradient: linear-gradient(135deg, #fdba74 0%, #fb923c 56%, #f97316 100%);
+  --mb-personal-accent: #8b5cf6;
+  --mb-personal-accent-hover: #7c3aed;
+  --mb-personal-accent-bg: #2a1f44;
+  --mb-personal-accent-text: #d8c7ff;
+  --mb-personal-accent-soft: #1f1733;
+  --mb-personal-accent-border: #6d28d9;
+  --mb-personal-solid-dark: #221a38;
+  --mb-personal-solid-mid: #3a2a63;
+  --mb-personal-gradient: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 56%, #7c3aed 100%);
 
   --mb-professional-accent: #3b82f6;
   --mb-professional-accent-hover: #2563eb;
@@ -668,12 +668,11 @@ summary {
   }
 }
 
-/* Mobile : la bottom nav est désormais DANS le flux (sous la zone scrollable),
-   plus besoin de réserver sa hauteur sous les <main>. On garde juste une marge
-   de respiration en bas. */
+/* Mobile : la bottom nav est en position:fixed → on réserve sa hauteur sous les
+   <main> pour que les derniers items ne soient pas masqués derrière. */
 @media (max-width: 639px) {
   main {
-    padding-bottom: 1rem;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -2256,9 +2255,9 @@ textarea::placeholder {
   .mb-mobile-scroll {
     padding-inline: 0.75rem !important;
     padding-top: 0.75rem !important;
-    /* La bottom nav est maintenant dans le flux (sous la zone scrollable) :
-       plus besoin de réserver sa hauteur ici, juste une marge de respiration. */
-    padding-bottom: 1rem !important;
+    /* La bottom nav (position:fixed) masque le bas → on réserve sa hauteur +
+       la safe-area du home indicator pour pouvoir scroller jusqu'au bout. */
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
     /* Aucun débordement horizontal possible sur mobile (cartes qui
        dépassaient à droite) — le contenu reste dans l'écran. */
     overflow-x: hidden;
