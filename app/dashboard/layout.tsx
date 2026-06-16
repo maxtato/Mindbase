@@ -5,7 +5,7 @@ import { getProfile } from "@/lib/account-store";
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const profile = await getProfile();
   return (
-    <AccountProvider value={{ name: profile.name, email: profile.email }}>
+    <AccountProvider value={{ name: profile.name, email: profile.email, plan: profile.plan }}>
       <AppShell accountName={profile.name}>{children}</AppShell>
     </AccountProvider>
   );

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { refreshProjectSynthesisAction } from "@/app/dashboard/projects/ai-actions";
+import { useIsPaidPlan } from "@/components/account/account-context";
 
 interface AISynthesisButtonProps {
   projectId: string;
@@ -9,6 +10,7 @@ interface AISynthesisButtonProps {
 }
 
 export function AISynthesisButton({ projectId, accentColor }: AISynthesisButtonProps) {
+  const isPaid = useIsPaidPlan();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -22,6 +24,8 @@ export function AISynthesisButton({ projectId, accentColor }: AISynthesisButtonP
       }
     });
   }
+
+  if (!isPaid) return null;
 
   return (
     <div className="flex flex-col gap-1">

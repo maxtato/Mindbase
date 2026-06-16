@@ -6,15 +6,20 @@
 import { createClient, type RedisClientType } from "redis";
 import { ACTIVE_ACCOUNT_NAME } from "@/lib/current-account";
 
+export type AccountPlan = "free" | "pro";
+
 export interface AccountProfile {
   name: string;
   email: string;
+  /** Palier d'abonnement. "pro" débloque l'IA et la collaboration. */
+  plan: AccountPlan;
 }
 
 const REDIS_URL = process.env.REDIS_URL;
 const REDIS_KEY = "mindbase:profile";
 
-const DEFAULT_PROFILE: AccountProfile = { name: ACTIVE_ACCOUNT_NAME, email: "" };
+// Par défaut "pro" : le compte propriétaire existant garde tout l'accès.
+const DEFAULT_PROFILE: AccountProfile = { name: ACTIVE_ACCOUNT_NAME, email: "", plan: "pro" };
 
 type RedisClient = RedisClientType<Record<string, never>, Record<string, never>, Record<string, never>>;
 let redisClientPromise: Promise<RedisClient> | null = null;
@@ -40,9 +45,11 @@ let memory: AccountProfile = { ...DEFAULT_PROFILE };
 function sanitize(profile: Partial<AccountProfile> | null | undefined): AccountProfile {
   const name = typeof profile?.name === "string" ? profile.name.trim() : "";
   const email = typeof profile?.email === "string" ? profile.email.trim() : "";
+  const plan: AccountPlan = profile?.plan === "free" ? "free" : "pro";
   return {
     name: name || DEFAULT_PROFILE.name,
     email,
+    plan,
   };
 }
 
@@ -58,8 +65,11 @@ export async function getProfile(): Promise<AccountProfile> {
   }
 }
 
-export async function saveProfile(profile: Partial<AccountProfile>): Promise<AccountProfile> {
-  const next = sanitize(profile);
+export async function saveProfile(patch: Partial<AccountProfile>): Promise<AccountProfile> {
+  // Fusion avec le profil existant pour ne pas écraser les champs absents du
+  // patch (ex : enregistrer le nom ne doit pas réinitialiser le plan).
+  const current = await getProfile();
+  const next = sanitize({ ...current, ...patch });
   if (!REDIS_URL) {
     memory = next;
     return next;

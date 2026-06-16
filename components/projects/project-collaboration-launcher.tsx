@@ -10,6 +10,7 @@ import {
 } from "@/app/dashboard/projects/[id]/actions";
 import type { ProjectPerson, ProjectTeam } from "@/lib/mock-data";
 import { surface, text } from "@/lib/design-tokens";
+import { useIsPaidPlan } from "@/components/account/account-context";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
 
 interface ProjectCollaborationLauncherProps {
@@ -32,6 +33,7 @@ export function ProjectCollaborationLauncher({
   accentColor,
   onColor = false,
 }: ProjectCollaborationLauncherProps) {
+  const isPaid = useIsPaidPlan();
   const router = useRouter();
   const theme = workspaceTheme[workspace];
   const [isOpen, setIsOpen] = useState(false);
@@ -131,6 +133,9 @@ export function ProjectCollaborationLauncher({
       current.includes(personId) ? current.filter((id) => id !== personId) : [...current, personId],
     );
   }
+
+  // Collaboration réservée au plan Pro : masquée pour les comptes gratuits.
+  if (!isPaid) return null;
 
   return (
     <>

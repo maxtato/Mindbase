@@ -5,8 +5,7 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { getProjectById } from "@/lib/project-store";
 import { getActiveTeamMemberNames } from "@/lib/team-store";
 import { getProfile } from "@/lib/account-store";
-import { isProjectCreator } from "@/lib/project-access";
-import { taskBelongsToUser } from "@/lib/task-filters";
+import { isProjectCreator, taskBelongsToViewerOrTeam } from "@/lib/project-access";
 import { formatShortDate } from "@/lib/date-format";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
 import { syncEnvironmentThemes } from "@/lib/environment-store";
@@ -54,25 +53,28 @@ export default async function ProjectDetailPage({
     : {
         ...project,
         steps: (project.steps ?? [])
-          .map((step) => ({ ...step, tasks: step.tasks.filter((task) => taskBelongsToUser(task, viewerName)) }))
+          .map((step) => ({ ...step, tasks: step.tasks.filter((task) => taskBelongsToViewerOrTeam(project, task, viewerName)) }))
           .filter((step) => step.tasks.length > 0),
       };
 
   const workspace = getWorkspace(sp.workspace ?? project.workspace);
   const theme = workspaceTheme[workspace];
-  const openBlockers = project.blockers.filter((blocker) => blocker.status === "open");
-  const steps = project.steps ?? [];
+  // Toutes les données dérivées (rail, indicateurs, risques) partent de la vue
+  // FILTRÉE pour ne pas exposer aux collaborateurs des tâches qui ne sont pas
+  // les leurs (titres, compteurs, prochaines actions, retards…).
+  const openBlockers = viewerProject.blockers.filter((blocker) => blocker.status === "open");
+  const steps = viewerProject.steps ?? [];
   const hasSteps = steps.length > 0;
-  const overdueTaskCount = flattenProjectTasks(project).filter((entry) => isTaskOverdue(entry.task)).length;
-  const pendingTaskCount = projectPendingTaskCount(project);
-  const projectIndicators = calculateProjectIndicators(project);
-  const visibleRisks = buildVisibleRisks(project.risks, {
+  const overdueTaskCount = flattenProjectTasks(viewerProject).filter((entry) => isTaskOverdue(entry.task)).length;
+  const pendingTaskCount = projectPendingTaskCount(viewerProject);
+  const projectIndicators = calculateProjectIndicators(viewerProject);
+  const visibleRisks = buildVisibleRisks(viewerProject.risks, {
     openBlockers,
     overdueTaskCount,
   });
   const visibleRiskItems = visibleRisks.slice(0, 2);
   const hiddenRiskItems = visibleRisks.slice(2);
-  const railSynthesis = buildProjectRailSynthesis(project, {
+  const railSynthesis = buildProjectRailSynthesis(viewerProject, {
     totalTasks: projectIndicators.totalTasks,
     doneTasks: projectIndicators.doneTasks,
     pendingTaskCount,
@@ -83,11 +85,11 @@ export default async function ProjectDetailPage({
   });
   const nextActionItems = railSynthesis.nextActions;
   // Legacy actions (projects without steps)
-  const pendingLegacyActions = project.actions.filter((a) => !a.done);
+  const pendingLegacyActions = viewerProject.actions.filter((a) => !a.done);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <ProjectPilotHeader project={project} workspace={workspace} teamMemberNames={teamMemberNames} />
+      <ProjectPilotHeader project={viewerProject} workspace={workspace} teamMemberNames={teamMemberNames} />
 
       <div className="mb-project-detail-frame flex-1 min-h-0 overflow-hidden">
         <div className="mb-project-detail-shell mb-mobile-scroll px-5 py-3">

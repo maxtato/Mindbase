@@ -17,7 +17,7 @@ import { formatTaskScheduleDate } from "@/lib/date-format";
 import { deriveTaskDisplayPriority, deriveTaskStatus, taskStatusLabels } from "@/lib/project-plan";
 import { priorityVisuals, type ProjectPriority } from "@/lib/project-taxonomy";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
-import { useAccountName } from "@/components/account/account-context";
+import { useAccountName, useIsPaidPlan } from "@/components/account/account-context";
 
 interface TaskExpandedPreviewProps {
   task: Task;
@@ -301,9 +301,10 @@ function ExpectedField({
   const [assistantOpen, setAssistantOpen] = useState(false);
   useEffect(() => setValue(initial), [initial]);
 
+  const isPaid = useIsPaidPlan();
   const dirty = value.trim() !== initial.trim();
   const editable = Boolean(onUpdate);
-  const aiAvailable = Boolean(projectId && stepId);
+  const aiAvailable = Boolean(projectId && stepId) && isPaid;
 
   return (
     <FieldShell
@@ -582,6 +583,7 @@ function RealizationField({
   const [rows, setRows] = useState<string[]>(initialRows);
   useEffect(() => setRows(initialRows), [initialRows]);
 
+  const isPaid = useIsPaidPlan();
   const dirty = !rowsEqual(rows, initialRows);
   const editable = Boolean(onUpdate);
   const [assistantOpen, setAssistantOpen] = useState(false);
@@ -592,12 +594,14 @@ function RealizationField({
       icon="realization"
       iconColor={statusColor.green.text}
       rightSlot={
-        <AIChip
-          label="Assistant IA"
-          accentColor={aiAccent}
-          onClick={() => setAssistantOpen(true)}
-          disabled={!editable}
-        />
+        isPaid ? (
+          <AIChip
+            label="Assistant IA"
+            accentColor={aiAccent}
+            onClick={() => setAssistantOpen(true)}
+            disabled={!editable}
+          />
+        ) : undefined
       }
     >
       <BulletListEditor
@@ -696,8 +700,9 @@ function ChecklistField({
   const [aiPending, setAiPending] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiSuggestions, setAiSuggestions] = useState<string[] | null>(null);
+  const isPaid = useIsPaidPlan();
   const editable = Boolean(onChecklistMutated);
-  const aiAvailable = Boolean(projectId && stepId);
+  const aiAvailable = Boolean(projectId && stepId) && isPaid;
 
   async function handleAISuggest() {
     if (!projectId || !stepId) return;
