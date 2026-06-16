@@ -4,6 +4,9 @@ import { severityLabels } from "@/components/ui/badge";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { getProjectById } from "@/lib/project-store";
 import { getActiveTeamMemberNames } from "@/lib/team-store";
+import { getProfile } from "@/lib/account-store";
+import { isProjectCreator } from "@/lib/project-access";
+import { taskBelongsToUser } from "@/lib/task-filters";
 import { formatShortDate } from "@/lib/date-format";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
 import { syncEnvironmentThemes } from "@/lib/environment-store";
@@ -42,6 +45,19 @@ export default async function ProjectDetailPage({
   // Membres d'équipe actifs → proposés en ajout rapide comme collaborateurs.
   const teamMemberNames = await getActiveTeamMemberNames();
 
+  // Visibilité collaboration : le CRÉATEUR voit tout ; un collaborateur ne voit
+  // que les étapes/tâches auxquelles il contribue (assigné/responsable).
+  const viewerName = (await getProfile()).name;
+  const viewerIsCreator = isProjectCreator(project, viewerName);
+  const viewerProject: Project = viewerIsCreator
+    ? project
+    : {
+        ...project,
+        steps: (project.steps ?? [])
+          .map((step) => ({ ...step, tasks: step.tasks.filter((task) => taskBelongsToUser(task, viewerName)) }))
+          .filter((step) => step.tasks.length > 0),
+      };
+
   const workspace = getWorkspace(sp.workspace ?? project.workspace);
   const theme = workspaceTheme[workspace];
   const openBlockers = project.blockers.filter((blocker) => blocker.status === "open");
@@ -78,7 +94,7 @@ export default async function ProjectDetailPage({
           <div className="mb-project-command-grid">
             <main className="mb-project-main-scroll min-w-0">
               <section id="project-workspace">
-                <ProjectMultiView project={project} workspace={workspace} />
+                <ProjectMultiView project={viewerProject} workspace={workspace} />
               </section>
             </main>
 
