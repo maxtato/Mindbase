@@ -21,7 +21,7 @@ export function FlatmindLogo({
       )}
     >
       {/* Logo Flatmind (image fournie) — suit la couleur du texte (blanc en sombre). */}
-      <FlatmindLogoMark height={compact ? 52 : 72} style={{ color: "var(--mb-text-primary)" }} />
+      <FlatmindLogoMark height={compact ? 46 : 63} style={{ color: "var(--mb-text-primary)" }} />
 
       <div className="min-w-0">
         <div

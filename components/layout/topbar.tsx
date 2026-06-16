@@ -87,7 +87,7 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
 
         {/* iPhone : logo (cerveau Flatmind) + wordmark « Flatmind » à droite du titre. */}
         <span className="flex shrink-0 items-center gap-2 sm:hidden">
-          <FlatmindLogoMark height={26} style={{ color: text.primary }} />
+          <FlatmindLogoMark height={23} style={{ color: text.primary }} />
           <FlatmindWordmark fontSize={28} style={{ color: text.primary }} />
         </span>
       </div>
