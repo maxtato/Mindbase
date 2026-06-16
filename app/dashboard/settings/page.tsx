@@ -3,7 +3,9 @@ import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { PushSettings } from "@/components/notifications/push-settings";
 import { ProfileSettings } from "@/components/account/profile-settings";
 import { EnvironmentsManager } from "@/components/environments/environments-manager";
+import { TeamManager } from "@/components/team/team-manager";
 import { getProfile } from "@/lib/account-store";
+import { getTeamMembers } from "@/lib/team-store";
 import { surface, text } from "@/lib/design-tokens";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
 import { syncEnvironmentThemes } from "@/lib/environment-store";
@@ -18,6 +20,7 @@ export default async function SettingsPage({
   const workspace = getWorkspace(sp.workspace);
   const theme = workspaceTheme[workspace];
   const profile = await getProfile();
+  const teamMembers = await getTeamMembers();
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -51,6 +54,13 @@ export default async function SettingsPage({
           style={{ background: surface.s1, border: `1px solid ${surface.border}` }}
         >
           <ProfileSettings workspace={workspace} initialName={profile.name} initialEmail={profile.email} />
+        </section>
+
+        <section
+          className="rounded-[22px] p-6"
+          style={{ background: surface.s1, border: `1px solid ${surface.border}` }}
+        >
+          <TeamManager initialMembers={teamMembers} accountName={profile.name} />
         </section>
 
         <section
