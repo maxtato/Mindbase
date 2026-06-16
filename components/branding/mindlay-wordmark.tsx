@@ -36,7 +36,7 @@ export function FlatmindWordmark({
           marginLeft: fontSize * -0.05,
           paddingRight: fontSize * 0.16,
           // Descend « mind » de quelques pixels (proportionnel à la taille).
-          top: fontSize * 0.08,
+          top: fontSize * 0.04,
         }}
       >
         <span className="mb-script" style={{ fontSize: fontSize * 0.93, lineHeight: 1 }}>
