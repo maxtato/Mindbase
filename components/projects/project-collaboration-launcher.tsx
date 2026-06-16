@@ -17,6 +17,8 @@ interface ProjectCollaborationLauncherProps {
   workspace: Workspace;
   people?: ProjectPerson[];
   teams?: ProjectTeam[];
+  /** Membres d'équipe actifs (invités via Paramètres) proposés en ajout rapide. */
+  teamMemberNames?: string[];
   accentColor: string;
   onColor?: boolean;
 }
@@ -26,6 +28,7 @@ export function ProjectCollaborationLauncher({
   workspace,
   people = [],
   teams = [],
+  teamMemberNames = [],
   accentColor,
   onColor = false,
 }: ProjectCollaborationLauncherProps) {
@@ -44,6 +47,18 @@ export function ProjectCollaborationLauncher({
   const [editedTeamName, setEditedTeamName] = useState(editedTeam?.name ?? "");
   const [editedTeamColor, setEditedTeamColor] = useState(editedTeam?.color ?? accentColor ?? theme.accent);
   const [editedTeamMemberIds, setEditedTeamMemberIds] = useState<string[]>(editedTeam?.memberIds ?? []);
+
+  // Membres d'équipe actifs pas encore dans le projet → ajout rapide.
+  const availableMembers = teamMemberNames.filter(
+    (memberName) => !people.some((p) => p.name.trim().toLowerCase() === memberName.trim().toLowerCase()),
+  );
+
+  function quickAddMember(memberName: string) {
+    startTransition(async () => {
+      await addProjectPersonAction(projectId, { name: memberName });
+      router.refresh();
+    });
+  }
 
   function submitPerson(event: FormEvent) {
     event.preventDefault();
@@ -207,6 +222,29 @@ export function ProjectCollaborationLauncher({
                 </Panel>
 
                 <Panel title="Ajouter une personne">
+                  {availableMembers.length > 0 && (
+                    <div className="mb-3">
+                      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: text.muted }}>
+                        Membres de mon équipe
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {availableMembers.map((memberName) => (
+                          <button
+                            key={memberName}
+                            type="button"
+                            disabled={isPending}
+                            onClick={() => quickAddMember(memberName)}
+                            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                            style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.borderSubtle}`, cursor: "pointer" }}
+                            title={`Ajouter ${memberName} au projet`}
+                          >
+                            <span aria-hidden style={{ color: accentColor }}>+</span>
+                            {memberName}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <form onSubmit={submitPerson} className="grid gap-2">
                     <input value={personName} onChange={(event) => setPersonName(event.target.value)} placeholder="Nom de la personne" style={fieldStyle()} />
                     <div className="grid gap-2 sm:grid-cols-2">

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { severityLabels } from "@/components/ui/badge";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { getProjectById } from "@/lib/project-store";
+import { getActiveTeamMemberNames } from "@/lib/team-store";
 import { formatShortDate } from "@/lib/date-format";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
 import { syncEnvironmentThemes } from "@/lib/environment-store";
@@ -38,6 +39,9 @@ export default async function ProjectDetailPage({
   const project = await getProjectById(id);
   if (!project) notFound();
 
+  // Membres d'équipe actifs → proposés en ajout rapide comme collaborateurs.
+  const teamMemberNames = await getActiveTeamMemberNames();
+
   const workspace = getWorkspace(sp.workspace ?? project.workspace);
   const theme = workspaceTheme[workspace];
   const openBlockers = project.blockers.filter((blocker) => blocker.status === "open");
@@ -67,7 +71,7 @@ export default async function ProjectDetailPage({
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <ProjectPilotHeader project={project} workspace={workspace} />
+      <ProjectPilotHeader project={project} workspace={workspace} teamMemberNames={teamMemberNames} />
 
       <div className="mb-project-detail-frame flex-1 min-h-0 overflow-hidden">
         <div className="mb-project-detail-shell mb-mobile-scroll px-5 py-3">
@@ -159,9 +163,11 @@ export default async function ProjectDetailPage({
 function ProjectPilotHeader({
   project,
   workspace,
+  teamMemberNames,
 }: {
   project: Project;
   workspace: Project["workspace"];
+  teamMemberNames: string[];
 }) {
   const theme = workspaceTheme[workspace];
   // Seul le pictogramme du projet garde la couleur de thème (sous-catégorie).
@@ -225,6 +231,7 @@ function ProjectPilotHeader({
             workspace={workspace}
             people={project.people ?? []}
             teams={project.teams ?? []}
+            teamMemberNames={teamMemberNames}
             accentColor={envAccent}
           />
           <ProjectFilesLauncher projectId={project.id} workspace={workspace} files={project.files ?? []} accentColor={envAccent} />
