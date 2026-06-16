@@ -4,7 +4,7 @@ import type { CSSProperties } from "react";
 // `currentColor` (suit le thème : noir en clair, blanc en sombre). Fond
 // transparent. L'icône PWA, elle, a son propre fond violet (cf. /public/icons).
 const ASPECT = 613 / 460; // ratio natif de l'asset
-const LOGO_URL = "/flatmind-logo.png?v=7";
+const LOGO_URL = "/flatmind-logo.png?v=9";
 
 export function FlatmindLogoMark({
   height = 32,
