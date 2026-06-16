@@ -1774,9 +1774,13 @@ function TaskNameInsights({
                 className="inline-flex h-5 w-5 items-center justify-center rounded-full text-[8px] font-bold"
                 style={{
                   marginLeft: index === 0 ? 0 : -6,
-                  background: index === 0 ? accentColor : surface.s3,
-                  color: index === 0 ? "#FFFFFF" : text.secondary,
+                  // Toutes les pastilles en couleur d'environnement (violet) ;
+                  // le fin liseré clair (border) sépare celles qui se chevauchent.
+                  background: accentColor,
+                  color: "#FFFFFF",
                   border: `1.5px solid ${surface.s1}`,
+                  position: "relative",
+                  zIndex: 3 - index,
                 }}
               >
                 {getInitials(name)}
