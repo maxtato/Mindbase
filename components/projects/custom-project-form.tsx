@@ -245,10 +245,10 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
                         }}
                       >
                         <span
-                          className="mb-2 flex h-8 w-8 items-center justify-center rounded-xl"
+                          className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl"
                           style={{ background: option.color, color: "#FFFFFF" }}
                         >
-                          <ProjectCategoryIcon icon={option.icon} color="#FFFFFF" size={15} />
+                          <ProjectCategoryIcon icon={option.icon} color="#FFFFFF" size={21} />
                         </span>
                         <span className="block text-xs font-bold">{option.label}</span>
                         {selected && (
