@@ -63,9 +63,9 @@ LES TÂCHES = les actions précises à réaliser dans chaque étape : produire, 
 
 LE CHAMP "expected" (l'Attendu) : concret, précis et actionnable, en 2 à 3 phrases. Dis ce qu'il faut faire, le livrable / la décision / le résultat précis attendu, et le critère qui permet de considérer la tâche comme réussie. Quelqu'un doit pouvoir exécuter la tâche et savoir quand elle est terminée en le lisant. Jamais « réfléchir à », « voir si », « faire le point » sans résultat défini.
 
-CADRAGE (rester concis pour une réponse rapide) :
-- Étapes : 4 à 6, strictement ordonnées, couvrant tout le chemin sans trou.
-- Tâches : 3 à 5 par étape, séquencées, sans doublon.
+CADRAGE (adapte la taille à l'ampleur réelle du projet — un projet simple = un petit plan, pour une réponse rapide et sans remplissage) :
+- Étapes : autant que nécessaire, jusqu'à 6 environ ; un projet simple peut n'en compter que 2 ou 3. Strictement ordonnées, couvrant tout le chemin sans trou.
+- Tâches : seulement celles qui sont utiles, jusqu'à ~5 par étape (souvent 2 à 4). Aucune tâche de remplissage.
 - Nom du projet : court (5 mots max). Objectif : une phrase claire. Contexte : 2 phrases sur ce qui pilote le projet.
 - Le champ "subcategory" doit être l'une de ces clés exactes : ${validKeys}
   Choisis la plus pertinente selon la description. Exemples :
