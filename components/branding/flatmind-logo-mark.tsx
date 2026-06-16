@@ -5,9 +5,9 @@ import type { CSSProperties } from "react";
 //    sombre en clair, blanc en sombre) ;
 //  • la couche du bas (avec la queue) → peinte en VIOLET (couleur unique des
 //    environnements).
-const ASPECT = 1024 / 879; // ratio natif de l'asset
-const TOP_URL = "/flatmind-logo-top.png?v=4";
-const BOTTOM_URL = "/flatmind-logo-bottom.png?v=4";
+const ASPECT = 613 / 460; // ratio natif de l'asset
+const TOP_URL = "/flatmind-logo-top.png?v=6";
+const BOTTOM_URL = "/flatmind-logo-bottom.png?v=6";
 
 export function FlatmindLogoMark({
   height = 32,
