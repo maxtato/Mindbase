@@ -26,16 +26,18 @@ export function FlatmindWordmark({
       <span className="mb-wordmark-mind" style={{ fontWeight: 700, letterSpacing: "-0.02em", fontSize }}>
         Flat
       </span>
-      {/* « mind » : script Pacifico, aligné sur la ligne de base de « Flat ». */}
+      {/* « mind » : script Pacifico, aligné sur la ligne de base de « Flat ».
+          Marge négative pour compenser l'approche gauche de Pacifico : l'espace
+          « t » → « m » devient équivalent à l'espace entre les lettres. */}
       <span
         style={{
           position: "relative",
           display: "inline-block",
-          marginLeft: fontSize * 0.03,
+          marginLeft: fontSize * -0.05,
           paddingRight: fontSize * 0.16,
         }}
       >
-        <span className="mb-script" style={{ fontSize: fontSize * 0.9, lineHeight: 1 }}>
+        <span className="mb-script" style={{ fontSize: fontSize * 0.84, lineHeight: 1 }}>
           mind
         </span>
         {/* Trait « brush » sous « mind » (même teinte) : fin et détaché. */}
