@@ -105,12 +105,13 @@ export function ProjectCategoryIcon({ icon, color = "currentColor", size = 14 }:
         </>
       )}
       {icon === "car" && (
-        <>
+        // Remontée (translate) pour mieux centrer la voiture dans la pastille.
+        <g transform="translate(0 -1.3)">
           <path d="m4.5 12.5 1.7-4.6A1.5 1.5 0 0 1 7.6 7h8.8a1.5 1.5 0 0 1 1.4 0.9l1.7 4.6" {...common} />
           <path d="M3.5 12.5h17v4.5a1 1 0 0 1-1 1H18v1.5a.5.5 0 0 1-.5.5h-1.5a.5.5 0 0 1-.5-.5v-1.5H8.5v1.5a.5.5 0 0 1-.5.5H6.5a.5.5 0 0 1-.5-.5v-1.5H4.5a1 1 0 0 1-1-1Z" {...common} />
           <circle cx="7.5" cy="14.8" r="0.85" fill={color} stroke="none" />
           <circle cx="16.5" cy="14.8" r="0.85" fill={color} stroke="none" />
-        </>
+        </g>
       )}
       {icon === "music" && (
         <>
@@ -121,15 +122,15 @@ export function ProjectCategoryIcon({ icon, color = "currentColor", size = 14 }:
         </>
       )}
       {icon === "gamepad" && (
-        // Manette de jeux vidéo : corps arrondi, croix directionnelle à gauche,
-        // deux boutons à droite.
+        // Manette de jeu au corps bien ARRONDI (ovale), plus grande et remontée :
+        // croix directionnelle à gauche, deux boutons à droite.
         <>
           <path
-            d="M8 8.5h8a5 5 0 0 1 5 5c0 1.7-.4 3.4-1 4.4-.6 1-1.8 1.1-2.6.4l-1.5-1.3a2 2 0 0 0-1.3-.5H9.4a2 2 0 0 0-1.3.5l-1.5 1.3c-.8.7-2 .6-2.6-.4-.6-1-1-2.7-1-4.4a5 5 0 0 1 5-5Z"
+            d="M8 6.5 H16 C19.5 6.5 22 9 22 12.5 C22 14.5 21.4 16.5 20.2 17.4 C19.3 18.1 18 18 17.2 17.2 L15.8 15.9 C15.3 15.4 14.7 15.2 14 15.2 H10 C9.3 15.2 8.7 15.4 8.2 15.9 L6.8 17.2 C6 18 4.7 18.1 3.8 17.4 C2.6 16.5 2 14.5 2 12.5 C2 9 4.5 6.5 8 6.5 Z"
             {...common}
           />
-          <path d="M7 12v2.4M5.8 13.2h2.4" {...common} />
-          <path d="M15.8 12.4h.01M17.6 14.2h.01" {...common} />
+          <path d="M7.5 9.8v3.4M5.8 11.5h3.4" {...common} />
+          <path d="M15.5 10.5h.01M17.3 12.3h.01" {...common} />
         </>
       )}
       {icon === "plane" && (
