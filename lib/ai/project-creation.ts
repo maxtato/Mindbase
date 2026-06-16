@@ -63,17 +63,26 @@ cadrage / préparation → planification → exécution → suivi & contrôle qu
 
 Réponds en JSON strict, en français.
 
-Règles de structuration :
-- Étapes : autant que nécessaire pour couvrir le cycle de vie (en général 4 à 7), ordonnées logiquement, chacune représentant une phase ou un lot cohérent. La "description" explique le but de l'étape et ce qui la conclut (livrable / jalon).
-- Tâches : 3 à 6 par étape, concrètes, bien séquencées, sans trou ni doublon. Pense aux tâches souvent oubliées mais essentielles : cadrage du besoin, vérification des normes/conformité, budget, autorisations, communication, contrôle qualité, points de décision, validation finale.
-- "expected" de chaque tâche : décrit précisément le livrable / résultat attendu et, quand c'est utile, le critère de réussite — jamais une formulation vague. Toujours actionnable (verbe d'action concret), jamais "réfléchir à", "voir si", "réviser".
-- Nom du projet : court (5 mots max). Objectif : une seule phrase claire et, si possible, mesurable. Contexte : 2 phrases sur ce qui pilote le projet (enjeux, contraintes clés).
+PRINCIPE CENTRAL : transforme la demande en une PROGRESSION claire, un véritable PLAN D'EXÉCUTION — pas une simple liste d'idées. En lisant les étapes dans l'ordre, l'utilisateur doit comprendre immédiatement comment le projet avance : ce qui se fait en premier, ce qui vient ensuite, et ce qui permettra de considérer le projet comme abouti.
+
+LES ÉTAPES = les grandes phases d'évolution du projet, du point de départ jusqu'au résultat final. Chaque étape doit faire avancer le projet CONCRÈTEMENT et correspondre à un moment réel du projet, avec un rôle précis dans la progression. Une étape n'est JAMAIS une réflexion interne, une analyse générale ou une simple catégorie. Chaque étape doit pouvoir répondre à : où en est le projet à ce moment-là ? quel objectif atteindre dans cette phase ? qu'est-ce qui doit être terminé avant de passer à la suivante ? quel résultat concret existe à la fin ? La "description" de l'étape exprime son rôle dans la progression et le résultat concret qui la conclut.
+
+LES TÂCHES = les actions précises à réaliser à l'intérieur de chaque étape. Chaque tâche est concrète, utile, et directement liée à l'aboutissement du projet : produire quelque chose, prendre une décision, préparer un élément, valider un point, réaliser une action, ou débloquer la suite. Le "title" dit l'action à faire ; le champ "expected" dit clairement le résultat attendu (le livrable / la décision / la validation) et, si utile, pourquoi c'est utile et le critère de réussite.
+
+À ÉVITER absolument :
+- Étapes vagues du type « préparer le projet », « analyser la demande », « suivre l'avancement » — SAUF si elles correspondent à une action concrète avec un résultat défini.
+- Tâches génériques du type « faire le point », « réfléchir à la suite », « organiser les idées » — SAUF si le résultat attendu est clairement défini. Jamais de « réfléchir à », « voir si », « réviser » sans livrable.
+
+CADRAGE :
+- Étapes : autant que nécessaire pour aller du début à la fin (en général 4 à 7), strictement ordonnées (chaque étape suppose la précédente terminée). Couvre tout le chemin jusqu'au résultat final, sans trou.
+- Tâches : 3 à 6 par étape, séquencées, sans doublon. Intègre les actions souvent oubliées mais essentielles quand le domaine l'exige : vérification des normes/conformité, budget, autorisations, contrôle qualité, validation finale.
+- Nom du projet : court (5 mots max). Objectif : une seule phrase claire et, si possible, mesurable. Contexte : 2 phrases sur ce qui pilote le projet (enjeux, contraintes clés, normes du domaine).
 - Le champ "subcategory" doit être l'une de ces clés exactes : ${validKeys}
   Choisis la plus pertinente selon la description. Exemples :
   - ${SUBCATEGORY_EXAMPLES[workspace as "personal" | "professional"] ?? SUBCATEGORY_EXAMPLES.personal}
   Si vraiment rien ne colle, utilise "other".
 
-Exigence de qualité : agis comme un chef de projet professionnel rigoureux. Chaque étape et chaque tâche doit apporter une réelle valeur pour mener le projet à bien proprement — qualité et exhaustivité utile avant remplissage.`;
+Agis comme un chef de projet professionnel rigoureux : le plan doit donner l'impression d'un chemin logique évident, où chaque étape et chaque tâche fait réellement progresser le projet.`;
 }
 
 const SCHEMA = {
