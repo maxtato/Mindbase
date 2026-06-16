@@ -37,16 +37,19 @@ export async function AppShell({ children, accountName }: AppShellProps) {
         {/* Sidebar — masquée < sm via Tailwind. */}
         <Sidebar stats={sidebarStats} initialWorkspace={initialWorkspace} accountName={accountName} />
 
-        {/* Zone principale — on réserve la safe-area haute (Dynamic Island). */}
+        {/* Zone principale — on réserve la safe-area haute (Dynamic Island).
+            La bottom nav est un enfant EN FLUX en bas de cette colonne (hauteur
+            100dvh) : elle suit le viewport dynamique iOS au lieu d'être en
+            position:fixed (qui se décollait du bas au lancement). */}
         <div
           className="flex flex-col flex-1 min-w-0 overflow-hidden"
           style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
         >
-          {children}
-        </div>
+          <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
 
-        {/* Bottom nav mobile — position:fixed, flotte au-dessus du contenu. */}
-        <MobileBottomNav initialWorkspace={initialWorkspace} />
+          {/* Bottom nav mobile — en flux, collée au bas du viewport (sm:hidden). */}
+          <MobileBottomNav initialWorkspace={initialWorkspace} />
+        </div>
 
         {/* Palette de recherche globale (⌘K). */}
         <CommandPalette initialWorkspace={initialWorkspace} />

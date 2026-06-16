@@ -668,11 +668,12 @@ summary {
   }
 }
 
-/* Mobile : la bottom nav est en position:fixed → on réserve sa hauteur sous les
-   <main> pour que les derniers items ne soient pas masqués derrière. */
+/* Mobile : la bottom nav est désormais EN FLUX sous la zone de contenu (plus
+   en position:fixed) → plus besoin de réserver sa hauteur. Un petit espace de
+   respiration suffit. */
 @media (max-width: 639px) {
   main {
-    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 14px;
   }
 }
 
@@ -2262,9 +2263,9 @@ textarea::placeholder {
   .mb-mobile-scroll {
     padding-inline: 0.75rem !important;
     padding-top: 0.75rem !important;
-    /* La bottom nav (position:fixed) masque le bas → on réserve sa hauteur +
-       la safe-area du home indicator pour pouvoir scroller jusqu'au bout. */
-    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    /* Bottom nav désormais EN FLUX sous le contenu → plus besoin de réserver sa
+       hauteur ni la safe-area (la nav la gère elle-même). */
+    padding-bottom: 16px !important;
     /* Aucun débordement horizontal possible sur mobile (cartes qui
        dépassaient à droite) — le contenu reste dans l'écran. */
     overflow-x: hidden;
