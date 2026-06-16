@@ -37,6 +37,7 @@ interface TaskExpandedPreviewProps {
     dueTime?: string;
     owner?: string;
     assignees?: string[];
+    teamIds?: string[];
     priority?: ProjectPriority;
     status?: TaskStatus;
   }) => void;
@@ -79,6 +80,7 @@ export function TaskExpandedPreview({
             linkedTeams={linkedTeams}
             accentColor={accentColor}
             projectPeople={projectPeople}
+            projectTeams={projectTeams}
             onUpdate={onUpdate}
             statusSettings={statusSettings}
           />
@@ -1272,6 +1274,7 @@ function QuickInfos({
   linkedTeams,
   accentColor,
   projectPeople,
+  projectTeams,
   onUpdate,
   statusSettings,
 }: {
@@ -1279,15 +1282,29 @@ function QuickInfos({
   linkedTeams: ProjectTeam[];
   accentColor: string;
   projectPeople: Array<{ id: string; name: string }>;
+  projectTeams: ProjectTeam[];
   onUpdate?: TaskExpandedPreviewProps["onUpdate"];
   statusSettings?: ProjectStatusSettings;
 }) {
   const accountName = useAccountName();
   const fileCount = task.files?.length ?? 0;
-  const owner = task.owner?.trim() || task.assignees?.[0] || linkedTeams[0]?.name || "";
   const meFirst = accountName.trim().toLowerCase().split(" ")[0] ?? "";
-  // Affiche « Moi » quand la tâche est assignée au compte courant.
-  const ownerLabel = owner && meFirst && owner.trim().toLowerCase().split(" ")[0] === meFirst ? "Moi" : owner;
+  // Liste des personnes assignées (assignees, ou l'ancien `owner` seul).
+  const assigneeNames = (task.assignees && task.assignees.length > 0
+    ? task.assignees
+    : task.owner?.trim()
+      ? [task.owner.trim()]
+      : []
+  ).map((n) => n.trim()).filter(Boolean);
+  // « Moi » pour le compte courant.
+  const labelParts = [
+    ...assigneeNames.map((n) => (meFirst && n.toLowerCase().split(" ")[0] === meFirst ? "Moi" : n)),
+    ...linkedTeams.map((t) => t.name),
+  ];
+  const assigneeCount = labelParts.length;
+  // Affiche « Alex », « Alex +2 » ou « 3 assignés ».
+  const ownerLabel =
+    assigneeCount === 0 ? "" : assigneeCount <= 2 ? labelParts.join(", ") : `${labelParts[0]} +${assigneeCount - 1}`;
   const editable = Boolean(onUpdate);
   const [editing, setEditing] = useState<"calendar" | "person" | "file" | null>(null);
   const [showCompletionBlocked, setShowCompletionBlocked] = useState(false);
@@ -1307,7 +1324,7 @@ function QuickInfos({
         </QuickInfoTile>
         <QuickInfoTile
           icon="person"
-          empty={!owner}
+          empty={assigneeCount === 0}
           accentColor={accentColor}
           editable={editable}
           active={editing === "person"}
@@ -1347,9 +1364,10 @@ function QuickInfos({
         <PersonEditor
           task={task}
           projectPeople={projectPeople}
+          projectTeams={projectTeams}
           accentColor={accentColor}
-          onSave={(nextOwner) => {
-            onUpdate?.({ owner: nextOwner });
+          onSave={(next) => {
+            onUpdate?.({ owner: next.owner, assignees: next.assignees, teamIds: next.teamIds });
             setEditing(null);
           }}
           onCancel={() => setEditing(null)}
@@ -1955,28 +1973,69 @@ function DateEditor({
 function PersonEditor({
   task,
   projectPeople,
+  projectTeams,
   accentColor,
   onSave,
   onCancel,
 }: {
   task: Task;
   projectPeople: Array<{ id: string; name: string }>;
+  projectTeams: ProjectTeam[];
   accentColor: string;
-  onSave: (owner: string) => void;
+  onSave: (input: { owner: string; assignees: string[]; teamIds: string[] }) => void;
   onCancel: () => void;
 }) {
   const accountName = useAccountName();
-  const [value, setValue] = useState(task.owner ?? "");
-  const dirty = value.trim() !== (task.owner?.trim() ?? "");
-  const hasOwner = (task.owner?.trim() ?? "") !== "";
-
   const firstName = (name: string) => name.trim().toLowerCase().split(" ")[0] ?? "";
   const meFirst = firstName(accountName);
   const isMe = (name: string) => Boolean(meFirst) && firstName(name) === meFirst;
-  const meSelected = isMe(value);
-  // On évite d'afficher le compte courant deux fois : la puce « Moi » couvre
-  // déjà l'attribution à soi-même.
+
+  // État initial : on part des assignees existants (ou de l'ancien `owner` seul,
+  // pour les tâches d'avant le multi-assignation).
+  const initialAssignees = (task.assignees && task.assignees.length > 0
+    ? task.assignees
+    : task.owner?.trim()
+      ? [task.owner.trim()]
+      : []
+  ).map((n) => n.trim()).filter(Boolean);
+  const [assignees, setAssignees] = useState<string[]>(initialAssignees);
+  const [teamIds, setTeamIds] = useState<string[]>(task.teamIds ?? []);
+  const [draft, setDraft] = useState("");
+
+  // Le compte courant est représenté par la puce « Moi » → on l'exclut des
+  // autres puces personnes pour éviter le doublon.
   const otherPeople = projectPeople.filter((person) => !isMe(person.name));
+  const meSelected = assignees.some((a) => isMe(a));
+
+  const norm = (n: string) => n.trim().toLowerCase();
+  function toggleName(name: string) {
+    const clean = name.trim();
+    if (!clean) return;
+    setAssignees((cur) =>
+      cur.some((a) => norm(a) === norm(clean)) ? cur.filter((a) => norm(a) !== norm(clean)) : [...cur, clean],
+    );
+  }
+  function toggleTeam(id: string) {
+    setTeamIds((cur) => (cur.includes(id) ? cur.filter((t) => t !== id) : [...cur, id]));
+  }
+  function addDraft() {
+    const clean = draft.trim();
+    if (!clean) return;
+    if (!assignees.some((a) => norm(a) === norm(clean))) setAssignees((cur) => [...cur, clean]);
+    setDraft("");
+  }
+
+  function save() {
+    const cleaned = assignees.map((a) => a.trim()).filter(Boolean);
+    onSave({ owner: cleaned[0] ?? "", assignees: cleaned, teamIds });
+  }
+
+  const pill = (selected: boolean) => ({
+    background: selected ? accentColor : surface.s2,
+    color: selected ? "#FFFFFF" : text.secondary,
+    border: `1px solid ${selected ? accentColor : surface.borderSubtle}`,
+    cursor: "pointer" as const,
+  });
 
   return (
     <div
@@ -1991,66 +2050,102 @@ function PersonEditor({
       }}
     >
       <p style={{ fontSize: 10.5, fontWeight: 600, color: text.muted, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-        Personne assignée
+        Personnes assignées
       </p>
       <div className="flex flex-wrap gap-1">
-        {/* « Moi » : assigne la tâche au compte courant → elle apparaît avec
-            le filtre « Moi » des vues Kanban / Calendrier. */}
+        {/* « Moi » : assigne la tâche au compte courant. */}
         <button
           type="button"
-          onClick={() => setValue(meSelected ? "" : accountName)}
+          onClick={() => toggleName(accountName)}
           className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
-          style={{
-            background: meSelected ? accentColor : surface.s2,
-            color: meSelected ? "#FFFFFF" : text.secondary,
-            border: `1px solid ${meSelected ? accentColor : surface.borderSubtle}`,
-            cursor: "pointer",
-          }}
+          style={pill(meSelected)}
         >
           Moi
         </button>
-        {otherPeople.map((person) => {
-          const selected = value.trim() === person.name;
-          return (
+        {otherPeople.map((person) => (
+          <button
+            key={person.id}
+            type="button"
+            onClick={() => toggleName(person.name)}
+            className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
+            style={pill(assignees.some((a) => norm(a) === norm(person.name)))}
+          >
+            {person.name}
+          </button>
+        ))}
+        {/* Personnes saisies à la main mais absentes de la liste du projet. */}
+        {assignees
+          .filter((a) => !isMe(a) && !projectPeople.some((p) => norm(p.name) === norm(a)))
+          .map((a) => (
             <button
-              key={person.id}
+              key={`free-${a}`}
               type="button"
-              // Reclic sur la personne déjà sélectionnée = on la retire.
-              onClick={() => setValue(selected ? "" : person.name)}
+              onClick={() => toggleName(a)}
               className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
-              style={{
-                background: selected ? accentColor : surface.s2,
-                color: selected ? "#FFFFFF" : text.secondary,
-                border: `1px solid ${selected ? accentColor : surface.borderSubtle}`,
-                cursor: "pointer",
-              }}
+              style={pill(true)}
             >
-              {person.name}
+              {a}
             </button>
-          );
-        })}
+          ))}
       </div>
-      <input
-        type="text"
-        value={value}
-        onChange={(event) => setValue(event.target.value)}
-        placeholder="Nom de la personne assignée"
-        className="mb-input"
-        style={{ ...fieldInputStyle(), minHeight: 32, padding: "6px 10px" }}
-      />
+
       <div className="flex items-center gap-1.5">
-        <Button
-          variant="primary"
-          size="sm"
-          accentColor={accentColor}
-          onClick={() => onSave(value.trim())}
-          disabled={!dirty}
-        >
+        <input
+          type="text"
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              addDraft();
+            }
+          }}
+          placeholder="Ajouter une personne…"
+          className="mb-input"
+          style={{ ...fieldInputStyle(), minHeight: 32, padding: "6px 10px" }}
+        />
+        <Button variant="ghost" size="sm" onClick={addDraft} disabled={!draft.trim()}>
+          Ajouter
+        </Button>
+      </div>
+
+      {projectTeams.length > 0 && (
+        <>
+          <p style={{ fontSize: 10.5, fontWeight: 600, color: text.muted, margin: "2px 0 0", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Équipes
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {projectTeams.map((team) => {
+              const selected = teamIds.includes(team.id);
+              const teamColor = team.color || accentColor;
+              return (
+                <button
+                  key={team.id}
+                  type="button"
+                  onClick={() => toggleTeam(team.id)}
+                  className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
+                  style={{
+                    background: selected ? teamColor : surface.s2,
+                    color: selected ? "#FFFFFF" : teamColor,
+                    border: `1px solid ${selected ? teamColor : surface.borderSubtle}`,
+                    cursor: "pointer",
+                  }}
+                >
+                  {team.name}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      <div className="flex items-center gap-1.5">
+        <Button variant="primary" size="sm" accentColor={accentColor} onClick={save}>
           Enregistrer
         </Button>
-        {hasOwner && (
-          <Button variant="ghost" size="sm" onClick={() => onSave("")}>
-            Retirer
+        {(assignees.length > 0 || teamIds.length > 0) && (
+          <Button variant="ghost" size="sm" onClick={() => { setAssignees([]); setTeamIds([]); }}>
+            Tout retirer
           </Button>
         )}
         <Button variant="ghost" size="sm" onClick={onCancel}>
