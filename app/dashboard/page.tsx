@@ -109,24 +109,26 @@ export default async function DashboardPage({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <Topbar title="Dashboard" workspace={workspace} />
+      <Topbar
+        title="Dashboard"
+        workspace={workspace}
+        action={
+          <Link
+            href={`/dashboard/projects/new?${qs}`}
+            aria-label="Nouveau projet"
+            className="flex items-center gap-1.5 rounded-xl text-xs font-bold whitespace-nowrap px-2 py-2 sm:px-3.5"
+            style={{ background: theme.accent, color: "#fff" }}
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+              <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+            <span className="hidden sm:inline">Nouveau projet</span>
+          </Link>
+        }
+      />
 
       <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-4 py-5 lg:px-6">
         <div className="mx-auto flex w-full max-w-[1480px] flex-col gap-4">
-          {/* Bouton « Créer un projet » tout en haut du dashboard. */}
-          <div className="mb-rise flex justify-end">
-            <Link
-              href={`/dashboard/projects/new?${qs}`}
-              className="inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-[13px] font-semibold whitespace-nowrap"
-              style={{ background: theme.accent, color: "#FFFFFF", border: "none", boxShadow: "0 2px 8px -2px rgba(16, 24, 40, 0.16)" }}
-            >
-              <span aria-hidden style={{ fontSize: 15, lineHeight: 1 }}>
-                +
-              </span>
-              Créer un projet
-            </Link>
-          </div>
-
           {/* Focus proactif : la première chose visible — quoi faire maintenant
               et quels projets surveiller (réutilise project-health + insights). */}
           <div className="mb-rise" style={{ animationDelay: "60ms" }}>
