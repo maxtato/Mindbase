@@ -4,6 +4,7 @@ import { useState } from "react";
 import { surface, text } from "@/lib/design-tokens";
 import { useEnvironments } from "@/components/environments/environments-provider";
 import { updateEnvironmentAction, deleteEnvironmentAction } from "@/app/dashboard/environment-actions";
+import { CreateEnvironmentDialog } from "@/components/environments/create-environment-dialog";
 
 // Tous les environnements partagent la couleur violette : pas de choix de
 // couleur, seul le nom est modifiable.
@@ -13,6 +14,7 @@ export function EnvironmentsManager() {
   const environments = useEnvironments();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   // Rechargement complet après modification : le thème (couleur) des
   // environnements est lu via un registre module-global par de nombreux
@@ -31,12 +33,23 @@ export function EnvironmentsManager() {
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: text.muted }}>
-        Environnements personnalisés
-      </p>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: text.muted }}>
+          Environnements personnalisés
+        </p>
+        <button
+          type="button"
+          onClick={() => setCreateOpen(true)}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold"
+          style={{ background: ENV_COLOR, color: "#FFFFFF", border: "none", cursor: "pointer" }}
+        >
+          <span aria-hidden style={{ fontSize: 13, lineHeight: 1 }}>+</span>
+          Créer un environnement
+        </button>
+      </div>
       {environments.length === 0 ? (
         <p className="text-sm" style={{ color: text.secondary }}>
-          Aucun environnement personnalisé. Utilise le « + » dans le sélecteur d'environnement pour en créer un.
+          Aucun environnement personnalisé. Utilise le bouton « Créer un environnement » pour en ajouter un.
         </p>
       ) : (
         <div className="flex flex-col gap-2">
@@ -106,6 +119,7 @@ export function EnvironmentsManager() {
       <p className="mt-1 text-[11px]" style={{ color: text.muted }}>
         Supprimer un environnement ne supprime pas ses projets : ils restent visibles dans la vue « Tous ».
       </p>
+      {createOpen && <CreateEnvironmentDialog onClose={() => setCreateOpen(false)} />}
     </div>
   );
 }

@@ -7,13 +7,12 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { getWorkspace, workspaceTheme, BUILTIN_WORKSPACES, ALL_WORKSPACE } from "@/lib/workspace";
+import { getWorkspace, workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { error, surface, text } from "@/lib/design-tokens";
-import { broadcastWorkspace, WORKSPACE_EVENT } from "@/lib/workspace-client";
+import { WORKSPACE_EVENT } from "@/lib/workspace-client";
 import { FlatmindWordmark } from "@/components/branding/mindlay-wordmark";
 import { FlatmindLogoMark } from "@/components/branding/flatmind-logo-mark";
-import { useEnvironments } from "@/components/environments/environments-provider";
 
 const WIDE = 212;
 const COLLAPSED = 62;
@@ -36,7 +35,6 @@ interface SidebarProps {
 
 export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const environments = useEnvironments();
   const pathname = usePathname();
   // Lit le workspace depuis l'URL côté client uniquement (pas de useSearchParams).
   const [workspaceParam, setWorkspaceParam] = useState<string | null>(initialWorkspace ?? null);
@@ -91,13 +89,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
     const sp = new URLSearchParams({ workspace });
     return `${href}?${sp.toString()}`;
   };
-  const makeWorkspaceHref = (targetWorkspace: Workspace) => {
-    const sp = new URLSearchParams();
-    sp.set("workspace", targetWorkspace);
-    return `/dashboard?${sp.toString()}`;
-  };
 
-  const workspaces: Workspace[] = [...BUILTIN_WORKSPACES, ...environments.map((e) => e.id), ALL_WORKSPACE];
   const navItems = [
     {
       href: "/dashboard",
@@ -239,79 +231,6 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
         )}
       </div>
 
-      {/* Workspace switcher */}
-      <div className="px-3 mb-4">
-        {collapsed ? (
-          <div className="flex flex-col gap-2 items-center">
-            {workspaces.map((item) => {
-              const itemTheme = workspaceTheme[item];
-              const active = item === workspace;
-
-              return (
-                <Link
-                  key={item}
-                  href={makeWorkspaceHref(item)}
-                  onClick={() => broadcastWorkspace(item)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold"
-                  style={{
-                    background: active ? itemTheme.gradient : surface.sidebarPanel,
-                    color: active ? "#FFFFFF" : text.sidebarMuted,
-                    border: `1px solid ${active ? itemTheme.accentBorder : surface.sidebarBorder}`,
-                  }}
-                  title={itemTheme.label}
-                >
-                  {itemTheme.initial}
-                </Link>
-              );
-            })}
-          </div>
-        ) : (
-          <div
-            className="flex flex-col gap-1.5 p-1.5 rounded-2xl"
-            style={{ background: surface.sidebarPanel, border: `1px solid ${surface.sidebarBorder}` }}
-          >
-            {workspaces.map((item) => {
-              const itemTheme = workspaceTheme[item];
-              const active = item === workspace;
-
-              return (
-                <Link
-                  key={item}
-                  href={makeWorkspaceHref(item)}
-                  onClick={() => broadcastWorkspace(item)}
-                  className="h-10 rounded-xl flex items-center gap-2 px-2.5 text-[11px] font-semibold"
-                  style={{
-                    background: active ? itemTheme.gradient : surface.sidebarPanel,
-                    color: active ? "#FFFFFF" : text.sidebarMuted,
-                    border: `1px solid ${active ? itemTheme.accentBorder : surface.sidebarPanel}`,
-                  }}
-                >
-                  <span
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
-                    style={{
-                      background: active ? surface.metricIconBg : surface.sidebarPanelActive,
-                      color: active ? surface.metricIconBg : text.sidebarMuted,
-                      border: `1px solid ${active ? surface.metricIconBorder : surface.sidebarBorder}`,
-                    }}
-                  >
-                    <span style={{ color: active ? itemTheme.accent : text.sidebarMuted }}>{itemTheme.initial}</span>
-                  </span>
-                  <span className="truncate leading-none">{itemTheme.label}</span>
-                  {active && (
-                    <span
-                      className="ml-auto w-1.5 h-1.5 rounded-full"
-                      style={{ background: surface.metricIconBg }}
-                    />
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Divider */}
-      <div className="mx-3 mb-3" style={{ height: 1, background: surface.sidebarBorder }} />
 
       {/* Nav items */}
       <nav className="flex flex-col gap-0.5 flex-1 px-2">

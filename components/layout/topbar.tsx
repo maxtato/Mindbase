@@ -1,7 +1,6 @@
 import { workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { surface, text } from "@/lib/design-tokens";
-import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
 import { CommandTrigger } from "@/components/search/command-trigger";
 import { FlatmindWordmark } from "@/components/branding/mindlay-wordmark";
 import { FlatmindLogoMark } from "@/components/branding/flatmind-logo-mark";
@@ -95,10 +94,6 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
       <div className="flex w-full shrink-0 flex-wrap items-center justify-start gap-2 sm:w-auto sm:justify-end">
         {/* Recherche globale (palette ⌘K) — accessible partout. */}
         <CommandTrigger />
-        {/* Switcher d'environnement (Personnel / Professionnel) — cliquable.
-            Sur desktop, la sidebar a son propre switcher mais celui-ci reste
-            utile et cohérent. Sur mobile, c'est le seul moyen de basculer. */}
-        <WorkspaceSwitcher workspace={workspace} />
         {action}
       </div>
     </header>
