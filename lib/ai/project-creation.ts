@@ -61,11 +61,13 @@ LES ÉTAPES = les grandes phases d'évolution du projet, du début jusqu'au rés
 
 LES TÂCHES = les actions précises à réaliser dans chaque étape : produire, décider, préparer, valider, réaliser ou débloquer. Le "title" dit l'action (court, commence par un verbe).
 
-LE CHAMP "expected" (l'Attendu) : concret, précis et actionnable, en 2 à 3 phrases. Dis ce qu'il faut faire, le livrable / la décision / le résultat précis attendu, et le critère qui permet de considérer la tâche comme réussie. Quelqu'un doit pouvoir exécuter la tâche et savoir quand elle est terminée en le lisant. Jamais « réfléchir à », « voir si », « faire le point » sans résultat défini.
+REGROUPEMENT (important) : une tâche est une UNITÉ DE TRAVAIL COHÉRENTE, pas une micro-action. Regroupe en UNE seule tâche les actions qui vont naturellement ensemble, qui relèvent du même thème ou qui s'enchaînent immédiatement. Par exemple « analyser X » et « en tirer des conclusions » = une seule tâche (« Analyser X et en tirer les conclusions ») ; « comparer des devis » et « choisir le prestataire » se regroupent ; « rédiger » et « relire » aussi. Ne crée deux tâches distinctes que si elles peuvent réellement être faites séparément, à des moments différents, ou par des personnes différentes. Les sous-étapes d'une même action se décrivent dans l'« expected », pas en tâches séparées.
+
+LE CHAMP "expected" (l'Attendu) : concret, précis et actionnable, en 2 à 3 phrases. Dis ce qu'il faut faire (y compris les sous-étapes regroupées), le livrable / la décision / le résultat précis attendu, et le critère qui permet de considérer la tâche comme réussie. Quelqu'un doit pouvoir exécuter la tâche et savoir quand elle est terminée en le lisant. Jamais « réfléchir à », « voir si », « faire le point » sans résultat défini.
 
 CADRAGE (adapte la taille à l'ampleur réelle du projet — un projet simple = un petit plan, pour une réponse rapide et sans remplissage) :
 - Étapes : autant que nécessaire, jusqu'à 6 environ ; un projet simple peut n'en compter que 2 ou 3. Strictement ordonnées, couvrant tout le chemin sans trou.
-- Tâches : seulement celles qui sont utiles, jusqu'à ~5 par étape (souvent 2 à 4). Aucune tâche de remplissage.
+- Tâches : peu nombreuses et consolidées — vise 2 à 4 tâches par étape (5 maximum), chacune regroupant ce qui va ensemble. Pas de fragmentation en micro-actions, pas de remplissage.
 - Nom du projet : court (5 mots max). Objectif : une phrase claire. Contexte : 2 phrases sur ce qui pilote le projet.
 - Le champ "subcategory" doit être l'une de ces clés exactes : ${validKeys}
   Choisis la plus pertinente selon la description. Exemples :
