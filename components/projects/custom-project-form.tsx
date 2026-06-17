@@ -65,7 +65,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
   // en Pro). On la réinitialise alors sur la première option valide pour éviter
   // un rejet à la création.
   useEffect(() => {
-    const keys = getSubcategoryOptions(effectiveWorkspace).map((option) => option.key);
+    const keys = getSubcategoryOptions(effectiveWorkspace).map((option) => String(option.key));
     if (!keys.includes(subcategory)) {
       setSubcategory(keys[0] ?? "other");
     }
