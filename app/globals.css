@@ -1825,7 +1825,7 @@ summary {
   grid-template-columns: 1fr;
   gap: 18px;
   align-items: start;
-  max-width: 720px;
+  max-width: 840px;
   margin-inline: auto;
 }
 
