@@ -724,6 +724,10 @@ function CalendarTaskCard({
             </p>
           </div>
           <p className="mt-1 truncate text-[10px]" style={{ color: text.muted }}>
+            <span style={{ color: workspaceTheme[project.workspace].accent, fontWeight: 600 }}>
+              {workspaceTheme[project.workspace].label}
+            </span>
+            {" · "}
             {project.name}
           </p>
           <span
