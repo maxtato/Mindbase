@@ -1444,15 +1444,16 @@ function TaskCard({
         transition: "background-color 120ms var(--mb-ease), border-color 120ms var(--mb-ease), box-shadow 180ms var(--mb-ease), transform 120ms var(--mb-ease)",
       }}
     >
-      {/* Carte-tâche « ludique » : en-tête priorité/échéance, corps coche + titre,
-          pied statut + assignés + compteurs. Toute la fiche est cliquable
-          (ouvre le détail) sauf les éléments interactifs. */}
-      <div className="flex h-full flex-col gap-2">
-        {/* En-tête : priorité (ou « Terminé ») · échéance */}
+      {/* Grande « fiche » empilée : en-tête priorité + statut, titre en gros
+          avec coche, barre de progression de la checklist, pied échéance +
+          assignés + compteurs. Toute la fiche est cliquable (ouvre le détail)
+          sauf les éléments interactifs. */}
+      <div className="flex flex-col gap-2.5">
+        {/* En-tête : priorité (ou « Terminé ») · statut */}
         <div className="flex items-center justify-between gap-2">
           {taskStatus === "done" ? (
             <span
-              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold"
+              className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.04em]"
               style={{ background: statusColor.green.bg, color: statusColor.green.text }}
             >
               <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
@@ -1462,7 +1463,7 @@ function TaskCard({
             </span>
           ) : (
             <span
-              className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold"
+              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.04em]"
               style={{
                 background: `color-mix(in srgb, ${displayedPriorityVisual.text} 14%, transparent)`,
                 color: displayedPriorityVisual.text,
@@ -1474,31 +1475,28 @@ function TaskCard({
             </span>
           )}
 
-          <span
-            className="inline-flex shrink-0 items-center gap-1 text-[10px]"
-            style={{
-              color: !task.dueDate
-                ? text.ghost
-                : overdue
-                  ? errorTokens.text
-                  : dueSoon
-                    ? statusColor.yellow.text
-                    : text.secondary,
-              fontWeight: task.dueDate && (overdue || dueSoon) ? 700 : 500,
-            }}
-            title={overdue ? "Échéance dépassée" : dueSoon ? "Échéance proche" : undefined}
-          >
-            <CalendarMiniIcon />
-            {task.dueDate ? formatTaskScheduleLabel(task) : "Ajouter"}
+          <span className="min-w-0">
+            <TaskStatusInlinePicker
+              task={task}
+              statusSettings={statusSettings}
+              onPickStatus={(nextStatus) => {
+                if (nextStatus === taskStatus) return;
+                if (nextStatus === "done") {
+                  attemptCompletion();
+                  return;
+                }
+                onUpdate({ status: nextStatus });
+              }}
+            />
           </span>
         </div>
 
-        {/* Corps : coche + titre (+ renommage en place) */}
-        <div className="flex flex-1 items-start gap-2">
+        {/* Titre en gros + coche + menu d'actions */}
+        <div className="flex items-start gap-2.5">
           <button
             type="button"
             onClick={taskStatus === "done" ? onToggle : attemptCompletion}
-            className="mt-0.5 flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full"
+            className="mt-0.5 flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full"
             style={{
               background: taskStatus === "done" ? accentColor : "transparent",
               border:
@@ -1510,7 +1508,7 @@ function TaskCard({
             title={taskStatus === "done" ? "Marquer comme à faire" : "Marquer comme terminée"}
           >
             {taskStatus === "done" && (
-              <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
                 <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             )}
@@ -1540,17 +1538,19 @@ function TaskCard({
                   background: surface.s2,
                   border: `1px solid ${accentColor}`,
                   borderRadius: 6,
-                  padding: "2px 8px",
-                  fontSize: 13,
-                  fontWeight: 600,
+                  padding: "3px 8px",
+                  fontSize: 14.5,
+                  fontWeight: 700,
                   color: text.primary,
                   outline: "none",
                 }}
               />
             ) : (
               <p
-                className="text-[13px] font-semibold leading-snug"
+                className="font-bold"
                 style={{
+                  fontSize: 14.5,
+                  lineHeight: 1.3,
                   color: taskStatus === "done" ? text.ghost : text.primary,
                   textDecoration: taskStatus === "done" ? "line-through" : "none",
                   display: "-webkit-box",
@@ -1592,24 +1592,49 @@ function TaskCard({
           </div>
         </div>
 
-        {/* Pied : statut · compteurs · assignés */}
-        <div className="flex items-center justify-between gap-2 pt-1.5" style={{ borderTop: `1px solid ${surface.borderSubtle}` }}>
-          <span className="min-w-0">
-            <TaskStatusInlinePicker
-              task={task}
-              statusSettings={statusSettings}
-              onPickStatus={(nextStatus) => {
-                if (nextStatus === taskStatus) return;
-                if (nextStatus === "done") {
-                  attemptCompletion();
-                  return;
-                }
-                onUpdate({ status: nextStatus });
-              }}
-            />
+        {/* Barre de progression de la checklist (sous-actions) */}
+        {checklistTotal > 0 && (
+          <div className="flex items-center gap-2">
+            <div
+              className="h-1.5 flex-1 overflow-hidden rounded-full"
+              style={{ background: surface.s3, border: `1px solid ${surface.border}` }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: `${Math.round((checklistDone / checklistTotal) * 100)}%`,
+                  background: accentColor,
+                  borderRadius: 999,
+                  transition: "width 0.3s var(--mb-ease)",
+                }}
+              />
+            </div>
+            <span className="shrink-0 text-[10px] font-semibold tabular-nums" style={{ color: text.muted }}>
+              {checklistDone}/{checklistTotal} sous-action{checklistTotal > 1 ? "s" : ""}
+            </span>
+          </div>
+        )}
+
+        {/* Pied : échéance · compteurs · assignés */}
+        <div className="flex items-center justify-between gap-2 pt-2" style={{ borderTop: `1px solid ${surface.borderSubtle}` }}>
+          <span
+            className="inline-flex min-w-0 items-center gap-1 text-[11px]"
+            style={{
+              color: !task.dueDate
+                ? text.ghost
+                : overdue
+                  ? errorTokens.text
+                  : dueSoon
+                    ? statusColor.yellow.text
+                    : text.secondary,
+              fontWeight: task.dueDate && (overdue || dueSoon) ? 700 : 500,
+            }}
+            title={overdue ? "Échéance dépassée" : dueSoon ? "Échéance proche" : undefined}
+          >
+            <CalendarMiniIcon />
+            {task.dueDate ? formatTaskScheduleLabel(task) : "Ajouter une date"}
           </span>
-          <div className="flex shrink-0 items-center gap-2">
-            {checklistTotal > 0 && <TaskTinyCounter icon="check" value={`${checklistDone}/${checklistTotal}`} />}
+          <div className="flex shrink-0 items-center gap-2.5">
             {discussionCount > 0 && <TaskTinyCounter icon="comment" value={discussionCount} />}
             {fileCount > 0 && <TaskTinyCounter icon="file" value={fileCount} />}
             <TaskCardAvatars names={participantNames} fallback={assigneeLabel} accentColor={accentColor} />

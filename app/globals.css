@@ -1813,18 +1813,12 @@ summary {
   margin: 2px 0 0;
 }
 
-/* Cartes-tâches « ludiques » disposées en grille : 1 colonne sur iPhone,
-   2 colonnes dès qu'on a la place. Les cartes d'une même rangée s'alignent en
-   hauteur (align-items: stretch par défaut). */
+/* Grandes « fiches » de tâches empilées (une par ligne, pleine largeur),
+   look application mobile : titre en gros, barre de progression, pied d'infos. */
 .mb-task-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
-}
-@media (min-width: 768px) {
-  .mb-task-grid {
-    grid-template-columns: 1fr 1fr;
-  }
+  gap: 10px;
 }
 
 /* Carte-tâche dans une étape = carte blanche surélevée (ombre + arrondi +
