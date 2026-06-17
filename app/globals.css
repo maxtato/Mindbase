@@ -1813,6 +1813,17 @@ summary {
   margin: 2px 0 0;
 }
 
+/* Étapes disposées en colonnes côte à côte dès qu'on a la place (PC), et
+   empilées sur une colonne sur petit écran (iPhone). auto-fit → autant de
+   colonnes d'au moins 320px que la largeur le permet. align-items:start pour
+   que chaque carte garde sa hauteur naturelle (pas d'étirement). */
+.mb-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
 /* Grandes « fiches » de tâches empilées (une par ligne, pleine largeur),
    look application mobile : titre en gros, barre de progression, pied d'infos. */
 .mb-task-grid {

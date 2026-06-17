@@ -734,7 +734,8 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
       {steps.length === 0 ? (
         <EmptySteps />
       ) : (
-        steps.map((step) => {
+        <div className="mb-steps-grid">
+        {steps.map((step) => {
           return (
             <StepCard
               key={step.id}
@@ -768,7 +769,8 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
               statusSettings={statusSettings}
             />
           );
-        })
+        })}
+        </div>
       )}
 
       <AddStepForm projectId={projectId} workspace={workspace} />
