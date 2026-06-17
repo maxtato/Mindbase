@@ -6,11 +6,13 @@ import { getAuthUser } from "@/utils/supabase/auth";
 import { ACTIVE_ACCOUNT_NAME } from "@/lib/current-account";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  // Étape 1 — accès protégé : si Supabase est configuré et qu'aucun utilisateur
-  // n'est connecté, on renvoie vers la connexion. (Si Supabase n'est pas
-  // configuré en preview/dev, on laisse passer → comportement mono-compte.)
+  // Accès protégé — DÉSACTIVÉ par défaut (la fonctionnalité de connexion reste
+  // en arrière-plan tant qu'on ne l'active pas). On ne redirige vers la
+  // connexion QUE si AUTH_ENABLED === "true" ET Supabase configuré ET aucun
+  // utilisateur. Sinon, on continue à travailler librement (mono-compte).
+  const authEnabled = process.env.AUTH_ENABLED === "true";
   const { user, configured } = await getAuthUser();
-  if (configured && !user) {
+  if (authEnabled && configured && !user) {
     redirect("/auth/login");
   }
 
@@ -27,12 +29,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // utilisé côté serveur (getProfile().name → filtres « Moi », createdBy,
   // visibilité collaborateur) correspond au compte connecté, et plus au défaut
   // partagé. Une seule écriture : ensuite le nom est « personnalisé ».
-  if (configured && user && !customizedProfileName && supabaseName && supabaseName !== profile.name) {
+  if (authEnabled && configured && user && !customizedProfileName && supabaseName && supabaseName !== profile.name) {
     await saveProfile({ name: supabaseName });
   }
 
-  const name = customizedProfileName ? profile.name : supabaseName || profile.name;
-  const email = user?.email || profile.email;
+  // Quand l'auth est désactivée, on garde strictement le profil (mono-compte).
+  const name = !authEnabled ? profile.name : customizedProfileName ? profile.name : supabaseName || profile.name;
+  const email = authEnabled && user?.email ? user.email : profile.email;
 
   return (
     <AccountProvider value={{ name, email, plan: profile.plan }}>
