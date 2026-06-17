@@ -14,7 +14,7 @@ import { ProjectIdentityEditor } from "@/components/projects/project-identity-ed
 import { AISynthesisButton } from "@/components/projects/ai-synthesis-button";
 import { ProjectEvolutionLauncher } from "@/components/projects/project-evolution-launcher";
 import { ProjectCollaborationLauncher } from "@/components/projects/project-collaboration-launcher";
-import { ProjectControls, ProjectSettingsMenu } from "@/components/projects/project-controls";
+import { ProjectSettingsMenu } from "@/components/projects/project-controls";
 import { ProjectFilesLauncher } from "@/components/projects/project-files-launcher";
 import { ProjectTeamChatLauncher } from "@/components/projects/project-team-chat-launcher";
 import { ProjectMultiView } from "@/components/projects/project-multi-view";
@@ -316,15 +316,6 @@ function ProjectPilotHeader({
             >
               {project.progress}%
             </span>
-            <ProjectControls
-              projectId={project.id}
-              workspace={workspace}
-              currentStatus={project.status}
-              currentStatusMode={project.statusMode}
-              currentPriority={project.priority}
-              hideDestructive
-              compact
-            />
           </div>
         </div>
       </div>
