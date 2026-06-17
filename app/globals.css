@@ -1819,9 +1819,15 @@ summary {
    que chaque carte garde sa hauteur naturelle (pas d'étirement). */
 .mb-steps-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: 1fr;
   gap: 14px;
   align-items: start;
+}
+/* PC : 2 colonnes maximum côte à côte (jamais plus). */
+@media (min-width: 1024px) {
+  .mb-steps-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* Grandes « fiches » de tâches empilées (une par ligne, pleine largeur),
