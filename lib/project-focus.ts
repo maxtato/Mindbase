@@ -145,7 +145,7 @@ function buildBrief(counts: { dueToday: number; overdue: number; attention: numb
 
   // Pas de préfixe « Aujourd'hui : » → évite la répétition avec « pour
   // aujourd'hui ». On démarre directement par les compteurs.
-  if (parts.length === 0) return "Tout est sous contrôle — rien d'urgent aujourd'hui.";
+  if (parts.length === 0) return "Tout est sous contrôle, rien d'urgent aujourd'hui.";
   if (parts.length === 1) return `${parts[0]}.`;
   return `${parts.slice(0, -1).join(", ")} et ${parts[parts.length - 1]}.`;
 }

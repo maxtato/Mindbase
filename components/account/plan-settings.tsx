@@ -72,7 +72,7 @@ export function PlanSettings({ initialPlan }: { initialPlan: AccountPlan }) {
         })}
       </div>
       <p className="text-[11px]" style={{ color: text.muted }}>
-        Démo : pas de paiement réel pour l'instant — ce sélecteur sert à tester les accès.
+        Démo : pas de paiement réel pour l'instant, ce sélecteur sert à tester les accès.
       </p>
     </div>
   );

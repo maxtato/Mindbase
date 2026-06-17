@@ -164,7 +164,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="Assistant IA — faire évoluer le projet"
+            aria-label="Assistant IA, faire évoluer le projet"
             className="mb-modal-surface"
             onClick={(event) => event.stopPropagation()}
             style={{
@@ -245,7 +245,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
               {items && items.length > 0 && (
                 <div className="mt-4">
                   <p className="mb-2 text-[10.5px] font-semibold uppercase tracking-wide" style={{ color: text.muted }}>
-                    Changements proposés — décoche ce que tu ne veux pas
+                    Changements proposés, décoche ce que tu ne veux pas
                   </p>
                   <ul className="flex flex-col gap-2">
                     {items.map((item, index) => {

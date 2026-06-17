@@ -68,7 +68,7 @@ export function RealizationAssistant({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Assistant IA — Réalisation"
+        aria-label="Assistant IA, Réalisation"
         className="mb-modal-surface"
         onClick={(event) => event.stopPropagation()}
         style={{
@@ -83,7 +83,7 @@ export function RealizationAssistant({
         <div className="flex items-start justify-between gap-3 px-5 py-4" style={{ borderBottom: `1px solid ${surface.borderSubtle}` }}>
           <div className="min-w-0">
             <p className="text-sm font-semibold" style={{ color: text.primary }}>
-              Assistant IA — Réalisation
+              Assistant IA, Réalisation
             </p>
             <p className="mt-0.5 text-[11px]" style={{ color: text.muted }}>
               Décris ce que tu as fait ; l&apos;IA le reformule en actions claires, une par ligne.

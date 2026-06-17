@@ -365,7 +365,7 @@ function MemberPicker({
   return (
     <div className="grid gap-1.5">
       <p className="text-[10px] font-semibold uppercase tracking-[0.1em]" style={{ color: text.muted }}>
-        Membres — touche une personne pour l’associer
+        Membres, touche une personne pour l’associer
       </p>
       {people.length === 0 ? (
         <p className="text-[11px]" style={{ color: text.muted }}>
