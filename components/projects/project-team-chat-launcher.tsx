@@ -40,6 +40,20 @@ export function ProjectTeamChatLauncher({
   const [content, setContent] = useState("");
   const [isPending, startTransition] = useTransition();
   const [pending, setPending] = useState<ProjectTeamMessage[]>([]);
+  // Suivi « lu » local : on retient (sur l'appareil) la date de dernière
+  // ouverture du chat pour ce projet → la pastille ne compte que les messages
+  // des AUTRES arrivés depuis, jamais les miens.
+  const seenKey = `mb-chat-seen-${projectId}`;
+  const [seenAt, setSeenAt] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    try {
+      setSeenAt(window.localStorage.getItem(seenKey));
+    } catch {
+      /* stockage indisponible */
+    }
+  }, [seenKey]);
 
   // Mentions @ pilotées par la frappe.
   const [mention, setMention] = useState<{ start: number; query: string } | null>(null);
@@ -49,6 +63,27 @@ export function ProjectTeamChatLauncher({
 
   const isMine = (message: ProjectTeamMessage) =>
     normalizeName(message.authorName) === normalizeName(accountName);
+
+  // Nombre de messages NON LUS des autres (jamais les miens). 0 avant montage
+  // pour ne pas diverger entre SSR et hydratation.
+  const unreadCount = mounted
+    ? messages.filter((m) => !isMine(m) && (!seenAt || m.createdAt > seenAt)).length
+    : 0;
+
+  function markChatSeen() {
+    const now = new Date().toISOString();
+    setSeenAt(now);
+    try {
+      window.localStorage.setItem(seenKey, now);
+    } catch {
+      /* stockage indisponible */
+    }
+  }
+
+  function openChat() {
+    markChatSeen();
+    setIsOpen(true);
+  }
 
   // Messages en ordre chronologique (anciens en haut, récents en bas) + envois
   // optimistes locaux non encore renvoyés par le serveur (dédupe author|content).
@@ -130,20 +165,21 @@ export function ProjectTeamChatLauncher({
     <>
       <button
         type="button"
-        onClick={() => setIsOpen(true)}
+        onClick={openChat}
         className="mb-project-top-action mb-project-icon-action"
         style={{
           background: surface.s1,
           color: messages.length > 0 ? accentColor : text.secondary,
           borderColor: messages.length > 0 ? accentColor : surface.border,
         }}
-        title={`Chat projet${messages.length > 0 ? ` · ${messages.length} message${messages.length > 1 ? "s" : ""}` : ""}`}
+        title={`Chat projet${unreadCount > 0 ? ` · ${unreadCount} non lu${unreadCount > 1 ? "s" : ""}` : ""}`}
         aria-label="Chat projet"
       >
         <TeamChatIcon />
-        {messages.length > 0 && (
+        {/* Pastille = uniquement les messages NON LUS des autres. */}
+        {unreadCount > 0 && (
           <span className="mb-project-action-dot" style={{ background: accentColor }} aria-hidden="true">
-            {messages.length > 9 ? "9+" : messages.length}
+            {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
