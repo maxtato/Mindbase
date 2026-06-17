@@ -132,14 +132,8 @@ export function NotificationBell() {
         <div
           role="dialog"
           aria-label="Notifications"
+          className="mb-notif-panel"
           style={{
-            position: "absolute",
-            top: "calc(100% + 8px)",
-            right: 0,
-            zIndex: 200,
-            width: "min(340px, calc(100vw - 24px))",
-            maxHeight: "min(60vh, 460px)",
-            overflowY: "auto",
             background: surface.s1,
             border: `1px solid ${surface.border}`,
             borderRadius: 16,
