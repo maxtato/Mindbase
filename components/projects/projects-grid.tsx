@@ -19,7 +19,6 @@ import { calculateProjectIndicators } from "@/lib/project-plan";
 import {
   FilterPill,
   FilterPillGroup,
-  FilterToggleChip,
   type FilterPillOption,
 } from "@/components/ui/filter-pill";
 
@@ -36,9 +35,6 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
   const [envFilter, setEnvFilter] = useState<string>("all");
-  const [showBlockedOnly, setShowBlockedOnly] = useState(false);
-  const [showInactiveOnly, setShowInactiveOnly] = useState(false);
-  const [showOverdueOnly, setShowOverdueOnly] = useState(false);
   const theme = workspaceTheme[workspace];
 
   // Filtre « Environnement » : depuis la suppression du sélecteur d'espaces, la
@@ -66,16 +62,10 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
         activeFilter: FilterKey;
         priorityFilter: PriorityFilter;
         envFilter: string;
-        showBlockedOnly: boolean;
-        showInactiveOnly: boolean;
-        showOverdueOnly: boolean;
       }>;
       if (s.activeFilter) setActiveFilter(s.activeFilter);
       if (s.priorityFilter) setPriorityFilter(s.priorityFilter);
       if (s.envFilter) setEnvFilter(s.envFilter);
-      if (typeof s.showBlockedOnly === "boolean") setShowBlockedOnly(s.showBlockedOnly);
-      if (typeof s.showInactiveOnly === "boolean") setShowInactiveOnly(s.showInactiveOnly);
-      if (typeof s.showOverdueOnly === "boolean") setShowOverdueOnly(s.showOverdueOnly);
     } catch {
       /* ignore */
     }
@@ -84,12 +74,12 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
     try {
       localStorage.setItem(
         FILTERS_KEY,
-        JSON.stringify({ activeFilter, priorityFilter, envFilter, showBlockedOnly, showInactiveOnly, showOverdueOnly }),
+        JSON.stringify({ activeFilter, priorityFilter, envFilter }),
       );
     } catch {
       /* ignore */
     }
-  }, [activeFilter, priorityFilter, envFilter, showBlockedOnly, showInactiveOnly, showOverdueOnly]);
+  }, [activeFilter, priorityFilter, envFilter]);
 
   const nonArchived = projects.filter((p) => p.status !== "archived");
   const statusFiltered =
@@ -100,10 +90,7 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
         : nonArchived.filter((p) => p.status === activeFilter);
   const filtered = statusFiltered
     .filter((project) => envFilter === "all" || project.workspace === envFilter)
-    .filter((project) => priorityFilter === "all" || project.priority === priorityFilter)
-    .filter((project) => !showBlockedOnly || projectHasBlockedTask(project) || project.blockers.some((blocker) => blocker.status === "open"))
-    .filter((project) => !showInactiveOnly || isProjectInactive(project))
-    .filter((project) => !showOverdueOnly || projectHasOverdueTask(project));
+    .filter((project) => priorityFilter === "all" || project.priority === priorityFilter);
 
   const archivedCount = projects.filter((p) => p.status === "archived").length;
 
@@ -132,33 +119,7 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
           {activeFilter === "archived" && <span className="ml-1.5 text-xs" style={{ color: text.muted }}>archivés</span>}
         </p>
 
-        <FilterPillGroup
-          trailing={
-            <>
-              <FilterToggleChip
-                label="Bloqués"
-                active={showBlockedOnly}
-                onToggle={() => setShowBlockedOnly((v) => !v)}
-                accentColor={theme.accent}
-                dot="var(--mb-status-red-text)"
-              />
-              <FilterToggleChip
-                label="Inactifs"
-                active={showInactiveOnly}
-                onToggle={() => setShowInactiveOnly((v) => !v)}
-                accentColor={theme.accent}
-                dot="var(--mb-status-gray-text)"
-              />
-              <FilterToggleChip
-                label="En retard"
-                active={showOverdueOnly}
-                onToggle={() => setShowOverdueOnly((v) => !v)}
-                accentColor={theme.accent}
-                dot="var(--mb-status-orange-text)"
-              />
-            </>
-          }
-        >
+        <FilterPillGroup>
           <FilterPill
             label="Environnement"
             value={envFilter}
