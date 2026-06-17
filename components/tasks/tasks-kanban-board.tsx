@@ -317,6 +317,20 @@ function KanbanTaskCard({
   const displayedPriority = hydrated ? deriveTaskDisplayPriority(task) : task.priority ?? "medium";
   const displayedPriorityVisual = priorityVisuals[displayedPriority];
 
+  // Personne assignée (ou équipe à défaut) → pastille à droite de la carte.
+  const linkedTeams = (project.teams ?? []).filter((team) => task.teamIds?.includes(team.id));
+  const assigneeName =
+    (task.assignees ?? []).map((name) => name.trim()).find(Boolean) ||
+    (task.owner ?? "").trim() ||
+    linkedTeams[0]?.name ||
+    "";
+  const assigneeInitials = assigneeName
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toLocaleUpperCase("fr-FR");
+
   return (
     <TaskDetailLauncher
       projectId={project.id}
@@ -442,10 +456,19 @@ function KanbanTaskCard({
             </p>
           </div>
 
-          <div className="mt-2.5 flex flex-wrap items-center gap-1.5 pr-4">
+          <div className="mt-2.5 flex items-center justify-between gap-2 pr-1">
             <span className="text-[10px] font-semibold" style={{ color: overdue ? errorTokens.text : text.secondary }}>
               {formatDueLabel(task)}
             </span>
+            {assigneeName && (
+              <span
+                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9px] font-bold"
+                style={{ background: workspaceTheme[project.workspace].accent, color: "#FFFFFF" }}
+                title={`Assigné : ${assigneeName}`}
+              >
+                {assigneeInitials || "?"}
+              </span>
+            )}
           </div>
         </article>
       )}
