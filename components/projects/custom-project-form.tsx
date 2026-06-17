@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, type CSSProperties, type ReactNode } from "react";
+import { useActionState, useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { createProjectAction } from "@/app/dashboard/projects/actions";
 import { initialCreateProjectFormState } from "@/app/dashboard/projects/form-state";
@@ -60,6 +60,16 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
   const theme = workspaceTheme[effectiveWorkspace];
   const [state, formAction, pending] = useActionState(createProjectAction, initialCreateProjectFormState);
   const [subcategory, setSubcategory] = useState<string>(getSubcategoryOptions(effectiveWorkspace)[0]?.key ?? "other");
+  // Quand on change d'environnement (vue « Tous »), la sous-catégorie courante
+  // peut ne pas exister pour le nouvel espace (ex. « maison » en Perso → invalide
+  // en Pro). On la réinitialise alors sur la première option valide pour éviter
+  // un rejet à la création.
+  useEffect(() => {
+    const keys = getSubcategoryOptions(effectiveWorkspace).map((option) => option.key);
+    if (!keys.includes(subcategory)) {
+      setSubcategory(keys[0] ?? "other");
+    }
+  }, [effectiveWorkspace, subcategory]);
   const [priority, setPriority] = useState<ProjectPriority>("medium");
   const [customSubcategoryLabel, setCustomSubcategoryLabel] = useState("");
   const [customSubcategoryColor, setCustomSubcategoryColor] = useState<string>(
