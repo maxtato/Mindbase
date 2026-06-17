@@ -2,6 +2,7 @@ import { workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { surface, text } from "@/lib/design-tokens";
 import { CommandTrigger } from "@/components/search/command-trigger";
+import { NotificationBell } from "@/components/layout/notification-bell";
 import { FlatmindWordmark } from "@/components/branding/mindlay-wordmark";
 import { FlatmindLogoMark } from "@/components/branding/flatmind-logo-mark";
 
@@ -87,6 +88,7 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
           au même endroit quel que soit le titre.
           Desktop → en flux, alignés à droite (ml-auto). */}
       <div className="absolute left-1/2 top-1/2 z-[1] flex shrink-0 -translate-x-1/2 -translate-y-1/2 items-center gap-2 sm:static sm:translate-x-0 sm:translate-y-0 sm:ml-auto">
+        <NotificationBell />
         <CommandTrigger />
         {action}
       </div>
