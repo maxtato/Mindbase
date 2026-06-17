@@ -65,6 +65,19 @@ export function TaskExpandedPreview({
 
   return (
     <div className={`mb-task-expanded-preview ${className}`} onClick={(event) => event.stopPropagation()}>
+      {/* Bloc « Informations » (personne, fichiers, date, statut…) collé sous la
+          barre de titre : il reste fixe pendant le scroll de la tâche (sticky). */}
+      <div className="mb-task-info-sticky">
+        <QuickInfos
+          task={task}
+          linkedTeams={linkedTeams}
+          accentColor={accentColor}
+          projectPeople={projectPeople}
+          projectTeams={projectTeams}
+          onUpdate={onUpdate}
+          statusSettings={statusSettings}
+        />
+      </div>
       <div className="mb-task-expanded-preview-grid">
         <TaskPreviewPane>
           <ExpectedField
@@ -74,15 +87,6 @@ export function TaskExpandedPreview({
             aiAccent={aiAccent}
             projectId={projectId}
             stepId={stepId}
-          />
-          <QuickInfos
-            task={task}
-            linkedTeams={linkedTeams}
-            accentColor={accentColor}
-            projectPeople={projectPeople}
-            projectTeams={projectTeams}
-            onUpdate={onUpdate}
-            statusSettings={statusSettings}
           />
         </TaskPreviewPane>
 
