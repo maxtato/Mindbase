@@ -4,6 +4,7 @@ import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { refresh, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { assertPaidPlan } from "@/lib/account-plan";
 import {
   addProjectPerson,
   removeProjectPerson,
@@ -623,21 +624,25 @@ export async function addTaskDiscussionMessageAction(
 }
 
 export async function addProjectPersonAction(projectId: string, input: { name: string; email?: string; role?: string }) {
+  await assertPaidPlan("La collaboration");
   await addProjectPerson(projectId, input);
   await finalizeProjectMutation(projectId, `personne ajoutée au projet : ${input.name}.`);
 }
 
 export async function removeProjectPersonAction(projectId: string, personId: string) {
+  await assertPaidPlan("La collaboration");
   await removeProjectPerson(projectId, personId);
   await finalizeProjectMutation(projectId, `personne retirée du projet : ${personId}.`);
 }
 
 export async function addProjectTeamAction(projectId: string, input: { name: string; color?: string; memberIds?: string[] }) {
+  await assertPaidPlan("La collaboration");
   await addProjectTeam(projectId, input);
   await finalizeProjectMutation(projectId, `équipe ajoutée au projet : ${input.name}.`);
 }
 
 export async function updateProjectTeamAction(projectId: string, teamId: string, input: { name?: string; color?: string; memberIds?: string[] }) {
+  await assertPaidPlan("La collaboration");
   await updateProjectTeam(projectId, teamId, input);
   await finalizeProjectMutation(projectId, `équipe ${teamId} mise à jour.`);
 }

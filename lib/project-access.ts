@@ -78,8 +78,9 @@ export function taskVisibleToViewer(
   personFilter: string,
 ): boolean {
   if (!isProjectCreator(project, viewerName)) {
-    // Collaborateur non créateur : uniquement ses propres tâches.
-    return taskBelongsToUser(task, viewerName);
+    // Collaborateur non créateur : ses propres tâches OU celles d'une équipe
+    // dont il fait partie (cohérent avec la vue détaillée du projet).
+    return taskBelongsToViewerOrTeam(project, task, viewerName);
   }
   // Créateur : soumis au filtre personne.
   if (personFilter === PERSON_FILTER_ALL) return true;
