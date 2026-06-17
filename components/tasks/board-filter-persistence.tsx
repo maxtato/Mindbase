@@ -36,21 +36,22 @@ export function BoardFilterPersistence({ storageKey, basePath, workspace, month,
     if (!didInit.current) {
       didInit.current = true;
       if (present.length === 0) {
-        const raw = window.localStorage.getItem(storageKey);
-        if (raw) {
-          try {
-            const saved = JSON.parse(raw) as Record<string, string>;
-            const keys = (FILTER_KEYS as readonly string[]).filter((key) => saved[key]);
-            if (keys.length > 0) {
-              const next = new URLSearchParams();
-              next.set("workspace", workspace);
-              if (month) next.set("month", month);
-              keys.forEach((key) => next.set(key, saved[key]));
-              router.replace(`${basePath}?${next.toString()}`);
-              return;
-            }
-          } catch {
-            /* ignore */
+        let saved: Record<string, string> | null = null;
+        try {
+          const raw = window.localStorage.getItem(storageKey);
+          saved = raw ? (JSON.parse(raw) as Record<string, string>) : null;
+        } catch {
+          saved = null;
+        }
+        if (saved) {
+          const keys = (FILTER_KEYS as readonly string[]).filter((key) => saved![key]);
+          if (keys.length > 0) {
+            const next = new URLSearchParams();
+            next.set("workspace", workspace);
+            if (month) next.set("month", month);
+            keys.forEach((key) => next.set(key, saved![key]));
+            router.replace(`${basePath}?${next.toString()}`);
+            return;
           }
         }
         return;
@@ -64,7 +65,11 @@ export function BoardFilterPersistence({ storageKey, basePath, workspace, month,
       const value = sp.get(key);
       if (value) saved[key] = value;
     });
-    window.localStorage.setItem(storageKey, JSON.stringify(saved));
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(saved));
+    } catch {
+      /* stockage indisponible / quota → on ignore */
+    }
   }, [signature, storageKey, basePath, workspace, month, router]);
 
   return null;

@@ -17,7 +17,7 @@ import type { Project, TaskStatus } from "@/lib/mock-data";
 import { formatDueLabel, isTaskOverdue, type FlattenedProjectTask } from "@/lib/project-insights";
 import { deriveTaskDisplayPriority, deriveTaskStatus, taskStatusLabels } from "@/lib/project-plan";
 import { getDisplayStepTitle } from "@/lib/project-display";
-import type { Workspace } from "@/lib/workspace";
+import { workspaceTheme, type Workspace } from "@/lib/workspace";
 
 type TaskItem = { project: Project; entry: FlattenedProjectTask };
 type VisibleTaskItem = TaskItem & { status: TaskStatus };
@@ -434,6 +434,10 @@ function KanbanTaskCard({
               </p>
             </div>
             <p className="mt-1 truncate text-[10px]" style={{ color: text.muted }}>
+              <span style={{ color: workspaceTheme[project.workspace].accent, fontWeight: 600 }}>
+                {workspaceTheme[project.workspace].label}
+              </span>
+              {" · "}
               {project.name} · {getDisplayStepTitle(entry.stepTitle)}
             </p>
           </div>

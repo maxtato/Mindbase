@@ -229,6 +229,18 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
                           >
                             {project.name}
                           </p>
+                          {/* Étiquette d'espace : permet de savoir d'un coup
+                              d'œil à quel environnement appartient le projet
+                              dans la vue agrégée « Tous ». */}
+                          <span className="mt-1 inline-flex items-center gap-1.5">
+                            <span
+                              aria-hidden
+                              style={{ width: 6, height: 6, borderRadius: 999, background: workspaceTheme[project.workspace].accent }}
+                            />
+                            <span className="text-[11px] font-medium" style={{ color: text.muted }}>
+                              {workspaceTheme[project.workspace].label}
+                            </span>
+                          </span>
                         </div>
                       </div>
 
