@@ -11,6 +11,8 @@ import {
   resolveProjectSubcategoryDisplay,
 } from "@/lib/project-taxonomy";
 import type { Workspace } from "@/lib/workspace";
+import { listEnvironmentOptions } from "@/lib/workspace";
+import { useEnvironments } from "@/components/environments/environments-provider";
 
 interface ProjectIdentityEditorProps {
   projectId: string;
@@ -46,12 +48,30 @@ export function ProjectIdentityEditor({
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSubcategory, setSelectedSubcategory] = useState(subcategory);
+  // Environnement du projet : modifiable ici pour « lier » le projet à un autre
+  // environnement (Perso / Pro / personnalisé). Le jeu de sous-catégories
+  // dépend de l'environnement, donc on recalcule les options en conséquence.
+  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace>(workspace);
   const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
   const [isPending, startTransition] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const options = getSubcategoryOptions(workspace);
+  const environments = useEnvironments();
+  const environmentOptions = listEnvironmentOptions(environments);
+  const options = getSubcategoryOptions(selectedWorkspace);
+
+  // Si la sous-catégorie sélectionnée n'existe pas dans le nouvel
+  // environnement, on retombe sur la première option valide pour garder un
+  // pictogramme cohérent.
+  function handleWorkspaceChange(nextWorkspace: Workspace) {
+    setSelectedWorkspace(nextWorkspace);
+    const nextOptions = getSubcategoryOptions(nextWorkspace);
+    if (!nextOptions.some((option) => option.key === selectedSubcategory)) {
+      const firstReal = nextOptions.find((option) => option.key !== "other") ?? nextOptions[0];
+      if (firstReal) setSelectedSubcategory(firstReal.key);
+    }
+  }
   const dimension = size === "lg" ? 42 : size === "sm" ? 26 : 34;
   const iconSize = size === "lg" ? 25 : size === "sm" ? 16 : 20;
   const menuWidth = 320;
@@ -95,7 +115,7 @@ export function ProjectIdentityEditor({
     startTransition(async () => {
       await updateProjectIdentityAction({
         projectId,
-        workspace,
+        workspace: selectedWorkspace,
         subcategory: selectedSubcategory,
       });
       // Force le re-render des composants serveur de la route courante : sans
@@ -161,6 +181,37 @@ export function ProjectIdentityEditor({
           </p>
 
           <div className="mt-3">
+            <label className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
+              Environnement
+            </label>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {environmentOptions.map((option) => {
+                const selected = selectedWorkspace === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      handleWorkspaceChange(option.value);
+                    }}
+                    className="rounded-full px-3 py-1.5 text-xs font-semibold"
+                    style={{
+                      background: selected ? display.color : surface.s2,
+                      color: selected ? "#FFFFFF" : text.secondary,
+                      border: `1px solid ${selected ? display.color : surface.border}`,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-4">
             <label className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
               Pictogramme / thème
             </label>

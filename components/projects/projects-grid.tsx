@@ -6,7 +6,8 @@ import { Badge, statusLabels } from "@/components/ui/badge";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import type { Project } from "@/lib/mock-data";
 import type { Workspace } from "@/lib/workspace";
-import { workspaceTheme } from "@/lib/workspace";
+import { workspaceTheme, listEnvironmentOptions } from "@/lib/workspace";
+import { useEnvironments } from "@/components/environments/environments-provider";
 import { surface, text, error, statusColor } from "@/lib/design-tokens";
 import {
   ProjectPriorityBadge,
@@ -34,10 +35,24 @@ interface ProjectsGridProps {
 export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
+  const [envFilter, setEnvFilter] = useState<string>("all");
   const [showBlockedOnly, setShowBlockedOnly] = useState(false);
   const [showInactiveOnly, setShowInactiveOnly] = useState(false);
   const [showOverdueOnly, setShowOverdueOnly] = useState(false);
   const theme = workspaceTheme[workspace];
+
+  // Filtre « Environnement » : depuis la suppression du sélecteur d'espaces, la
+  // vue affiche toujours tous les environnements. Ce filtre permet de se
+  // restreindre à un environnement sans perdre la vue agrégée par défaut.
+  const environments = useEnvironments();
+  const envOptions: FilterPillOption<string>[] = [
+    { value: "all", label: "Tous les environnements" },
+    ...listEnvironmentOptions(environments).map((option) => ({
+      value: option.value,
+      label: option.label,
+      dot: workspaceTheme[option.value].accent,
+    })),
+  ];
 
   // Persistance des filtres de la page Projets (state local) : on restaure au
   // montage et on sauvegarde à chaque changement, pour qu'ils restent actifs
@@ -50,12 +65,14 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
       const s = JSON.parse(raw) as Partial<{
         activeFilter: FilterKey;
         priorityFilter: PriorityFilter;
+        envFilter: string;
         showBlockedOnly: boolean;
         showInactiveOnly: boolean;
         showOverdueOnly: boolean;
       }>;
       if (s.activeFilter) setActiveFilter(s.activeFilter);
       if (s.priorityFilter) setPriorityFilter(s.priorityFilter);
+      if (s.envFilter) setEnvFilter(s.envFilter);
       if (typeof s.showBlockedOnly === "boolean") setShowBlockedOnly(s.showBlockedOnly);
       if (typeof s.showInactiveOnly === "boolean") setShowInactiveOnly(s.showInactiveOnly);
       if (typeof s.showOverdueOnly === "boolean") setShowOverdueOnly(s.showOverdueOnly);
@@ -67,12 +84,12 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
     try {
       localStorage.setItem(
         FILTERS_KEY,
-        JSON.stringify({ activeFilter, priorityFilter, showBlockedOnly, showInactiveOnly, showOverdueOnly }),
+        JSON.stringify({ activeFilter, priorityFilter, envFilter, showBlockedOnly, showInactiveOnly, showOverdueOnly }),
       );
     } catch {
       /* ignore */
     }
-  }, [activeFilter, priorityFilter, showBlockedOnly, showInactiveOnly, showOverdueOnly]);
+  }, [activeFilter, priorityFilter, envFilter, showBlockedOnly, showInactiveOnly, showOverdueOnly]);
 
   const nonArchived = projects.filter((p) => p.status !== "archived");
   const statusFiltered =
@@ -82,6 +99,7 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
         ? nonArchived
         : nonArchived.filter((p) => p.status === activeFilter);
   const filtered = statusFiltered
+    .filter((project) => envFilter === "all" || project.workspace === envFilter)
     .filter((project) => priorityFilter === "all" || project.priority === priorityFilter)
     .filter((project) => !showBlockedOnly || projectHasBlockedTask(project) || project.blockers.some((blocker) => blocker.status === "open"))
     .filter((project) => !showInactiveOnly || isProjectInactive(project))
@@ -141,6 +159,15 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
             </>
           }
         >
+          <FilterPill
+            label="Environnement"
+            value={envFilter}
+            options={envOptions}
+            onChange={setEnvFilter}
+            active={envFilter !== "all"}
+            accentColor={theme.accent}
+            minWidth={190}
+          />
           <FilterPill
             label="Statut"
             value={activeFilter}
