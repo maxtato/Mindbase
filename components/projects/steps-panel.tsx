@@ -1116,8 +1116,7 @@ function StepCard({
             Aucune tâche dans cette étape — utilise le bouton ci-dessous pour en ajouter.
           </p>
         ) : (
-          <>
-            <TaskTableHeader />
+          <div className="mb-task-grid">
             {tasks.map((task) => (
               <TaskCard
                 key={task.id}
@@ -1145,7 +1144,7 @@ function StepCard({
                 onReorderEngage={(x, y, element) => onTaskReorderEngage(task.id, x, y, element)}
               />
             ))}
-          </>
+          </div>
         )}
 
         <AddTaskForm projectId={projectId} workspace={workspace} stepId={step.id} />
@@ -1445,44 +1444,79 @@ function TaskCard({
         transition: "background-color 120ms var(--mb-ease), border-color 120ms var(--mb-ease), box-shadow 180ms var(--mb-ease), transform 120ms var(--mb-ease)",
       }}
     >
-      {/* La priorité n'est PLUS une barre à gauche (réservée désormais à l'arête
-          d'identité projet de l'étape) → on l'affiche par une petite pastille
-          colorée devant le titre (cf. plus bas). */}
-      <div className="mb-task-row grid items-center gap-2">
-        <button
-          type="button"
-          onClick={taskStatus === "done" ? onToggle : attemptCompletion}
-          className="w-[18px] h-[18px] rounded-full shrink-0 flex items-center justify-center"
-          style={{
-            // Cocher la tâche = remplir en couleur projet. Sinon : contour fin en couleur
-            // projet (sauf si en retard → contour rouge d'alerte). La couleur projet est
-            // ainsi toujours présente sur la coche.
-            background: taskStatus === "done" ? accentColor : "transparent",
-            border:
-              taskStatus === "done"
-                ? "none"
-                : `1.5px solid ${overdue ? errorTokens.text : accentColor}`,
-            transition: "background-color 180ms var(--mb-ease), border-color 180ms var(--mb-ease)",
-          }}
-          title={taskStatus === "done" ? "Marquer comme à faire" : "Marquer comme terminée"}
-        >
-          {taskStatus === "done" && (
-            <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
-              <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          )}
-        </button>
-
-        <div className="min-w-0 flex items-center gap-2 overflow-hidden">
-          {taskStatus !== "done" && (
+      {/* Carte-tâche « ludique » : en-tête priorité/échéance, corps coche + titre,
+          pied statut + assignés + compteurs. Toute la fiche est cliquable
+          (ouvre le détail) sauf les éléments interactifs. */}
+      <div className="flex h-full flex-col gap-2">
+        {/* En-tête : priorité (ou « Terminé ») · échéance */}
+        <div className="flex items-center justify-between gap-2">
+          {taskStatus === "done" ? (
             <span
-              aria-hidden
+              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold"
+              style={{ background: statusColor.green.bg, color: statusColor.green.text }}
+            >
+              <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
+                <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Terminé
+            </span>
+          ) : (
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold"
+              style={{
+                background: `color-mix(in srgb, ${displayedPriorityVisual.text} 14%, transparent)`,
+                color: displayedPriorityVisual.text,
+              }}
               title={`Priorité : ${displayedPriorityVisual.label.toLowerCase()}`}
-              className="shrink-0"
-              style={{ width: 7, height: 7, borderRadius: "50%", background: displayedPriorityVisual.text }}
-            />
+            >
+              <span aria-hidden style={{ width: 6, height: 6, borderRadius: "50%", background: displayedPriorityVisual.text }} />
+              {displayedPriorityVisual.label}
+            </span>
           )}
-          <div className="min-w-0 flex-1 overflow-hidden">
+
+          <span
+            className="inline-flex shrink-0 items-center gap-1 text-[10px]"
+            style={{
+              color: !task.dueDate
+                ? text.ghost
+                : overdue
+                  ? errorTokens.text
+                  : dueSoon
+                    ? statusColor.yellow.text
+                    : text.secondary,
+              fontWeight: task.dueDate && (overdue || dueSoon) ? 700 : 500,
+            }}
+            title={overdue ? "Échéance dépassée" : dueSoon ? "Échéance proche" : undefined}
+          >
+            <CalendarMiniIcon />
+            {task.dueDate ? formatTaskScheduleLabel(task) : "Ajouter"}
+          </span>
+        </div>
+
+        {/* Corps : coche + titre (+ renommage en place) */}
+        <div className="flex flex-1 items-start gap-2">
+          <button
+            type="button"
+            onClick={taskStatus === "done" ? onToggle : attemptCompletion}
+            className="mt-0.5 flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full"
+            style={{
+              background: taskStatus === "done" ? accentColor : "transparent",
+              border:
+                taskStatus === "done"
+                  ? "none"
+                  : `1.5px solid ${overdue ? errorTokens.text : accentColor}`,
+              transition: "background-color 180ms var(--mb-ease), border-color 180ms var(--mb-ease)",
+            }}
+            title={taskStatus === "done" ? "Marquer comme à faire" : "Marquer comme terminée"}
+          >
+            {taskStatus === "done" && (
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </button>
+
+          <div className="min-w-0 flex-1">
             {renaming ? (
               <input
                 type="text"
@@ -1507,7 +1541,7 @@ function TaskCard({
                   border: `1px solid ${accentColor}`,
                   borderRadius: 6,
                   padding: "2px 8px",
-                  fontSize: 11.5,
+                  fontSize: 13,
                   fontWeight: 600,
                   color: text.primary,
                   outline: "none",
@@ -1515,91 +1549,72 @@ function TaskCard({
               />
             ) : (
               <p
-                className="mb-task-title truncate text-[11.5px] font-semibold leading-tight"
+                className="text-[13px] font-semibold leading-snug"
                 style={{
                   color: taskStatus === "done" ? text.ghost : text.primary,
+                  textDecoration: taskStatus === "done" ? "line-through" : "none",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                  overflowWrap: "anywhere",
                 }}
               >
                 {task.title}
               </p>
             )}
-            <TaskNameInsights
-              participantNames={participantNames}
-              fileCount={fileCount}
-              discussionCount={discussionCount}
-              checklistDone={checklistDone}
-              checklistTotal={checklistTotal}
-              accentColor={accentColor}
-            />
+          </div>
+
+          <div className="relative -mr-1.5 -mt-1 flex shrink-0 items-center justify-end">
+            {confirmDelete ? (
+              <InlineDeleteConfirm onConfirm={onDelete} onCancel={() => setConfirmDelete(false)} compact />
+            ) : (
+              <RowSettingsMenu
+                ariaLabel="Actions sur la tâche"
+                items={[
+                  {
+                    label: "Renommer",
+                    icon: "pencil",
+                    onClick: () => {
+                      setRenaming(true);
+                      setRenameDraft(task.title);
+                    },
+                  },
+                  {
+                    label: "Supprimer la tâche",
+                    icon: "trash",
+                    tone: "danger",
+                    onClick: () => setConfirmDelete(true),
+                  },
+                ]}
+              />
+            )}
           </div>
         </div>
 
-        <span className="mb-task-status min-w-0">
-          <TaskStatusInlinePicker
-            task={task}
-            statusSettings={statusSettings}
-            onPickStatus={(nextStatus) => {
-              if (nextStatus === taskStatus) return;
-              if (nextStatus === "done") {
-                attemptCompletion();
-                return;
-              }
-              onUpdate({ status: nextStatus });
-            }}
-          />
-        </span>
-
-        <span
-          className="mb-task-date inline-flex items-center gap-1 text-[10px] font-medium"
-          style={{
-            // L'urgence d'échéance est portée directement par la date :
-            // ambre si proche (≤ 3j), rouge si dépassée. Plus de dot
-            // séparé dans une colonne dédiée pour éviter la duplication.
-            color: !task.dueDate
-              ? text.ghost
-              : overdue
-                ? errorTokens.text
-                : dueSoon
-                  ? statusColor.yellow.text
-                  : text.secondary,
-            fontWeight: task.dueDate && (overdue || dueSoon) ? 600 : 500,
-          }}
-          title={overdue ? "Échéance dépassée" : dueSoon ? "Échéance proche" : undefined}
-        >
-          <CalendarMiniIcon />
-          {task.dueDate ? formatTaskScheduleLabel(task) : "Ajouter"}
-        </span>
-
-        <span className="mb-task-assignee inline-flex min-w-0 items-center gap-1.5 text-[10px] font-semibold" style={{ color: text.secondary }}>
-          <TaskAssigneePill label={assigneeLabel === "—" ? "Ajouter" : assigneeLabel} color={accentColor} muted={assigneeLabel === "—"} />
-        </span>
-
-        <div className="mb-task-actions relative flex items-center justify-end gap-1">
-          {confirmDelete ? (
-            <InlineDeleteConfirm onConfirm={onDelete} onCancel={() => setConfirmDelete(false)} compact />
-          ) : (
-            <RowSettingsMenu
-              ariaLabel="Actions sur la tâche"
-              items={[
-                {
-                  label: "Renommer",
-                  icon: "pencil",
-                  onClick: () => {
-                    setRenaming(true);
-                    setRenameDraft(task.title);
-                  },
-                },
-                {
-                  label: "Supprimer la tâche",
-                  icon: "trash",
-                  tone: "danger",
-                  onClick: () => setConfirmDelete(true),
-                },
-              ]}
+        {/* Pied : statut · compteurs · assignés */}
+        <div className="flex items-center justify-between gap-2 pt-1.5" style={{ borderTop: `1px solid ${surface.borderSubtle}` }}>
+          <span className="min-w-0">
+            <TaskStatusInlinePicker
+              task={task}
+              statusSettings={statusSettings}
+              onPickStatus={(nextStatus) => {
+                if (nextStatus === taskStatus) return;
+                if (nextStatus === "done") {
+                  attemptCompletion();
+                  return;
+                }
+                onUpdate({ status: nextStatus });
+              }}
             />
-          )}
+          </span>
+          <div className="flex shrink-0 items-center gap-2">
+            {checklistTotal > 0 && <TaskTinyCounter icon="check" value={`${checklistDone}/${checklistTotal}`} />}
+            {discussionCount > 0 && <TaskTinyCounter icon="comment" value={discussionCount} />}
+            {fileCount > 0 && <TaskTinyCounter icon="file" value={fileCount} />}
+            <TaskCardAvatars names={participantNames} fallback={assigneeLabel} accentColor={accentColor} />
+          </div>
         </div>
-
       </div>
 
       {showCompletionBlocked && (
@@ -1743,6 +1758,52 @@ function TaskAssigneePill({ label, color, muted }: { label: string; color: strin
       </span>
       <span className="truncate">{label}</span>
     </>
+  );
+}
+
+// Grappe d'avatars compacte pour le pied de la carte-tâche. Si personne n'est
+// assigné, on affiche un « Ajouter » discret (la fiche s'ouvre au clic pour
+// assigner quelqu'un).
+function TaskCardAvatars({
+  names,
+  fallback,
+  accentColor,
+}: {
+  names: string[];
+  fallback: string;
+  accentColor: string;
+}) {
+  if (names.length === 0) {
+    return (
+      <span className="text-[10px] font-medium" style={{ color: text.ghost }}>
+        {fallback === "—" ? "Ajouter" : fallback}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center" title={names.join(", ")}>
+      {names.slice(0, 3).map((name, index) => (
+        <span
+          key={`${name}-${index}`}
+          className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold"
+          style={{
+            marginLeft: index === 0 ? 0 : -7,
+            background: accentColor,
+            color: "#FFFFFF",
+            border: `2px solid ${surface.s1}`,
+            position: "relative",
+            zIndex: 3 - index,
+          }}
+        >
+          {getInitials(name)}
+        </span>
+      ))}
+      {names.length > 3 && (
+        <span className="ml-1 text-[10px] font-semibold" style={{ color: text.muted }}>
+          +{names.length - 3}
+        </span>
+      )}
+    </span>
   );
 }
 

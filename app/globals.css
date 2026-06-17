@@ -1813,6 +1813,20 @@ summary {
   margin: 2px 0 0;
 }
 
+/* Cartes-tâches « ludiques » disposées en grille : 1 colonne sur iPhone,
+   2 colonnes dès qu'on a la place. Les cartes d'une même rangée s'alignent en
+   hauteur (align-items: stretch par défaut). */
+.mb-task-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+@media (min-width: 768px) {
+  .mb-task-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 /* Carte-tâche dans une étape = carte blanche surélevée (ombre + arrondi +
    bordure fine), séparée des autres par le gap de la liste. */
 .mb-step-card .mb-task-card {
