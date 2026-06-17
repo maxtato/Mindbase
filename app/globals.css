@@ -2309,20 +2309,53 @@ textarea::placeholder {
     min-width: 680px;
   }
 
+  /* iPhone : barre du haut projet CONDENSÉE. Elle s'empile en 3 rangées
+     (identité · actions · avancement) → on resserre fortement paddings et
+     gaps, on rétrécit les boutons d'action et on masque le sous-titre
+     (objectif) pour gagner de la hauteur. */
   .mb-project-pilotbar {
     padding-inline: 0.75rem !important;
-    padding-block: 0.75rem !important;
+    padding-block: 0.4rem !important;
   }
 
   .mb-project-pilotbar-inner {
     border-radius: 0;
     padding: 0;
+    gap: 0.4rem;
+    min-height: 0;
   }
 
   .mb-project-pilotbar-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+  }
+
+  /* Sous-titre (objectif) masqué sur iPhone : il est déjà repris dans la
+     synthèse, et il faisait gonfler la barre. */
+  .mb-pilot-objective {
+    display: none;
+  }
+
+  .mb-pilot-title {
+    font-size: 15px !important;
+  }
+
+  /* Boutons d'action (Assistant IA, Collaborer, fichiers, chat, réglages)
+     plus petits sur la rangée scrollable. */
+  .mb-project-top-action {
+    height: 32px !important;
+    padding: 0 0.6rem !important;
+    border-radius: 10px !important;
+    font-size: 0.62rem !important;
+  }
+
+  /* Bouton « Assistant IA » aligné sur la même hauteur réduite. */
+  .mb-pilot-ai-button {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    height: 32px !important;
+    font-size: 0.68rem !important;
   }
 
   .mb-project-command-grid {
