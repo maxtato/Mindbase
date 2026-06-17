@@ -269,14 +269,18 @@ export function AIProjectCreatorTrigger({ workspace, active, onToggle }: AIProje
     <button
       type="button"
       onClick={onToggle}
-      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold"
+      className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-[15px] font-bold"
       style={{
-        background: theme.accent,
+        background: active ? theme.accent : theme.gradient,
         color: "#FFFFFF",
         border: "none",
         cursor: "pointer",
-        boxShadow: active ? "none" : "0 2px 8px -2px rgba(16, 24, 40, 0.16)",
-        opacity: active ? 0.85 : 1,
+        // Halo coloré pour bien attirer l'œil sur l'entrée principale de
+        // création assistée par l'IA.
+        boxShadow: active
+          ? "none"
+          : `0 6px 18px -4px color-mix(in srgb, ${theme.accent} 60%, transparent)`,
+        opacity: active ? 0.9 : 1,
       }}
     >
       <SparkleIcon />
@@ -287,11 +291,11 @@ export function AIProjectCreatorTrigger({ workspace, active, onToggle }: AIProje
 
 function SparkleIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path
         d="M8 2.5v3M8 10.5v3M2.5 8h3M10.5 8h3M4.5 4.5l1.5 1.5M10 10l1.5 1.5M4.5 11.5L6 10M10 6l1.5-1.5"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="1.6"
         strokeLinecap="round"
       />
     </svg>
