@@ -2005,14 +2005,31 @@ function PersonEditor({
   ).map((n) => n.trim()).filter(Boolean);
   const [assignees, setAssignees] = useState<string[]>(initialAssignees);
   const [teamIds, setTeamIds] = useState<string[]>(task.teamIds ?? []);
-  const [draft, setDraft] = useState("");
+  // Recherche : sert UNIQUEMENT à filtrer les collaborateurs déjà ajoutés au
+  // projet. On ne peut PAS créer de nom arbitraire ici — l'équipe se définit
+  // dans « Collaborer » à la base du projet.
+  const [query, setQuery] = useState("");
+
+  const norm = (n: string) => n.trim().toLowerCase();
 
   // Le compte courant est représenté par la puce « Moi » → on l'exclut des
   // autres puces personnes pour éviter le doublon.
   const otherPeople = projectPeople.filter((person) => !isMe(person.name));
   const meSelected = assignees.some((a) => isMe(a));
 
-  const norm = (n: string) => n.trim().toLowerCase();
+  // Personnes assignées qui ne font plus partie des collaborateurs du projet
+  // (données héritées / retirées de la collaboration). On les affiche en
+  // lecture pour pouvoir les RETIRER, mais on ne peut plus en ajouter.
+  const orphanAssignees = assignees.filter(
+    (a) => !isMe(a) && !projectPeople.some((p) => norm(p.name) === norm(a)),
+  );
+
+  const q = norm(query);
+  const filteredPeople = q
+    ? otherPeople.filter((person) => norm(person.name).includes(q))
+    : otherPeople;
+  const meMatches = q ? "moi".includes(q) || norm(accountName).includes(q) : true;
+
   function toggleName(name: string) {
     const clean = name.trim();
     if (!clean) return;
@@ -2022,12 +2039,6 @@ function PersonEditor({
   }
   function toggleTeam(id: string) {
     setTeamIds((cur) => (cur.includes(id) ? cur.filter((t) => t !== id) : [...cur, id]));
-  }
-  function addDraft() {
-    const clean = draft.trim();
-    if (!clean) return;
-    if (!assignees.some((a) => norm(a) === norm(clean))) setAssignees((cur) => [...cur, clean]);
-    setDraft("");
   }
 
   function save() {
@@ -2057,17 +2068,34 @@ function PersonEditor({
       <p style={{ fontSize: 10.5, fontWeight: 600, color: text.muted, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>
         Personnes assignées
       </p>
+
+      {/* Recherche parmi les collaborateurs DÉJÀ ajoutés au projet. On ne
+          peut pas saisir un nom arbitraire : la liste se définit dans
+          « Collaborer ». Le champ ne fait que filtrer les puces ci-dessous. */}
+      {otherPeople.length > 0 && (
+        <input
+          type="text"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Rechercher un collaborateur…"
+          className="mb-input"
+          style={{ ...fieldInputStyle(), minHeight: 32, padding: "6px 10px" }}
+        />
+      )}
+
       <div className="flex flex-wrap gap-1">
         {/* « Moi » : assigne la tâche au compte courant. */}
-        <button
-          type="button"
-          onClick={() => toggleName(accountName)}
-          className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
-          style={pill(meSelected)}
-        >
-          Moi
-        </button>
-        {otherPeople.map((person) => (
+        {meMatches && (
+          <button
+            type="button"
+            onClick={() => toggleName(accountName)}
+            className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
+            style={pill(meSelected)}
+          >
+            Moi
+          </button>
+        )}
+        {filteredPeople.map((person) => (
           <button
             key={person.id}
             type="button"
@@ -2078,41 +2106,39 @@ function PersonEditor({
             {person.name}
           </button>
         ))}
-        {/* Personnes saisies à la main mais absentes de la liste du projet. */}
-        {assignees
-          .filter((a) => !isMe(a) && !projectPeople.some((p) => norm(p.name) === norm(a)))
-          .map((a) => (
-            <button
-              key={`free-${a}`}
-              type="button"
-              onClick={() => toggleName(a)}
-              className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
-              style={pill(true)}
-            >
-              {a}
-            </button>
-          ))}
       </div>
 
-      <div className="flex items-center gap-1.5">
-        <input
-          type="text"
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              addDraft();
-            }
-          }}
-          placeholder="Ajouter une personne…"
-          className="mb-input"
-          style={{ ...fieldInputStyle(), minHeight: 32, padding: "6px 10px" }}
-        />
-        <Button variant="ghost" size="sm" onClick={addDraft} disabled={!draft.trim()}>
-          Ajouter
-        </Button>
-      </div>
+      {/* Aucun collaborateur encore défini dans le projet → on renvoie vers
+          « Collaborer », seul endroit où l'équipe se constitue. */}
+      {otherPeople.length === 0 && (
+        <p style={{ fontSize: 11, color: text.muted, margin: 0, lineHeight: 1.45 }}>
+          Aucun collaborateur dans le projet. Ajoute des personnes via «&nbsp;Collaborer&nbsp;» à la base du projet pour pouvoir les assigner ici.
+        </p>
+      )}
+
+      {/* Personnes assignées qui ne sont plus dans la collaboration : on peut
+          seulement les retirer (pas en ajouter de nouvelles). */}
+      {orphanAssignees.length > 0 && (
+        <>
+          <p style={{ fontSize: 10, fontWeight: 600, color: text.muted, margin: "2px 0 0", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Hors collaboration
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {orphanAssignees.map((a) => (
+              <button
+                key={`orphan-${a}`}
+                type="button"
+                onClick={() => toggleName(a)}
+                title="Retirer (cette personne n'est plus dans la collaboration)"
+                className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
+                style={pill(true)}
+              >
+                {a} ✕
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       {projectTeams.length > 0 && (
         <>
