@@ -734,7 +734,8 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
       {steps.length === 0 ? (
         <EmptySteps />
       ) : (
-        steps.map((step) => {
+        <div className="mb-steps-grid">
+        {steps.map((step) => {
           return (
             <StepCard
               key={step.id}
@@ -768,7 +769,8 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
               statusSettings={statusSettings}
             />
           );
-        })
+        })}
+        </div>
       )}
 
       <AddStepForm projectId={projectId} workspace={workspace} />
@@ -1116,8 +1118,7 @@ function StepCard({
             Aucune tâche dans cette étape — utilise le bouton ci-dessous pour en ajouter.
           </p>
         ) : (
-          <>
-            <TaskTableHeader />
+          <div className="mb-task-grid">
             {tasks.map((task) => (
               <TaskCard
                 key={task.id}
@@ -1145,7 +1146,7 @@ function StepCard({
                 onReorderEngage={(x, y, element) => onTaskReorderEngage(task.id, x, y, element)}
               />
             ))}
-          </>
+          </div>
         )}
 
         <AddTaskForm projectId={projectId} workspace={workspace} stepId={step.id} />
@@ -1445,18 +1446,15 @@ function TaskCard({
         transition: "background-color 120ms var(--mb-ease), border-color 120ms var(--mb-ease), box-shadow 180ms var(--mb-ease), transform 120ms var(--mb-ease)",
       }}
     >
-      {/* La priorité n'est PLUS une barre à gauche (réservée désormais à l'arête
-          d'identité projet de l'étape) → on l'affiche par une petite pastille
-          colorée devant le titre (cf. plus bas). */}
-      <div className="mb-task-row grid items-center gap-2">
+      {/* Carte-tâche « liste aérée » : coche + titre + ligne d'infos, et à
+          droite statut / assignés / menu. Toute la fiche est cliquable
+          (ouvre le détail) sauf l'interactif. */}
+      <div className="flex items-center gap-2.5">
         <button
           type="button"
           onClick={taskStatus === "done" ? onToggle : attemptCompletion}
-          className="w-[18px] h-[18px] rounded-full shrink-0 flex items-center justify-center"
+          className="flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full"
           style={{
-            // Cocher la tâche = remplir en couleur projet. Sinon : contour fin en couleur
-            // projet (sauf si en retard → contour rouge d'alerte). La couleur projet est
-            // ainsi toujours présente sur la coche.
             background: taskStatus === "done" ? accentColor : "transparent",
             border:
               taskStatus === "done"
@@ -1467,139 +1465,131 @@ function TaskCard({
           title={taskStatus === "done" ? "Marquer comme à faire" : "Marquer comme terminée"}
         >
           {taskStatus === "done" && (
-            <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
-              <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+              <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           )}
         </button>
 
-        <div className="min-w-0 flex items-center gap-2 overflow-hidden">
-          {taskStatus !== "done" && (
-            <span
-              aria-hidden
-              title={`Priorité : ${displayedPriorityVisual.label.toLowerCase()}`}
-              className="shrink-0"
-              style={{ width: 7, height: 7, borderRadius: "50%", background: displayedPriorityVisual.text }}
+        <div className="min-w-0 flex-1">
+          {renaming ? (
+            <input
+              type="text"
+              autoFocus
+              value={renameDraft}
+              data-no-task-expand="true"
+              onChange={(event) => setRenameDraft(event.target.value)}
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  commitRename();
+                } else if (event.key === "Escape") {
+                  setRenaming(false);
+                  setRenameDraft(task.title);
+                }
+              }}
+              onBlur={commitRename}
+              style={{
+                width: "100%",
+                background: surface.s2,
+                border: `1px solid ${accentColor}`,
+                borderRadius: 6,
+                padding: "2px 8px",
+                fontSize: 13,
+                fontWeight: 600,
+                color: text.primary,
+                outline: "none",
+              }}
             />
+          ) : (
+            <p
+              className="truncate font-semibold"
+              style={{
+                fontSize: 13,
+                lineHeight: 1.3,
+                color: taskStatus === "done" ? text.ghost : text.primary,
+                textDecoration: taskStatus === "done" ? "line-through" : "none",
+              }}
+            >
+              {task.title}
+            </p>
           )}
-          <div className="min-w-0 flex-1 overflow-hidden">
-            {renaming ? (
-              <input
-                type="text"
-                autoFocus
-                value={renameDraft}
-                data-no-task-expand="true"
-                onChange={(event) => setRenameDraft(event.target.value)}
-                onClick={(event) => event.stopPropagation()}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    commitRename();
-                  } else if (event.key === "Escape") {
-                    setRenaming(false);
-                    setRenameDraft(task.title);
-                  }
-                }}
-                onBlur={commitRename}
-                style={{
-                  width: "100%",
-                  background: surface.s2,
-                  border: `1px solid ${accentColor}`,
-                  borderRadius: 6,
-                  padding: "2px 8px",
-                  fontSize: 11.5,
-                  fontWeight: 600,
-                  color: text.primary,
-                  outline: "none",
-                }}
-              />
-            ) : (
-              <p
-                className="mb-task-title truncate text-[11.5px] font-semibold leading-tight"
-                style={{
-                  color: taskStatus === "done" ? text.ghost : text.primary,
-                }}
-              >
-                {task.title}
-              </p>
+
+          {/* Ligne d'infos : priorité · échéance · checklist */}
+          <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[10px]" style={{ color: text.muted }}>
+            {taskStatus !== "done" && (
+              <span className="inline-flex items-center gap-1 font-semibold" style={{ color: displayedPriorityVisual.text }}>
+                <span aria-hidden style={{ width: 6, height: 6, borderRadius: "50%", background: displayedPriorityVisual.text }} />
+                {displayedPriorityVisual.label}
+              </span>
             )}
-            <TaskNameInsights
-              participantNames={participantNames}
-              fileCount={fileCount}
-              discussionCount={discussionCount}
-              checklistDone={checklistDone}
-              checklistTotal={checklistTotal}
-              accentColor={accentColor}
-            />
+            <span
+              className="inline-flex items-center gap-1"
+              style={{
+                color: !task.dueDate
+                  ? text.ghost
+                  : overdue
+                    ? errorTokens.text
+                    : dueSoon
+                      ? statusColor.yellow.text
+                      : text.muted,
+                fontWeight: task.dueDate && (overdue || dueSoon) ? 700 : 500,
+              }}
+              title={overdue ? "Échéance dépassée" : dueSoon ? "Échéance proche" : undefined}
+            >
+              <CalendarMiniIcon />
+              {task.dueDate ? formatTaskScheduleLabel(task) : "Ajouter une date"}
+            </span>
+            {checklistTotal > 0 && <TaskTinyCounter icon="check" value={`${checklistDone}/${checklistTotal}`} />}
+            {discussionCount > 0 && <TaskTinyCounter icon="comment" value={discussionCount} />}
+            {fileCount > 0 && <TaskTinyCounter icon="file" value={fileCount} />}
           </div>
         </div>
 
-        <span className="mb-task-status min-w-0">
-          <TaskStatusInlinePicker
-            task={task}
-            statusSettings={statusSettings}
-            onPickStatus={(nextStatus) => {
-              if (nextStatus === taskStatus) return;
-              if (nextStatus === "done") {
-                attemptCompletion();
-                return;
-              }
-              onUpdate({ status: nextStatus });
-            }}
-          />
-        </span>
-
-        <span
-          className="mb-task-date inline-flex items-center gap-1 text-[10px] font-medium"
-          style={{
-            // L'urgence d'échéance est portée directement par la date :
-            // ambre si proche (≤ 3j), rouge si dépassée. Plus de dot
-            // séparé dans une colonne dédiée pour éviter la duplication.
-            color: !task.dueDate
-              ? text.ghost
-              : overdue
-                ? errorTokens.text
-                : dueSoon
-                  ? statusColor.yellow.text
-                  : text.secondary,
-            fontWeight: task.dueDate && (overdue || dueSoon) ? 600 : 500,
-          }}
-          title={overdue ? "Échéance dépassée" : dueSoon ? "Échéance proche" : undefined}
-        >
-          <CalendarMiniIcon />
-          {task.dueDate ? formatTaskScheduleLabel(task) : "Ajouter"}
-        </span>
-
-        <span className="mb-task-assignee inline-flex min-w-0 items-center gap-1.5 text-[10px] font-semibold" style={{ color: text.secondary }}>
-          <TaskAssigneePill label={assigneeLabel === "—" ? "Ajouter" : assigneeLabel} color={accentColor} muted={assigneeLabel === "—"} />
-        </span>
-
-        <div className="mb-task-actions relative flex items-center justify-end gap-1">
-          {confirmDelete ? (
-            <InlineDeleteConfirm onConfirm={onDelete} onCancel={() => setConfirmDelete(false)} compact />
-          ) : (
-            <RowSettingsMenu
-              ariaLabel="Actions sur la tâche"
-              items={[
-                {
-                  label: "Renommer",
-                  icon: "pencil",
-                  onClick: () => {
-                    setRenaming(true);
-                    setRenameDraft(task.title);
-                  },
-                },
-                {
-                  label: "Supprimer la tâche",
-                  icon: "trash",
-                  tone: "danger",
-                  onClick: () => setConfirmDelete(true),
-                },
-              ]}
+        {/* Droite : statut · assignés · menu */}
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="hidden sm:inline-flex">
+            <TaskStatusInlinePicker
+              task={task}
+              statusSettings={statusSettings}
+              onPickStatus={(nextStatus) => {
+                if (nextStatus === taskStatus) return;
+                if (nextStatus === "done") {
+                  attemptCompletion();
+                  return;
+                }
+                onUpdate({ status: nextStatus });
+              }}
             />
-          )}
+          </span>
+          <TaskCardAvatars names={participantNames} fallback={assigneeLabel} accentColor={accentColor} />
+          <div className="relative flex items-center justify-end">
+            {confirmDelete ? (
+              <InlineDeleteConfirm onConfirm={onDelete} onCancel={() => setConfirmDelete(false)} compact />
+            ) : (
+              <RowSettingsMenu
+                ariaLabel="Actions sur la tâche"
+                items={[
+                  {
+                    label: "Renommer",
+                    icon: "pencil",
+                    onClick: () => {
+                      setRenaming(true);
+                      setRenameDraft(task.title);
+                    },
+                  },
+                  {
+                    label: "Supprimer la tâche",
+                    icon: "trash",
+                    tone: "danger",
+                    onClick: () => setConfirmDelete(true),
+                  },
+                ]}
+              />
+            )}
+          </div>
         </div>
-
       </div>
 
       {showCompletionBlocked && (
@@ -1743,6 +1733,52 @@ function TaskAssigneePill({ label, color, muted }: { label: string; color: strin
       </span>
       <span className="truncate">{label}</span>
     </>
+  );
+}
+
+// Grappe d'avatars compacte pour le pied de la carte-tâche. Si personne n'est
+// assigné, on affiche un « Ajouter » discret (la fiche s'ouvre au clic pour
+// assigner quelqu'un).
+function TaskCardAvatars({
+  names,
+  fallback,
+  accentColor,
+}: {
+  names: string[];
+  fallback: string;
+  accentColor: string;
+}) {
+  if (names.length === 0) {
+    return (
+      <span className="text-[10px] font-medium" style={{ color: text.ghost }}>
+        {fallback === "—" ? "Ajouter" : fallback}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center" title={names.join(", ")}>
+      {names.slice(0, 3).map((name, index) => (
+        <span
+          key={`${name}-${index}`}
+          className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold"
+          style={{
+            marginLeft: index === 0 ? 0 : -7,
+            background: accentColor,
+            color: "#FFFFFF",
+            border: `2px solid ${surface.s1}`,
+            position: "relative",
+            zIndex: 3 - index,
+          }}
+        >
+          {getInitials(name)}
+        </span>
+      ))}
+      {names.length > 3 && (
+        <span className="ml-1 text-[10px] font-semibold" style={{ color: text.muted }}>
+          +{names.length - 3}
+        </span>
+      )}
+    </span>
   );
 }
 

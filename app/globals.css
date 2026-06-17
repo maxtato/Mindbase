@@ -1813,18 +1813,42 @@ summary {
   margin: 2px 0 0;
 }
 
+/* Étapes disposées en colonnes côte à côte dès qu'on a la place (PC), et
+   empilées sur une colonne sur petit écran (iPhone). auto-fit → autant de
+   colonnes d'au moins 320px que la largeur le permet. align-items:start pour
+   que chaque carte garde sa hauteur naturelle (pas d'étirement). */
+/* Étapes empilées (une sous l'autre) mais dans une colonne CENTRÉE à largeur
+   limitée — pas toute la largeur de l'écran sur PC — avec un espacement plus
+   généreux pour aérer. */
+.mb-steps-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  align-items: start;
+  max-width: 840px;
+  margin-inline: auto;
+}
+
+/* Grandes « fiches » de tâches empilées (une par ligne, pleine largeur),
+   look application mobile : titre en gros, barre de progression, pied d'infos. */
+.mb-task-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
 /* Carte-tâche dans une étape = carte blanche surélevée (ombre + arrondi +
    bordure fine), séparée des autres par le gap de la liste. */
 .mb-step-card .mb-task-card {
   background: var(--mb-s1) !important;
   border: 1px solid var(--mb-border-subtle) !important;
-  border-radius: 12px !important;
+  border-radius: 14px !important;
   box-shadow: var(--mb-shadow-card);
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  padding: 10px 12px 10px 14px !important;
+  padding: 13px 15px !important;
 }
 
 /* Survol = griser légèrement, UNIQUEMENT sur appareils avec vrai survol
@@ -2285,20 +2309,53 @@ textarea::placeholder {
     min-width: 680px;
   }
 
+  /* iPhone : barre du haut projet CONDENSÉE. Elle s'empile en 3 rangées
+     (identité · actions · avancement) → on resserre fortement paddings et
+     gaps, on rétrécit les boutons d'action et on masque le sous-titre
+     (objectif) pour gagner de la hauteur. */
   .mb-project-pilotbar {
     padding-inline: 0.75rem !important;
-    padding-block: 0.75rem !important;
+    padding-block: 0.4rem !important;
   }
 
   .mb-project-pilotbar-inner {
     border-radius: 0;
     padding: 0;
+    gap: 0.4rem;
+    min-height: 0;
   }
 
   .mb-project-pilotbar-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+  }
+
+  /* Sous-titre (objectif) masqué sur iPhone : il est déjà repris dans la
+     synthèse, et il faisait gonfler la barre. */
+  .mb-pilot-objective {
+    display: none;
+  }
+
+  .mb-pilot-title {
+    font-size: 15px !important;
+  }
+
+  /* Boutons d'action (Assistant IA, Collaborer, fichiers, chat, réglages)
+     plus petits sur la rangée scrollable. */
+  .mb-project-top-action {
+    height: 32px !important;
+    padding: 0 0.6rem !important;
+    border-radius: 10px !important;
+    font-size: 0.62rem !important;
+  }
+
+  /* Bouton « Assistant IA » aligné sur la même hauteur réduite. */
+  .mb-pilot-ai-button {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    height: 32px !important;
+    font-size: 0.68rem !important;
   }
 
   .mb-project-command-grid {

@@ -130,7 +130,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-bold"
+        className="mb-pilot-ai-button inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-bold"
         style={{
           background: accentColor,
           color: "#FFFFFF",

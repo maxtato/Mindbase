@@ -19,14 +19,13 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
 
   return (
     <header
-      className="mb-topbar flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4 shrink-0"
+      className="mb-topbar flex flex-row items-center gap-2 sm:gap-4 shrink-0"
       style={{
         position: "relative",
-        // Barre plus épaisse (présence + premium). Sur iPhone elle passe sur
-        // 2 lignes (titre en haut, contrôles en dessous) → le nom du menu n'est
-        // plus coupé par la recherche / le sélecteur d'environnement.
-        minHeight: "clamp(74px, 9vw, 86px)",
-        padding: "15px clamp(12px, 3vw, 24px)",
+        // Une seule ligne, y compris sur iPhone : titre à gauche, contrôles
+        // (recherche + action) au centre, wordmark « Flatmind » à droite.
+        minHeight: "clamp(64px, 9vw, 86px)",
+        padding: "12px clamp(12px, 3vw, 24px)",
         // Fond uni (plus de voile dégradé) — la signature d'environnement reste
         // portée par le fin filet de couleur en haut.
         background: surface.s1,
@@ -46,12 +45,10 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
           opacity: 0.9,
         }}
       />
-      {/* Ligne 1 : titre du menu à GAUCHE, et sur iPhone le wordmark « Flatmind »
-          à DROITE. Sur desktop la sidebar porte déjà le logo → wordmark masqué
-          (sm:hidden). */}
-      <div className="flex w-full items-center justify-between gap-2 min-w-0 sm:w-auto sm:justify-start sm:gap-3">
+      {/* Titre du menu à GAUCHE. */}
+      <div className="min-w-0">
         {breadcrumb ?? (
-          <div className="min-w-0">
+          <>
             <h1
               className="truncate"
               style={{
@@ -81,21 +78,24 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
                 {subtitle}
               </p>
             ) : null}
-          </div>
+          </>
         )}
-
-        {/* iPhone : logo (cerveau Flatmind) + wordmark « Flatmind » à droite du titre. */}
-        <span className="flex shrink-0 items-center gap-2 sm:hidden">
-          <FlatmindLogoMark height={23} style={{ color: text.primary }} />
-          <FlatmindWordmark fontSize={28} style={{ color: text.primary }} />
-        </span>
       </div>
 
-      <div className="flex w-full shrink-0 flex-wrap items-center justify-start gap-2 sm:w-auto sm:justify-end">
-        {/* Recherche globale (palette ⌘K) — accessible partout. */}
+      {/* Contrôles : recherche globale (palette ⌘K) + action de la page.
+          iPhone → centrés entre le titre et le logo (mx-auto).
+          Desktop → alignés à droite (mr-0 conserve le ml-auto). */}
+      <div className="flex shrink-0 flex-wrap items-center gap-2 mx-auto sm:mr-0">
         <CommandTrigger />
         {action}
       </div>
+
+      {/* iPhone : logo (cerveau Flatmind) + wordmark « Flatmind » à droite.
+          Sur desktop la sidebar porte déjà le logo → masqué (sm:hidden). */}
+      <span className="flex shrink-0 items-center gap-2 sm:hidden">
+        <FlatmindLogoMark height={23} style={{ color: text.primary }} />
+        <FlatmindWordmark fontSize={28} style={{ color: text.primary }} />
+      </span>
     </header>
   );
 }

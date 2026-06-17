@@ -104,6 +104,7 @@ export function TaskExpandedPreview({
 
         <TaskPreviewPane>
           <NoteField task={task} onUpdate={onUpdate} accentColor={accentColor} bulletAccent={aiAccent} />
+          <FilesField task={task} accentColor={aiAccent} />
           <DiscussionField
             task={task}
             projectId={projectId}
@@ -677,6 +678,114 @@ function NoteField({
   );
 }
 
+// Encart « Fichiers joints » : miniatures des pièces jointes de la tâche.
+// Les images s'affichent en aperçu ; les autres formats en pastille d'extension.
+// Sans fichier, on affiche « Pas de fichier joint. ».
+function FilesField({ task, accentColor }: { task: Task; accentColor: string }) {
+  const files = task.files ?? [];
+  return (
+    <FieldShell
+      title="Fichiers joints"
+      icon="file"
+      iconColor={text.muted}
+      rightLabel={files.length > 0 ? `${files.length}` : undefined}
+    >
+      {files.length === 0 ? (
+        <p style={{ fontSize: 11.5, color: text.muted, margin: 0, fontStyle: "italic" }}>
+          Pas de fichier joint.
+        </p>
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(74px, 1fr))",
+            gap: 8,
+          }}
+        >
+          {files.map((file) => (
+            <FileThumb key={file.id} file={file} accentColor={accentColor} />
+          ))}
+        </div>
+      )}
+    </FieldShell>
+  );
+}
+
+const FILE_EXT_LABEL: Record<string, string> = {
+  pdf: "PDF",
+  doc: "DOC",
+  xls: "XLS",
+  img: "IMG",
+  link: "LIEN",
+  other: "FICHIER",
+};
+
+function FileThumb({ file, accentColor }: { file: NonNullable<Task["files"]>[number]; accentColor: string }) {
+  const isImage = file.ext === "img" && Boolean(file.url);
+  const inner = (
+    <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          aspectRatio: "1 / 1",
+          borderRadius: 8,
+          overflow: "hidden",
+          background: surface.s2,
+          border: `1px solid ${surface.borderSubtle}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {isImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={file.url} alt={file.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <span
+            className="inline-flex items-center justify-center rounded-md text-[10px] font-bold"
+            style={{
+              padding: "3px 6px",
+              background: `color-mix(in srgb, ${accentColor} 14%, transparent)`,
+              color: accentColor,
+              letterSpacing: "0.04em",
+            }}
+          >
+            {FILE_EXT_LABEL[file.ext] ?? "FICHIER"}
+          </span>
+        )}
+      </div>
+      <span
+        title={file.name}
+        style={{
+          fontSize: 9.5,
+          color: text.muted,
+          lineHeight: 1.25,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {file.name}
+      </span>
+    </div>
+  );
+
+  if (!file.url) return inner;
+  return (
+    <a
+      href={file.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-no-task-expand="true"
+      onClick={(event) => event.stopPropagation()}
+      style={{ textDecoration: "none" }}
+    >
+      {inner}
+    </a>
+  );
+}
+
 function ChecklistField({
   task,
   onChecklistMutated,
@@ -1056,28 +1165,64 @@ function DiscussionField({
   }, [task.discussion, pendingMessages]);
   const [draft, setDraft] = useState("");
   const [isPending, startTransition] = useTransition();
+  // Deux modes d'ouverture du sélecteur de mentions :
+  //  • mentionsOpen : ouverture manuelle via le bouton (liste complète) ;
+  //  • mention : ouverture pilotée par la frappe d'un « @partiel » (liste
+  //    filtrée sur le texte saisi après le @).
   const [mentionsOpen, setMentionsOpen] = useState(false);
+  const [mention, setMention] = useState<{ start: number; query: string } | null>(null);
+  const [mentionActive, setMentionActive] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const mentionsRef = useRef<HTMLDivElement | null>(null);
 
   // Fermer le picker mentions au clic extérieur
   useEffect(() => {
-    if (!mentionsOpen) return;
+    if (!mentionsOpen && !mention) return;
     function handleClickOutside(event: MouseEvent) {
       if (mentionsRef.current && !mentionsRef.current.contains(event.target as Node)) {
         setMentionsOpen(false);
+        setMention(null);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [mentionsOpen]);
+  }, [mentionsOpen, mention]);
 
   const canSend = Boolean(projectId && stepId && draft.trim().length > 0);
 
+  // Liste affichée : filtrée sur le « @partiel » en cours de frappe, sinon
+  // (ouverture via bouton) la liste complète des collaborateurs.
+  const mentionMatches = useMemo(() => {
+    if (!mention || !mention.query) return projectPeople;
+    const q = normalizeName(mention.query);
+    return projectPeople.filter((person) => normalizeName(person.name).includes(q));
+  }, [mention, projectPeople]);
+  const pickerList = mention ? mentionMatches : projectPeople;
+  const pickerOpen = (mentionsOpen || mention != null) && projectPeople.length > 0;
+
+  function handleDraftChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const value = event.target.value;
+    const caret = event.target.selectionStart ?? value.length;
+    setDraft(value);
+    const token = findMentionToken(value, caret);
+    setMention(token);
+    setMentionActive(0);
+    if (token) setMentionsOpen(false); // la frappe pilote le picker
+  }
+
   function insertMention(name: string) {
-    const sep = draft.length === 0 || /\s$/.test(draft) ? "" : " ";
-    setDraft((current) => `${current}${sep}@${name} `);
+    if (mention) {
+      // Remplace le « @partiel » par « @NomComplet » suivi d'une espace.
+      const before = draft.slice(0, mention.start);
+      const after = draft.slice(mention.start + 1 + mention.query.length);
+      setDraft(`${before}@${name} ${after.replace(/^\s+/, "")}`);
+      setMention(null);
+    } else {
+      const sep = draft.length === 0 || /\s$/.test(draft) ? "" : " ";
+      setDraft((current) => `${current}${sep}@${name} `);
+    }
     setMentionsOpen(false);
+    setMentionActive(0);
     inputRef.current?.focus();
   }
 
@@ -1148,7 +1293,10 @@ function DiscussionField({
           <div className="flex items-center gap-1.5">
             <button
               type="button"
-              onClick={() => setMentionsOpen((current) => !current)}
+              onClick={() => {
+                setMention(null);
+                setMentionsOpen((current) => !current);
+              }}
               disabled={isPending || projectPeople.length === 0}
               title={
                 projectPeople.length === 0
@@ -1157,9 +1305,9 @@ function DiscussionField({
               }
               className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
               style={{
-                background: mentionsOpen ? accentColor : surface.s2,
-                color: mentionsOpen ? "#FFFFFF" : text.secondary,
-                border: `1px solid ${mentionsOpen ? accentColor : surface.borderSubtle}`,
+                background: pickerOpen ? accentColor : surface.s2,
+                color: pickerOpen ? "#FFFFFF" : text.secondary,
+                border: `1px solid ${pickerOpen ? accentColor : surface.borderSubtle}`,
                 cursor: projectPeople.length === 0 ? "not-allowed" : "pointer",
                 opacity: projectPeople.length === 0 ? 0.5 : 1,
               }}
@@ -1173,8 +1321,33 @@ function DiscussionField({
               ref={inputRef}
               type="text"
               value={draft}
-              onChange={(event) => setDraft(event.target.value)}
+              onChange={handleDraftChange}
               onKeyDown={(event) => {
+                // Quand le sélecteur de mentions est piloté par la frappe, les
+                // flèches/Entrée naviguent et choisissent un nom plutôt que
+                // d'envoyer le message.
+                if (mention && pickerList.length > 0) {
+                  if (event.key === "ArrowDown") {
+                    event.preventDefault();
+                    setMentionActive((prev) => Math.min(prev + 1, pickerList.length - 1));
+                    return;
+                  }
+                  if (event.key === "ArrowUp") {
+                    event.preventDefault();
+                    setMentionActive((prev) => Math.max(prev - 1, 0));
+                    return;
+                  }
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    insertMention(pickerList[mentionActive]?.name ?? pickerList[0].name);
+                    return;
+                  }
+                  if (event.key === "Escape") {
+                    event.preventDefault();
+                    setMention(null);
+                    return;
+                  }
+                }
                 if (event.key === "Enter" && !event.shiftKey) {
                   event.preventDefault();
                   send();
@@ -1196,7 +1369,7 @@ function DiscussionField({
             </Button>
           </div>
 
-          {mentionsOpen && projectPeople.length > 0 && (
+          {pickerOpen && (
             <div
               role="listbox"
               style={{
@@ -1218,26 +1391,42 @@ function DiscussionField({
               }}
             >
               <p style={{ fontSize: 9.5, fontWeight: 600, color: text.muted, margin: "4px 8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                Collaborateurs du projet
+                {mention && mention.query ? `Résultats pour « ${mention.query} »` : "Collaborateurs du projet"}
               </p>
-              {projectPeople.map((person) => (
-                <button
-                  key={person.id}
-                  type="button"
-                  onClick={() => insertMention(person.name)}
-                  className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left"
-                  style={{ background: "transparent", border: "none", color: text.secondary, fontSize: 12, cursor: "pointer" }}
-                >
-                  <span
-                    aria-hidden
-                    className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                    style={{ background: accentColor }}
-                  >
-                    {person.name.slice(0, 1).toUpperCase()}
-                  </span>
-                  <span style={{ fontWeight: 500 }}>@{person.name}</span>
-                </button>
-              ))}
+              {pickerList.length === 0 ? (
+                <p style={{ fontSize: 11, color: text.muted, margin: "2px 8px 6px", fontStyle: "italic" }}>
+                  Aucun collaborateur correspondant.
+                </p>
+              ) : (
+                pickerList.map((person, index) => {
+                  const highlighted = mention != null && index === mentionActive;
+                  return (
+                    <button
+                      key={person.id}
+                      type="button"
+                      onMouseEnter={() => mention && setMentionActive(index)}
+                      onClick={() => insertMention(person.name)}
+                      className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left"
+                      style={{
+                        background: highlighted ? surface.s2 : "transparent",
+                        border: "none",
+                        color: text.secondary,
+                        fontSize: 12,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <span
+                        aria-hidden
+                        className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                        style={{ background: accentColor }}
+                      >
+                        {person.name.slice(0, 1).toUpperCase()}
+                      </span>
+                      <span style={{ fontWeight: 500 }}>@{person.name}</span>
+                    </button>
+                  );
+                })
+              )}
             </div>
           )}
         </div>
@@ -2281,6 +2470,20 @@ function formatDiscussionTime(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+
+// Détecte un jeton de mention « @partiel » juste avant le curseur : @ précédé
+// d'un début de chaîne ou d'un espace, suivi de lettres/chiffres accentués.
+// Sert à filtrer les collaborateurs au fil de la frappe.
+function findMentionToken(value: string, caret: number): { start: number; query: string } | null {
+  const upto = value.slice(0, caret);
+  const match = /(^|\s)@([\p{L}\p{N}._-]*)$/u.exec(upto);
+  if (!match) return null;
+  return { start: match.index + match[1].length, query: match[2] };
+}
+
+function normalizeName(value: string) {
+  return value.normalize("NFD").replace(new RegExp("[\\u0300-\\u036f]", "g"), "").toLowerCase();
 }
 
 function cryptoRandomId() {

@@ -20,6 +20,7 @@ const COLLAPSED = 62;
 interface SidebarWorkspaceStats {
   projectCount: number;
   pendingActionsCount: number;
+  scheduledTasksCount: number;
   openBlockersCount: number;
 }
 
@@ -63,6 +64,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
   const workspaceStats = stats[workspace] ?? {
     projectCount: 0,
     pendingActionsCount: 0,
+    scheduledTasksCount: 0,
     openBlockersCount: 0,
   };
 
@@ -147,7 +149,10 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
       href: "/dashboard/calendar",
       exact: false,
       label: "Calendrier",
-      badge: undefined,
+      badge:
+        workspaceStats.scheduledTasksCount > 0
+          ? { count: workspaceStats.scheduledTasksCount, color: text.sidebar, bg: surface.sidebarPanel }
+          : undefined,
       icon: (
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
           <rect x="2" y="3" width="12" height="10.5" rx="1.4" stroke="currentColor" strokeWidth="1.3" />

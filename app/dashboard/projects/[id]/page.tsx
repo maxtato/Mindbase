@@ -240,11 +240,11 @@ function ProjectPilotHeader({
             size="lg"
           />
           <div className="min-w-0">
-            <h1 style={{ color: text.primary, fontSize: 18, fontWeight: 600, lineHeight: 1.25, margin: 0 }}>
+            <h1 className="mb-pilot-title" style={{ color: text.primary, fontSize: 18, fontWeight: 600, lineHeight: 1.25, margin: 0 }}>
               {project.name}
             </h1>
             <p
-              className="truncate"
+              className="mb-pilot-objective truncate"
               style={{ color: text.muted, fontSize: 11, lineHeight: 1.35, margin: "2px 0 0" }}
             >
               {project.objective}
