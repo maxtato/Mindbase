@@ -1689,10 +1689,24 @@ summary {
 }
 
 .mb-task-expanded-preview {
-  overflow: hidden;
+  /* overflow visible : indispensable pour que le bloc « Informations » en
+     position sticky reste collé sous la barre de titre pendant le scroll. */
+  overflow: visible;
   border-radius: 16px;
   background: var(--mb-s2);
   border: 1px solid var(--mb-border-subtle);
+}
+
+/* Bloc « Informations » collé sous la barre de titre du drawer de tâche. */
+.mb-task-info-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--mb-s2);
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid var(--mb-border-subtle);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
 }
 
 .mb-task-expanded-preview-head {
