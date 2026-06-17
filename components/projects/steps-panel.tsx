@@ -1446,20 +1446,9 @@ function TaskCard({
         transition: "background-color 120ms var(--mb-ease), border-color 120ms var(--mb-ease), box-shadow 180ms var(--mb-ease), transform 120ms var(--mb-ease)",
       }}
     >
-      {/* Carte-tâche « liste aérée » : barre de couleur de priorité à gauche,
-          coche + titre + ligne d'infos, et à droite statut / assignés / menu.
-          Toute la fiche est cliquable (ouvre le détail) sauf l'interactif. */}
-      <span
-        aria-hidden
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: 4,
-          background: taskStatus === "done" ? statusColor.green.text : displayedPriorityVisual.text,
-        }}
-      />
+      {/* Carte-tâche « liste aérée » : coche + titre + ligne d'infos, et à
+          droite statut / assignés / menu. Toute la fiche est cliquable
+          (ouvre le détail) sauf l'interactif. */}
       <div className="flex items-center gap-2.5">
         <button
           type="button"

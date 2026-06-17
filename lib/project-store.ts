@@ -807,6 +807,8 @@ export async function getSidebarStatsByWorkspace(extraWorkspaces: string[] = [])
   const projects = await getAllProjects();
 
   const stats: Record<string, ReturnType<typeof buildWorkspaceSidebarStats>> = {
+    // Vue agrégée « Tous » : tous les environnements confondus (par défaut).
+    all: buildWorkspaceSidebarStats(projects, "all"),
     personal: buildWorkspaceSidebarStats(projects, "personal"),
     professional: buildWorkspaceSidebarStats(projects, "professional"),
   };
@@ -817,7 +819,10 @@ export async function getSidebarStatsByWorkspace(extraWorkspaces: string[] = [])
 }
 
 function buildWorkspaceSidebarStats(projects: Project[], workspace: Workspace) {
-  const scopedProjects = projects.filter((project) => project.workspace === workspace && project.status !== "archived");
+  const scopedProjects = projects.filter(
+    (project) =>
+      project.status !== "archived" && (workspace === "all" || project.workspace === workspace),
+  );
   return {
     projectCount: scopedProjects.length,
     pendingActionsCount: scopedProjects.reduce((total, project) => {
@@ -826,6 +831,15 @@ function buildWorkspaceSidebarStats(projects: Project[], workspace: Workspace) {
         ? project.actions.filter((action) => !action.done).length
         : 0;
       return total + stepsTasksPending + legacyPending;
+    }, 0),
+    // Tâches non terminées qui ont une échéance → ce que le Calendrier affiche.
+    scheduledTasksCount: scopedProjects.reduce((total, project) => {
+      return (
+        total +
+        (project.steps ?? [])
+          .flatMap((step) => step.tasks)
+          .filter((task) => !task.done && Boolean(task.dueDate)).length
+      );
     }, 0),
     openBlockersCount: scopedProjects.flatMap((project) => project.blockers).filter((blocker) => blocker.status === "open").length,
   };

@@ -1848,7 +1848,7 @@ summary {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  padding: 13px 15px 13px 17px !important;
+  padding: 13px 15px !important;
 }
 
 /* Survol = griser légèrement, UNIQUEMENT sur appareils avec vrai survol
