@@ -18,6 +18,39 @@ export function ProjectFilesLauncher({ projectId, workspace, files, accentColor 
   const [open, setOpen] = useState(false);
   const hasFiles = files.length > 0;
 
+  // Suivi « vu » local : on mémorise (sur l'appareil) les ids de fichiers déjà
+  // consultés → pastille « nouveau » pour ceux pas encore vus, tout en gardant
+  // le nombre TOTAL de fichiers joints.
+  const seenKey = `mb-files-seen-${projectId}`;
+  const [seenIds, setSeenIds] = useState<string[]>([]);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    try {
+      const raw = window.localStorage.getItem(seenKey);
+      setSeenIds(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch {
+      setSeenIds([]);
+    }
+  }, [seenKey]);
+
+  const unseenCount = mounted ? files.filter((file) => !seenIds.includes(file.id)).length : 0;
+
+  function markFilesSeen() {
+    const allIds = files.map((file) => file.id);
+    setSeenIds(allIds);
+    try {
+      window.localStorage.setItem(seenKey, JSON.stringify(allIds));
+    } catch {
+      /* stockage indisponible */
+    }
+  }
+
+  function openFiles() {
+    markFilesSeen();
+    setOpen(true);
+  }
+
   useEffect(() => {
     if (!open) return;
     const handler = (event: KeyboardEvent) => {
@@ -31,20 +64,46 @@ export function ProjectFilesLauncher({ projectId, workspace, files, accentColor 
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={openFiles}
         className="mb-project-top-action mb-project-icon-action"
         style={{
           background: surface.s1,
           color: hasFiles ? accentColor : text.secondary,
           borderColor: hasFiles ? accentColor : surface.border,
         }}
-        title={`Fichiers${hasFiles ? ` · ${files.length} fichier${files.length > 1 ? "s" : ""}` : ""}`}
+        title={`Fichiers${hasFiles ? ` · ${files.length} fichier${files.length > 1 ? "s" : ""}` : ""}${unseenCount > 0 ? ` · ${unseenCount} nouveau${unseenCount > 1 ? "x" : ""}` : ""}`}
         aria-label="Fichiers"
       >
         <FileIcon />
+        {/* Nombre TOTAL de fichiers joints. */}
         {hasFiles && (
           <span className="mb-project-action-dot" style={{ background: accentColor }} aria-hidden="true">
             {files.length > 9 ? "9+" : files.length}
+          </span>
+        )}
+        {/* Pastille « nouveau » : fichiers pas encore vus (en haut à gauche). */}
+        {unseenCount > 0 && (
+          <span
+            aria-hidden="true"
+            title={`${unseenCount} nouveau${unseenCount > 1 ? "x" : ""} fichier${unseenCount > 1 ? "s" : ""}`}
+            style={{
+              position: "absolute",
+              top: -4,
+              left: -4,
+              minWidth: 15,
+              height: 15,
+              padding: "0 3px",
+              borderRadius: 999,
+              background: "var(--mb-status-red-text)",
+              color: "#FFFFFF",
+              fontSize: 9,
+              fontWeight: 700,
+              lineHeight: "15px",
+              textAlign: "center",
+              border: `2px solid ${surface.s1}`,
+            }}
+          >
+            {unseenCount > 9 ? "9+" : unseenCount}
           </span>
         )}
       </button>
