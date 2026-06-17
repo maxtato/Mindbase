@@ -31,7 +31,9 @@ export async function getAuthUser(): Promise<{
       configured: true,
     };
   } catch {
-    // Runtime sans Supabase joignable → on n'bloque pas l'app.
-    return { user: null, configured: false };
+    // Supabase EST configuré mais l'appel a échoué (URL/clé invalide, panne
+    // SDK/runtime…) → on échoue FERMÉ : configured:true sans utilisateur, pour
+    // que le layout redirige vers la connexion plutôt que d'exposer le dashboard.
+    return { user: null, configured: true };
   }
 }
