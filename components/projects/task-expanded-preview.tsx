@@ -76,6 +76,7 @@ export function TaskExpandedPreview({
             projectId={projectId}
             stepId={stepId}
           />
+          <FilesField task={task} accentColor={aiAccent} />
         </TaskPreviewPane>
 
         <TaskPreviewPane>
@@ -96,7 +97,6 @@ export function TaskExpandedPreview({
 
         <TaskPreviewPane>
           <NoteField task={task} onUpdate={onUpdate} accentColor={accentColor} bulletAccent={aiAccent} />
-          <FilesField task={task} accentColor={aiAccent} />
           <DiscussionField
             task={task}
             projectId={projectId}
@@ -1501,7 +1501,27 @@ export function QuickInfos({
 
   const body = (
     <>
-      <div className="grid grid-cols-3 gap-1.5">
+      {/* Une seule ligne sur ordinateur : statut · date · assigner · joindre ·
+          priorité (statut à gauche, priorité à droite). Sur petit écran ça
+          repasse sur plusieurs colonnes. */}
+      <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-5">
+        <ExpandedStatusPicker
+          task={task}
+          statusSettings={statusSettings}
+          editable={editable}
+          onPick={(nextStatus) => {
+            if (nextStatus === deriveTaskStatus(task)) return;
+            if (nextStatus === "done") {
+              const checklist = task.checklist ?? [];
+              const incomplete = checklist.length > 0 && !checklist.every((item) => item.done);
+              if (incomplete) {
+                setShowCompletionBlocked(true);
+                return;
+              }
+            }
+            onUpdate?.({ status: nextStatus });
+          }}
+        />
         <QuickInfoTile
           icon="calendar"
           empty={!task.dueDate}
@@ -1532,6 +1552,12 @@ export function QuickInfos({
         >
           {fileCount > 0 ? `${fileCount} fichier${fileCount > 1 ? "s" : ""}` : editable ? "Joindre" : "—"}
         </QuickInfoTile>
+        <ExpandedPriorityPicker
+          value={task.priority ?? "medium"}
+          displayValue={deriveTaskDisplayPriority(task)}
+          editable={editable}
+          onPick={(next) => onUpdate?.({ priority: next })}
+        />
       </div>
 
       {editing === "calendar" && (
@@ -1586,35 +1612,6 @@ export function QuickInfos({
           </button>
         </div>
       )}
-
-      {/* Statut & Priorité — pickers cohérents avec ceux de la rangée projet.
-          Permettent de manipuler ces deux champs depuis le Kanban et le
-          Calendrier (qui ouvrent cette même vue dépliée). */}
-      <div className="grid grid-cols-2 gap-1.5">
-        <ExpandedStatusPicker
-          task={task}
-          statusSettings={statusSettings}
-          editable={editable}
-          onPick={(nextStatus) => {
-            if (nextStatus === deriveTaskStatus(task)) return;
-            if (nextStatus === "done") {
-              const checklist = task.checklist ?? [];
-              const incomplete = checklist.length > 0 && !checklist.every((item) => item.done);
-              if (incomplete) {
-                setShowCompletionBlocked(true);
-                return;
-              }
-            }
-            onUpdate?.({ status: nextStatus });
-          }}
-        />
-        <ExpandedPriorityPicker
-          value={task.priority ?? "medium"}
-          displayValue={deriveTaskDisplayPriority(task)}
-          editable={editable}
-          onPick={(next) => onUpdate?.({ priority: next })}
-        />
-      </div>
 
       {showCompletionBlocked && (
         <CompletionBlockedAlert
