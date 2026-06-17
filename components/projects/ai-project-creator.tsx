@@ -269,18 +269,14 @@ export function AIProjectCreatorTrigger({ workspace, active, onToggle }: AIProje
     <button
       type="button"
       onClick={onToggle}
-      className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-[13.5px] font-bold"
+      className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-bold"
       style={{
-        background: active ? theme.accent : theme.gradient,
+        background: theme.accent,
         color: "#FFFFFF",
         border: "none",
         cursor: "pointer",
-        // Halo coloré pour bien attirer l'œil sur l'entrée principale de
-        // création assistée par l'IA.
-        boxShadow: active
-          ? "none"
-          : `0 6px 18px -4px color-mix(in srgb, ${theme.accent} 60%, transparent)`,
-        opacity: active ? 0.9 : 1,
+        boxShadow: active ? "none" : "0 2px 8px -2px rgba(16, 24, 40, 0.16)",
+        opacity: active ? 0.85 : 1,
       }}
     >
       <SparkleIcon />
