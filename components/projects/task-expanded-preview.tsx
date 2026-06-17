@@ -104,6 +104,7 @@ export function TaskExpandedPreview({
 
         <TaskPreviewPane>
           <NoteField task={task} onUpdate={onUpdate} accentColor={accentColor} bulletAccent={aiAccent} />
+          <FilesField task={task} accentColor={aiAccent} />
           <DiscussionField
             task={task}
             projectId={projectId}
@@ -674,6 +675,114 @@ function NoteField({
         accentColor={accentColor}
       />
     </FieldShell>
+  );
+}
+
+// Encart « Fichiers joints » : miniatures des pièces jointes de la tâche.
+// Les images s'affichent en aperçu ; les autres formats en pastille d'extension.
+// Sans fichier, on affiche « Pas de fichier joint. ».
+function FilesField({ task, accentColor }: { task: Task; accentColor: string }) {
+  const files = task.files ?? [];
+  return (
+    <FieldShell
+      title="Fichiers joints"
+      icon="file"
+      iconColor={text.muted}
+      rightLabel={files.length > 0 ? `${files.length}` : undefined}
+    >
+      {files.length === 0 ? (
+        <p style={{ fontSize: 11.5, color: text.muted, margin: 0, fontStyle: "italic" }}>
+          Pas de fichier joint.
+        </p>
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(74px, 1fr))",
+            gap: 8,
+          }}
+        >
+          {files.map((file) => (
+            <FileThumb key={file.id} file={file} accentColor={accentColor} />
+          ))}
+        </div>
+      )}
+    </FieldShell>
+  );
+}
+
+const FILE_EXT_LABEL: Record<string, string> = {
+  pdf: "PDF",
+  doc: "DOC",
+  xls: "XLS",
+  img: "IMG",
+  link: "LIEN",
+  other: "FICHIER",
+};
+
+function FileThumb({ file, accentColor }: { file: NonNullable<Task["files"]>[number]; accentColor: string }) {
+  const isImage = file.ext === "img" && Boolean(file.url);
+  const inner = (
+    <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          aspectRatio: "1 / 1",
+          borderRadius: 8,
+          overflow: "hidden",
+          background: surface.s2,
+          border: `1px solid ${surface.borderSubtle}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {isImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={file.url} alt={file.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <span
+            className="inline-flex items-center justify-center rounded-md text-[10px] font-bold"
+            style={{
+              padding: "3px 6px",
+              background: `color-mix(in srgb, ${accentColor} 14%, transparent)`,
+              color: accentColor,
+              letterSpacing: "0.04em",
+            }}
+          >
+            {FILE_EXT_LABEL[file.ext] ?? "FICHIER"}
+          </span>
+        )}
+      </div>
+      <span
+        title={file.name}
+        style={{
+          fontSize: 9.5,
+          color: text.muted,
+          lineHeight: 1.25,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {file.name}
+      </span>
+    </div>
+  );
+
+  if (!file.url) return inner;
+  return (
+    <a
+      href={file.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-no-task-expand="true"
+      onClick={(event) => event.stopPropagation()}
+      style={{ textDecoration: "none" }}
+    >
+      {inner}
+    </a>
   );
 }
 
