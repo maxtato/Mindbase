@@ -83,16 +83,17 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
       </div>
 
       {/* Contrôles : recherche globale (palette ⌘K) + action de la page.
-          iPhone → centrés entre le titre et le logo (mx-auto).
-          Desktop → alignés à droite (mr-0 conserve le ml-auto). */}
-      <div className="flex shrink-0 flex-wrap items-center gap-2 mx-auto sm:mr-0">
+          iPhone → fixés au CENTRE exact de la barre (position absolue), donc
+          au même endroit quel que soit le titre.
+          Desktop → en flux, alignés à droite (ml-auto). */}
+      <div className="absolute left-1/2 top-1/2 z-[1] flex shrink-0 -translate-x-1/2 -translate-y-1/2 items-center gap-2 sm:static sm:translate-x-0 sm:translate-y-0 sm:ml-auto">
         <CommandTrigger />
         {action}
       </div>
 
       {/* iPhone : logo (cerveau Flatmind) + wordmark « Flatmind » à droite.
           Sur desktop la sidebar porte déjà le logo → masqué (sm:hidden). */}
-      <span className="flex shrink-0 items-center gap-2 sm:hidden">
+      <span className="ml-auto flex shrink-0 items-center gap-2 sm:hidden">
         <FlatmindLogoMark height={23} style={{ color: text.primary }} />
         <FlatmindWordmark fontSize={28} style={{ color: text.primary }} />
       </span>
