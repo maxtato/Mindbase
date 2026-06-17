@@ -33,6 +33,7 @@ import {
 } from "@/lib/project-store";
 import type { Project, TaskStatus } from "@/lib/mock-data";
 import { getDisplayStepTitle } from "@/lib/project-display";
+import { assertPaidPlan } from "@/lib/account-plan";
 import { getWorkspace, type Workspace } from "@/lib/workspace";
 import type { ProjectPriority } from "@/lib/project-taxonomy";
 import type { ChecklistItem } from "@/lib/mock-data";
@@ -42,6 +43,7 @@ export async function suggestProjectFromDescriptionAction(
   description: string,
   workspace: string,
 ): Promise<AIProjectSuggestion> {
+  await assertPaidPlan("La création assistée par IA");
   const cleaned = description.trim();
   if (!cleaned) throw new Error("Décris le projet avant de demander une suggestion.");
   return generateProjectSuggestion(cleaned, getWorkspace(workspace));
@@ -56,6 +58,7 @@ export async function createProjectFromAISuggestionAction(input: {
   priority: ProjectPriority;
   suggestion: AIProjectSuggestion;
 }): Promise<void> {
+  await assertPaidPlan("La création assistée par IA");
   const workspace: Workspace = getWorkspace(input.workspace);
   const suggestion = input.suggestion;
   if (!suggestion?.name || !suggestion?.steps?.length) {
@@ -116,6 +119,7 @@ export async function suggestTaskExpectedAction(input: {
   stepId: string;
   taskId: string;
 }): Promise<{ expected: string }> {
+  await assertPaidPlan("L'assistant IA");
   const project = await getProjectById(input.projectId);
   if (!project) throw new Error("Projet introuvable.");
   const step = (project.steps ?? []).find((s) => s.id === input.stepId);
@@ -138,6 +142,7 @@ export async function refineTaskExpectedAction(input: {
   taskId: string;
   messages: ExpectedMessage[];
 }): Promise<ExpectedRefineResult> {
+  await assertPaidPlan("L'assistant IA");
   const project = await getProjectById(input.projectId);
   if (!project) throw new Error("Projet introuvable.");
   const step = (project.steps ?? []).find((s) => s.id === input.stepId);
@@ -157,6 +162,7 @@ export async function suggestTaskChecklistAction(input: {
   stepId: string;
   taskId: string;
 }): Promise<{ items: string[] }> {
+  await assertPaidPlan("L'assistant IA");
   const project = await getProjectById(input.projectId);
   if (!project) throw new Error("Projet introuvable.");
   const step = (project.steps ?? []).find((s) => s.id === input.stepId);
@@ -176,6 +182,7 @@ export async function suggestTaskChecklistAction(input: {
 export async function organizeTaskRealizationAction(input: {
   text: string;
 }): Promise<{ lines: string[] }> {
+  await assertPaidPlan("L'assistant IA");
   const cleaned = input.text.trim();
   if (!cleaned) throw new Error("Ajoute d'abord ce qui a été fait avant de demander à l'IA.");
   const lines = await splitTaskRealization(cleaned);
@@ -186,6 +193,7 @@ export async function organizeTaskRealizationAction(input: {
 // régénérées : Objectif, Contexte, État actuel, Résumé, Prochaines étapes,
 // Risques. Les tâches, statuts, dates et checklists restent intacts.
 export async function refreshProjectSynthesisAction(projectId: string): Promise<AIProjectSynthesis> {
+  await assertPaidPlan("La synthèse IA");
   const project = await getProjectById(projectId);
   if (!project) throw new Error("Projet introuvable.");
 
@@ -286,6 +294,7 @@ export async function analyzeProjectEvolutionAction(input: {
   projectId: string;
   messages: EvolutionMessage[];
 }): Promise<EvolutionPlanResult> {
+  await assertPaidPlan("L'assistant IA d'évolution");
   const messages = (input.messages ?? []).filter((message) => message.content.trim());
   if (messages.length === 0) throw new Error("Écris un message avant de lancer l'IA.");
 
@@ -321,6 +330,7 @@ export async function applyProjectEvolutionAction(input: {
   projectId: string;
   operations: EvolutionOperation[];
 }): Promise<{ applied: number }> {
+  await assertPaidPlan("L'assistant IA d'évolution");
   const { projectId } = input;
   const operations = Array.isArray(input.operations) ? input.operations : [];
   if (operations.length === 0) return { applied: 0 };

@@ -14,6 +14,7 @@ import {
   setTeamMemberStatusAction,
 } from "@/app/dashboard/team-actions";
 import type { TeamMember } from "@/lib/team-store";
+import { useIsPaidPlan } from "@/components/account/account-context";
 
 const ACCENT = "var(--mb-personal-accent)";
 
@@ -24,6 +25,7 @@ export function TeamManager({
   initialMembers: TeamMember[];
   accountName: string;
 }) {
+  const isPaid = useIsPaidPlan();
   const [members, setMembers] = useState<TeamMember[]>(initialMembers);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -100,7 +102,13 @@ export function TeamManager({
         </span>
       </div>
 
-      {/* Inviter */}
+      {/* Inviter — réservé au plan Pro. */}
+      {!isPaid ? (
+        <div className="rounded-2xl p-3 text-xs leading-relaxed" style={{ background: surface.s2, color: text.secondary }}>
+          Inviter des collaborateurs fait partie du plan <strong style={{ color: text.primary }}>Pro</strong>. Passe au
+          plan Pro (section « Mon plan ») pour constituer ton équipe.
+        </div>
+      ) : (
       <form onSubmit={invite} className="grid gap-2 rounded-2xl p-3" style={{ background: surface.s2 }}>
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
           Inviter une personne
@@ -131,6 +139,7 @@ export function TeamManager({
         </button>
         {error && <p className="text-[11px]" style={{ color: "var(--mb-status-red-text)" }}>{error}</p>}
       </form>
+      )}
 
       {/* Membres */}
       {members.length > 0 && (

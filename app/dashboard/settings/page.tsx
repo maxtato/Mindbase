@@ -2,6 +2,7 @@ import { Topbar } from "@/components/layout/topbar";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { PushSettings } from "@/components/notifications/push-settings";
 import { ProfileSettings } from "@/components/account/profile-settings";
+import { PlanSettings } from "@/components/account/plan-settings";
 import { EnvironmentsManager } from "@/components/environments/environments-manager";
 import { TeamManager } from "@/components/team/team-manager";
 import { getProfile } from "@/lib/account-store";
@@ -54,6 +55,13 @@ export default async function SettingsPage({
           style={{ background: surface.s1, border: `1px solid ${surface.border}` }}
         >
           <ProfileSettings workspace={workspace} initialName={profile.name} initialEmail={profile.email} />
+        </section>
+
+        <section
+          className="rounded-[22px] p-6"
+          style={{ background: surface.s1, border: `1px solid ${surface.border}` }}
+        >
+          <PlanSettings initialPlan={profile.plan} />
         </section>
 
         <section

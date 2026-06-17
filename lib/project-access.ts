@@ -48,6 +48,24 @@ export function collectAssignablePeople(ownedProjects: Project[], viewerName: st
   return [...byKey.values()].sort((a, b) => a.localeCompare(b, "fr"));
 }
 
+// Le viewer voit une tâche s'il en est responsable/assigné OU s'il appartient à
+// une équipe assignée à cette tâche (task.teamIds → team.memberIds → personnes).
+export function taskBelongsToViewerOrTeam(project: Project, task: Parameters<typeof taskBelongsToUser>[0], viewerName: string): boolean {
+  if (taskBelongsToUser(task, viewerName)) return true;
+  const taskTeamIds = (task as { teamIds?: string[] }).teamIds ?? [];
+  if (taskTeamIds.length === 0) return false;
+  const viewerFirst = firstName(viewerName);
+  // ids des personnes du projet qui correspondent au viewer (par prénom/nom).
+  const viewerPersonIds = (project.people ?? [])
+    .filter((p) => firstName(p.name) === viewerFirst || p.name.trim().toLowerCase() === viewerName.trim().toLowerCase())
+    .map((p) => p.id);
+  if (viewerPersonIds.length === 0) return false;
+  const viewerTeamIds = (project.teams ?? [])
+    .filter((team) => (team.memberIds ?? []).some((id) => viewerPersonIds.includes(id)))
+    .map((team) => team.id);
+  return taskTeamIds.some((id) => viewerTeamIds.includes(id));
+}
+
 // Valeurs spéciales du filtre « Personne ».
 export const PERSON_FILTER_ALL = "all";
 export const PERSON_FILTER_ME = "__me";

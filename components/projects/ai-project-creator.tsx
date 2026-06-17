@@ -17,6 +17,7 @@ import {
 } from "@/lib/project-taxonomy";
 import { surface, text } from "@/lib/design-tokens";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
+import { useIsPaidPlan } from "@/components/account/account-context";
 
 interface AIProjectCreatorProps {
   workspace: Workspace;
@@ -25,6 +26,7 @@ interface AIProjectCreatorProps {
 }
 
 export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCreatorProps) {
+  const isPaid = useIsPaidPlan();
   const theme = workspaceTheme[workspace];
   const subcategoryOptions = getSubcategoryOptions(workspace);
   const [description, setDescription] = useState("");
@@ -35,7 +37,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
   const [subcategory, setSubcategory] = useState<string>(subcategoryOptions[0]?.key ?? "other");
   const [priority, setPriority] = useState<ProjectPriority>("medium");
 
-  if (!open) return null;
+  if (!open || !isPaid) return null;
 
   async function handleGenerate() {
     setError(null);
@@ -260,6 +262,9 @@ interface AIProjectCreatorTriggerProps {
 
 export function AIProjectCreatorTrigger({ workspace, active, onToggle }: AIProjectCreatorTriggerProps) {
   const theme = workspaceTheme[workspace];
+  const isPaid = useIsPaidPlan();
+  // Création IA réservée au plan Pro : pas de bouton pour les comptes gratuits.
+  if (!isPaid) return null;
   return (
     <button
       type="button"
