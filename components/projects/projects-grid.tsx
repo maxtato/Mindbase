@@ -46,7 +46,7 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
   // restreindre à un environnement sans perdre la vue agrégée par défaut.
   const environments = useEnvironments();
   const envOptions: FilterPillOption<string>[] = [
-    { value: "all", label: "Tous les environnements" },
+    { value: "all", label: "Tous" },
     ...listEnvironmentOptions(environments).map((option) => ({
       value: option.value,
       label: option.label,
@@ -108,7 +108,7 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
   const archivedCount = projects.filter((p) => p.status === "archived").length;
 
   const statusOptions: FilterPillOption<FilterKey>[] = [
-    { value: "all", label: "Tous les statuts" },
+    { value: "all", label: "Tous" },
     { value: "preparing", label: "À préparer", dot: "var(--mb-status-gray-text)" },
     { value: "active", label: "En cours", dot: "var(--mb-status-green-text)" },
     { value: "paused", label: "En pause", dot: "var(--mb-status-yellow-text)" },
@@ -117,7 +117,7 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
   ];
 
   const priorityOptions: FilterPillOption<PriorityFilter>[] = [
-    { value: "all", label: "Toutes priorités" },
+    { value: "all", label: "Toutes" },
     { value: "high", label: "Haute", dot: "var(--mb-status-red-text)" },
     { value: "medium", label: "Moyenne", dot: "var(--mb-status-blue-text)" },
     { value: "low", label: "Basse", dot: "var(--mb-status-gray-text)" },

@@ -103,23 +103,23 @@ export function BoardFilterControls({
   const theme = workspaceTheme[workspace];
 
   const personOptions: FilterPillOption<string>[] = [
-    { value: PERSON_FILTER_ALL, label: "Toutes les personnes" },
+    { value: PERSON_FILTER_ALL, label: "Toutes" },
     { value: PERSON_FILTER_ME, label: "Moi" },
     ...people.map((name) => ({ value: name, label: name })),
   ];
 
   const projectOptions: FilterPillOption<string>[] = [
-    { value: "all", label: "Tous les projets" },
+    { value: "all", label: "Tous" },
     ...projects.map((project) => ({ value: project.id, label: project.name })),
   ];
 
   const envOptions: FilterPillOption<string>[] = [
-    { value: "all", label: "Tous les environnements" },
+    { value: "all", label: "Tous" },
     ...environments.map((env) => ({ value: env.value, label: env.label, dot: theme.accent })),
   ];
 
   const stepOptions: FilterPillOption<string>[] = [
-    { value: "all", label: "Toutes les étapes" },
+    { value: "all", label: "Toutes" },
     ...steps.map((step) => ({ value: step.id, label: step.title })),
   ];
 
