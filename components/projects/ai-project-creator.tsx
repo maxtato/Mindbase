@@ -269,7 +269,7 @@ export function AIProjectCreatorTrigger({ workspace, active, onToggle }: AIProje
     <button
       type="button"
       onClick={onToggle}
-      className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-[15px] font-bold"
+      className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-[13.5px] font-bold"
       style={{
         background: active ? theme.accent : theme.gradient,
         color: "#FFFFFF",
@@ -291,7 +291,7 @@ export function AIProjectCreatorTrigger({ workspace, active, onToggle }: AIProje
 
 function SparkleIcon() {
   return (
-    <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path
         d="M8 2.5v3M8 10.5v3M2.5 8h3M10.5 8h3M4.5 4.5l1.5 1.5M10 10l1.5 1.5M4.5 11.5L6 10M10 6l1.5-1.5"
         stroke="currentColor"
