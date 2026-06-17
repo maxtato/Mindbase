@@ -1817,17 +1817,16 @@ summary {
    empilées sur une colonne sur petit écran (iPhone). auto-fit → autant de
    colonnes d'au moins 320px que la largeur le permet. align-items:start pour
    que chaque carte garde sa hauteur naturelle (pas d'étirement). */
+/* Étapes empilées (une sous l'autre) mais dans une colonne CENTRÉE à largeur
+   limitée — pas toute la largeur de l'écran sur PC — avec un espacement plus
+   généreux pour aérer. */
 .mb-steps-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 14px;
+  gap: 18px;
   align-items: start;
-}
-/* PC : 2 colonnes maximum côte à côte (jamais plus). */
-@media (min-width: 1024px) {
-  .mb-steps-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  max-width: 720px;
+  margin-inline: auto;
 }
 
 /* Grandes « fiches » de tâches empilées (une par ligne, pleine largeur),
@@ -1843,13 +1842,13 @@ summary {
 .mb-step-card .mb-task-card {
   background: var(--mb-s1) !important;
   border: 1px solid var(--mb-border-subtle) !important;
-  border-radius: 12px !important;
+  border-radius: 14px !important;
   box-shadow: var(--mb-shadow-card);
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  padding: 10px 12px 10px 14px !important;
+  padding: 13px 15px 13px 17px !important;
 }
 
 /* Survol = griser légèrement, UNIQUEMENT sur appareils avec vrai survol
