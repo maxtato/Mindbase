@@ -128,28 +128,30 @@ export default async function SettingsPage({
           ))}
         </section>
 
-        <section
-          className="flex flex-wrap items-center justify-between gap-3 rounded-[22px] p-6"
-          style={{ background: surface.s1, border: `1px solid ${surface.border}` }}
-        >
-          <div>
-            <h2 className="text-sm font-semibold" style={{ color: text.primary }}>
-              Compte
-            </h2>
-            <p className="mt-1 text-[13px]" style={{ color: text.secondary }}>
-              Se déconnecter de ce compte sur cet appareil.
-            </p>
-          </div>
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="rounded-xl px-4 py-2.5 text-[13px] font-semibold"
-              style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.border}`, cursor: "pointer" }}
-            >
-              Se déconnecter
-            </button>
-          </form>
-        </section>
+        {process.env.AUTH_ENABLED === "true" && (
+          <section
+            className="flex flex-wrap items-center justify-between gap-3 rounded-[22px] p-6"
+            style={{ background: surface.s1, border: `1px solid ${surface.border}` }}
+          >
+            <div>
+              <h2 className="text-sm font-semibold" style={{ color: text.primary }}>
+                Compte
+              </h2>
+              <p className="mt-1 text-[13px]" style={{ color: text.secondary }}>
+                Se déconnecter de ce compte sur cet appareil.
+              </p>
+            </div>
+            <form action={signOut}>
+              <button
+                type="submit"
+                className="rounded-xl px-4 py-2.5 text-[13px] font-semibold"
+                style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.border}`, cursor: "pointer" }}
+              >
+                Se déconnecter
+              </button>
+            </form>
+          </section>
+        )}
       </main>
     </div>
   );
