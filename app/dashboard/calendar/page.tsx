@@ -1,4 +1,5 @@
 import { BoardFilterControls } from "@/components/tasks/board-filter-controls";
+import { BoardFilterPersistence } from "@/components/tasks/board-filter-persistence";
 import { TasksCalendarBoard } from "@/components/tasks/tasks-calendar-board";
 import { Topbar } from "@/components/layout/topbar";
 import { surface, text } from "@/lib/design-tokens";
@@ -73,6 +74,13 @@ export default async function CalendarPage({
 
       <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-3 py-4 lg:px-4 xl:overflow-hidden">
         <div className="flex w-full flex-col gap-3 xl:h-full xl:min-h-0">
+          <BoardFilterPersistence
+            storageKey="mb-filters-calendar"
+            basePath="/dashboard/calendar"
+            workspace={workspace}
+            month={monthParam}
+            signature={`${selectedProjectId}|${selectedStepId}|${statusFilter}|${priorityFilter}|${personFilter}`}
+          />
           <BoardFilterControls
             basePath="/dashboard/calendar"
             workspace={workspace}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Badge, statusLabels } from "@/components/ui/badge";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -38,6 +38,41 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
   const [showInactiveOnly, setShowInactiveOnly] = useState(false);
   const [showOverdueOnly, setShowOverdueOnly] = useState(false);
   const theme = workspaceTheme[workspace];
+
+  // Persistance des filtres de la page Projets (state local) : on restaure au
+  // montage et on sauvegarde à chaque changement, pour qu'ils restent actifs
+  // après un rechargement ou un changement d'onglet.
+  const FILTERS_KEY = "mb-filters-projects";
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(FILTERS_KEY);
+      if (!raw) return;
+      const s = JSON.parse(raw) as Partial<{
+        activeFilter: FilterKey;
+        priorityFilter: PriorityFilter;
+        showBlockedOnly: boolean;
+        showInactiveOnly: boolean;
+        showOverdueOnly: boolean;
+      }>;
+      if (s.activeFilter) setActiveFilter(s.activeFilter);
+      if (s.priorityFilter) setPriorityFilter(s.priorityFilter);
+      if (typeof s.showBlockedOnly === "boolean") setShowBlockedOnly(s.showBlockedOnly);
+      if (typeof s.showInactiveOnly === "boolean") setShowInactiveOnly(s.showInactiveOnly);
+      if (typeof s.showOverdueOnly === "boolean") setShowOverdueOnly(s.showOverdueOnly);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        FILTERS_KEY,
+        JSON.stringify({ activeFilter, priorityFilter, showBlockedOnly, showInactiveOnly, showOverdueOnly }),
+      );
+    } catch {
+      /* ignore */
+    }
+  }, [activeFilter, priorityFilter, showBlockedOnly, showInactiveOnly, showOverdueOnly]);
 
   const nonArchived = projects.filter((p) => p.status !== "archived");
   const statusFiltered =
