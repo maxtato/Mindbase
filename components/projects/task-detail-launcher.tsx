@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { updateTaskAction } from "@/app/dashboard/projects/[id]/actions";
-import { TaskExpandedPreview } from "@/components/projects/task-expanded-preview";
+import { TaskExpandedPreview, QuickInfos } from "@/components/projects/task-expanded-preview";
 import type { ChecklistItem, ProjectPerson, ProjectStatusSettings, ProjectTeam, Task } from "@/lib/mock-data";
 import { surface, text } from "@/lib/design-tokens";
 import type { Workspace } from "@/lib/workspace";
@@ -267,7 +267,7 @@ function TaskDetailModal({
         }}
       >
         <header
-          className="flex items-start justify-between gap-4 px-5 py-4"
+          className="flex shrink-0 flex-col gap-3 px-5 py-4"
           style={{
             background: surface.s1,
             borderBottom: `1px solid ${surface.borderSubtle}`,
@@ -285,50 +285,65 @@ function TaskDetailModal({
               background: accentColor,
             }}
           />
-          <div className="min-w-0 flex-1">
-            <p
-              className="text-[10.5px] font-semibold uppercase tracking-[0.12em]"
-              style={{ color: text.muted }}
-            >
-              Tâche · {stepTitle}
-            </p>
-            <h2
-              className="mt-1 text-base font-bold"
-              style={{
-                color: text.primary,
-                letterSpacing: "-0.005em",
-                // Titre de la tâche OUVERTE : affiché EN ENTIER (s'enroule sur
-                // plusieurs lignes), jamais tronqué. On gère les mots très longs.
-                lineHeight: 1.3,
-                overflowWrap: "anywhere",
-                wordBreak: "break-word",
-              }}
-            >
-              {task.title}
-            </h2>
-            {stepDescription && (
-              <p className="mt-0.5 truncate text-[11.5px]" style={{ color: text.muted }}>
-                {stepDescription}
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <p
+                className="text-[10.5px] font-semibold uppercase tracking-[0.12em]"
+                style={{ color: text.muted }}
+              >
+                Tâche · {stepTitle}
               </p>
-            )}
+              <h2
+                className="mt-1 text-base font-bold"
+                style={{
+                  color: text.primary,
+                  letterSpacing: "-0.005em",
+                  // Titre de la tâche OUVERTE : affiché EN ENTIER (s'enroule sur
+                  // plusieurs lignes), jamais tronqué. On gère les mots très longs.
+                  lineHeight: 1.3,
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
+                }}
+              >
+                {task.title}
+              </h2>
+              {stepDescription && (
+                <p className="mt-0.5 truncate text-[11.5px]" style={{ color: text.muted }}>
+                  {stepDescription}
+                </p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+              style={{
+                background: surface.s2,
+                color: text.secondary,
+                border: `1px solid ${surface.borderSubtle}`,
+                cursor: "pointer",
+              }}
+              title="Fermer"
+              aria-label="Fermer"
+            >
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-            style={{
-              background: surface.s2,
-              color: text.secondary,
-              border: `1px solid ${surface.borderSubtle}`,
-              cursor: "pointer",
-            }}
-            title="Fermer"
-            aria-label="Fermer"
-          >
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-            </svg>
-          </button>
+
+          {/* Champs « Informations » (date, personne, fichiers, statut, priorité)
+              intégrés à la barre de titre fixe → toujours visibles, hors du
+              scroll de la tâche. */}
+          <QuickInfos
+            task={task}
+            linkedTeams={projectTeams.filter((team) => task.teamIds?.includes(team.id))}
+            accentColor={accentColor}
+            projectPeople={projectPeople.map((person) => ({ id: person.id, name: person.name }))}
+            projectTeams={projectTeams}
+            onUpdate={onUpdate}
+            statusSettings={statusSettings}
+          />
         </header>
 
         <div

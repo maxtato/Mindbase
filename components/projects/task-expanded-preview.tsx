@@ -61,23 +61,11 @@ export function TaskExpandedPreview({
   // Couleur des boutons / accents IA = couleur de l'ENVIRONNEMENT (Pro/Perso),
   // pas la couleur du thème projet.
   const aiAccent = workspace ? workspaceTheme[workspace].accent : accentColor;
-  const linkedTeams = projectTeams.filter((team) => task.teamIds?.includes(team.id));
 
   return (
     <div className={`mb-task-expanded-preview ${className}`} onClick={(event) => event.stopPropagation()}>
-      {/* Bloc « Informations » (personne, fichiers, date, statut…) collé sous la
-          barre de titre : il reste fixe pendant le scroll de la tâche (sticky). */}
-      <div className="mb-task-info-sticky">
-        <QuickInfos
-          task={task}
-          linkedTeams={linkedTeams}
-          accentColor={accentColor}
-          projectPeople={projectPeople}
-          projectTeams={projectTeams}
-          onUpdate={onUpdate}
-          statusSettings={statusSettings}
-        />
-      </div>
+      {/* Le bloc « Informations » est désormais intégré à la barre de titre du
+          drawer (fixe), il n'est donc plus rendu ici. */}
       <div className="mb-task-expanded-preview-grid">
         <TaskPreviewPane>
           <ExpectedField
@@ -1467,7 +1455,7 @@ function ChatBubble({ message, sent }: { message: TaskDiscussionMessage; sent: b
 
 // ─── Quick infos block (lecture seule) ───────────────────────────────────
 
-function QuickInfos({
+export function QuickInfos({
   task,
   linkedTeams,
   accentColor,
