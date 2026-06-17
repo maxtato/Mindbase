@@ -27,7 +27,7 @@ import {
   projectPendingTaskCount,
 } from "@/lib/project-insights";
 import type { Project, Risk } from "@/lib/mock-data";
-import { calculateProjectIndicators, deriveTaskDisplayPriority } from "@/lib/project-plan";
+import { calculateProjectIndicators, calculateProgressFromSteps, deriveTaskDisplayPriority } from "@/lib/project-plan";
 
 export default async function ProjectDetailPage({
   params,
@@ -48,13 +48,24 @@ export default async function ProjectDetailPage({
   // que les étapes/tâches auxquelles il contribue (assigné/responsable).
   const viewerName = (await getProfile()).name;
   const viewerIsCreator = isProjectCreator(project, viewerName);
+  const viewerFilteredSteps = (project.steps ?? [])
+    .map((step) => ({ ...step, tasks: step.tasks.filter((task) => taskBelongsToViewerOrTeam(project, task, viewerName)) }))
+    .filter((step) => step.tasks.length > 0);
   const viewerProject: Project = viewerIsCreator
     ? project
     : {
         ...project,
-        steps: (project.steps ?? [])
-          .map((step) => ({ ...step, tasks: step.tasks.filter((task) => taskBelongsToViewerOrTeam(project, task, viewerName)) }))
-          .filter((step) => step.tasks.length > 0),
+        steps: viewerFilteredSteps,
+        // On retire les agrégats / la narration de TOUT le projet : un
+        // collaborateur ne doit pas voir le résumé IA, les risques, blocages,
+        // l'état global ni l'avancement du travail qui n'est pas le sien.
+        description: "",
+        currentPriority: "",
+        nextStep: "",
+        risks: [],
+        blockers: [],
+        actions: [],
+        progress: calculateProgressFromSteps(viewerFilteredSteps),
       };
 
   const workspace = getWorkspace(sp.workspace ?? project.workspace);
