@@ -52,7 +52,19 @@ export async function signIn(formData: FormData) {
 }
 
 export async function signOut() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  // Défensif : si Supabase n'est pas configuré (setup par défaut, auth off),
+  // on ne tente pas de créer un client (qui planterait sur des env vars
+  // absentes) — on redirige simplement.
+  const configured = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  );
+  if (configured) {
+    try {
+      const supabase = await createClient();
+      await supabase.auth.signOut();
+    } catch {
+      /* ignore */
+    }
+  }
   redirect("/auth/login");
 }
