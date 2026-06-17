@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { appendProjectTeamMessageAction } from "@/app/dashboard/projects/[id]/actions";
 import type { ProjectPerson, ProjectTeamMessage } from "@/lib/mock-data";
-import { surface, text } from "@/lib/design-tokens";
+import { statusColor, surface, text } from "@/lib/design-tokens";
 import { getActiveAccountPersonId } from "@/lib/current-account";
 import { useAccountName } from "@/components/account/account-context";
 
@@ -13,6 +13,19 @@ interface ProjectTeamChatLauncherProps {
   people?: ProjectPerson[];
   messages?: ProjectTeamMessage[];
   accentColor: string;
+}
+
+// Détecte un jeton « @partiel » juste avant le curseur (début de chaîne ou
+// espace, puis lettres/chiffres accentués) → filtre les collaborateurs.
+function findMentionToken(value: string, caret: number): { start: number; query: string } | null {
+  const upto = value.slice(0, caret);
+  const match = /(^|\s)@([\p{L}\p{N}._-]*)$/u.exec(upto);
+  if (!match) return null;
+  return { start: match.index + match[1].length, query: match[2] };
+}
+
+function normalizeName(value: string) {
+  return value.normalize("NFD").replace(new RegExp("[\\u0300-\\u036f]", "g"), "").toLowerCase();
 }
 
 export function ProjectTeamChatLauncher({
@@ -26,21 +39,90 @@ export function ProjectTeamChatLauncher({
   const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState("");
   const [isPending, startTransition] = useTransition();
-  const latestMessages = messages.slice(-8).reverse();
+  const [pending, setPending] = useState<ProjectTeamMessage[]>([]);
+
+  // Mentions @ pilotées par la frappe.
+  const [mention, setMention] = useState<{ start: number; query: string } | null>(null);
+  const [mentionActive, setMentionActive] = useState(0);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const mentionsRef = useRef<HTMLDivElement | null>(null);
+
+  const isMine = (message: ProjectTeamMessage) =>
+    normalizeName(message.authorName) === normalizeName(accountName);
+
+  // Messages en ordre chronologique (anciens en haut, récents en bas) + envois
+  // optimistes locaux non encore renvoyés par le serveur (dédupe author|content).
+  const chronological = useMemo(() => {
+    const persistedKeys = new Set(messages.map((m) => `${m.authorName}|${m.content}`));
+    const stillPending = pending.filter((m) => !persistedKeys.has(`${m.authorName}|${m.content}`));
+    return [...messages, ...stillPending];
+  }, [messages, pending]);
+
+  const mentionMatches = useMemo(() => {
+    if (!mention || !mention.query) return people;
+    const q = normalizeName(mention.query);
+    return people.filter((person) => normalizeName(person.name).includes(q));
+  }, [mention, people]);
+  const pickerOpen = mention != null && mentionMatches.length > 0;
+
+  useEffect(() => {
+    if (!mention) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (mentionsRef.current && !mentionsRef.current.contains(event.target as Node)) {
+        setMention(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [mention]);
+
+  function handleContentChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+    const value = event.target.value;
+    const caret = event.target.selectionStart ?? value.length;
+    setContent(value);
+    setMention(findMentionToken(value, caret));
+    setMentionActive(0);
+  }
+
+  function insertMention(name: string) {
+    if (mention) {
+      const before = content.slice(0, mention.start);
+      const after = content.slice(mention.start + 1 + mention.query.length);
+      setContent(`${before}@${name} ${after.replace(/^\s+/, "")}`);
+      setMention(null);
+    }
+    setMentionActive(0);
+    textareaRef.current?.focus();
+  }
 
   function submitMessage(event: FormEvent) {
     event.preventDefault();
     const cleaned = content.trim();
     if (!cleaned) return;
+    const optimistic: ProjectTeamMessage = {
+      id: `local_${Date.now()}`,
+      authorName: accountName,
+      authorPersonId: getActiveAccountPersonId(people, accountName),
+      content: cleaned,
+      createdAt: new Date().toISOString(),
+    };
+    setPending((current) => [...current, optimistic]);
+    setContent("");
+    setMention(null);
 
     startTransition(async () => {
-      await appendProjectTeamMessageAction(projectId, {
-        authorName: accountName,
-        authorPersonId: getActiveAccountPersonId(people, accountName),
-        content: cleaned,
-      });
-      setContent("");
-      router.refresh();
+      try {
+        await appendProjectTeamMessageAction(projectId, {
+          authorName: accountName,
+          authorPersonId: getActiveAccountPersonId(people, accountName),
+          content: cleaned,
+        });
+        router.refresh();
+      } catch (error) {
+        console.error("[team_chat] send failed", error);
+        setPending((current) => current.filter((m) => m.id !== optimistic.id));
+        setContent(cleaned);
+      }
     });
   }
 
@@ -90,27 +172,22 @@ export function ProjectTeamChatLauncher({
             </div>
 
             <div className="grid gap-3">
-              <div className="max-h-[320px] overflow-y-auto rounded-2xl p-3" style={{ background: surface.s1 }}>
-                {latestMessages.length === 0 ? (
+              {/* Fil de discussion : mes messages à GAUCHE, ceux des autres à
+                  DROITE (dans une couleur différente) — comme dans une tâche. */}
+              <div className="max-h-[360px] overflow-y-auto rounded-2xl p-3" style={{ background: surface.s1 }}>
+                {chronological.length === 0 ? (
                   <p className="text-sm" style={{ color: text.muted }}>
                     Aucun message pour l’instant. Ajoute une première note d’équipe.
                   </p>
                 ) : (
-                  <div className="grid gap-2">
-                    {latestMessages.map((message) => (
-                      <article key={message.id} className="rounded-2xl p-3" style={{ background: surface.s2 }}>
-                        <div className="mb-1 flex items-center justify-between gap-2">
-                          <strong className="text-xs" style={{ color: text.primary }}>
-                            {message.authorName}
-                          </strong>
-                          <span className="text-[11px]" style={{ color: text.dim }}>
-                            {new Date(message.createdAt).toLocaleString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                          </span>
-                        </div>
-                        <p className="text-sm leading-relaxed" style={{ color: text.secondary }}>
-                          {message.content}
-                        </p>
-                      </article>
+                  <div className="flex flex-col gap-1.5">
+                    {chronological.map((message) => (
+                      <TeamChatBubble
+                        key={message.id}
+                        message={message}
+                        mine={isMine(message)}
+                        accentColor={accentColor}
+                      />
                     ))}
                   </div>
                 )}
@@ -120,19 +197,98 @@ export function ProjectTeamChatLauncher({
                 <div className="rounded-xl px-3 py-2 text-xs" style={{ background: surface.s2, color: text.muted }}>
                   Envoyé comme <strong style={{ color: text.secondary }}>{accountName}</strong>
                 </div>
-                <textarea
-                  value={content}
-                  onChange={(event) => setContent(event.target.value)}
-                  placeholder="Écrire un message d’équipe..."
-                  rows={3}
-                  className="resize-none rounded-xl px-3 py-2 text-sm outline-none"
-                  style={{ background: surface.s2, color: text.primary }}
-                />
+                <div ref={mentionsRef} style={{ position: "relative" }}>
+                  <textarea
+                    ref={textareaRef}
+                    value={content}
+                    onChange={handleContentChange}
+                    onKeyDown={(event) => {
+                      if (mention && mentionMatches.length > 0) {
+                        if (event.key === "ArrowDown") {
+                          event.preventDefault();
+                          setMentionActive((prev) => Math.min(prev + 1, mentionMatches.length - 1));
+                          return;
+                        }
+                        if (event.key === "ArrowUp") {
+                          event.preventDefault();
+                          setMentionActive((prev) => Math.max(prev - 1, 0));
+                          return;
+                        }
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          insertMention((mentionMatches[mentionActive] ?? mentionMatches[0]).name);
+                          return;
+                        }
+                        if (event.key === "Escape") {
+                          event.preventDefault();
+                          setMention(null);
+                          return;
+                        }
+                      }
+                    }}
+                    placeholder="Écrire un message d’équipe… (@ pour mentionner)"
+                    rows={3}
+                    className="w-full resize-none rounded-xl px-3 py-2 text-sm outline-none"
+                    style={{ background: surface.s2, color: text.primary }}
+                  />
+
+                  {pickerOpen && (
+                    <div
+                      role="listbox"
+                      style={{
+                        position: "absolute",
+                        bottom: "calc(100% + 6px)",
+                        left: 0,
+                        zIndex: 10,
+                        minWidth: 220,
+                        maxHeight: 220,
+                        overflowY: "auto",
+                        padding: 6,
+                        background: surface.s1,
+                        border: `1px solid ${surface.borderSubtle}`,
+                        borderRadius: 12,
+                        boxShadow: "var(--mb-shadow-md)",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 1,
+                      }}
+                    >
+                      <p style={{ fontSize: 9.5, fontWeight: 600, color: text.muted, margin: "4px 8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                        {mention?.query ? `Résultats pour « ${mention.query} »` : "Collaborateurs du projet"}
+                      </p>
+                      {mentionMatches.map((person, index) => (
+                        <button
+                          key={person.id}
+                          type="button"
+                          onMouseEnter={() => setMentionActive(index)}
+                          onClick={() => insertMention(person.name)}
+                          className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left"
+                          style={{
+                            background: index === mentionActive ? surface.s2 : "transparent",
+                            border: "none",
+                            color: text.secondary,
+                            fontSize: 12,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <span
+                            aria-hidden
+                            className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                            style={{ background: accentColor }}
+                          >
+                            {person.name.slice(0, 1).toUpperCase()}
+                          </span>
+                          <span style={{ fontWeight: 500 }}>@{person.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <button
                   type="submit"
                   disabled={isPending || !content.trim()}
                   className="h-10 rounded-xl px-4 text-sm font-semibold"
-                  style={{ background: surface.s3, color: text.primary }}
+                  style={{ background: accentColor, color: "#FFFFFF" }}
                 >
                   Envoyer
                 </button>
@@ -142,6 +298,44 @@ export function ProjectTeamChatLauncher({
         </div>
       )}
     </>
+  );
+}
+
+function TeamChatBubble({
+  message,
+  mine,
+  accentColor,
+}: {
+  message: ProjectTeamMessage;
+  mine: boolean;
+  accentColor: string;
+}) {
+  return (
+    <div className={`flex ${mine ? "justify-start" : "justify-end"}`}>
+      <div
+        className="max-w-[82%] px-3 py-2"
+        style={{
+          background: mine ? surface.s2 : `color-mix(in srgb, ${accentColor} 16%, transparent)`,
+          color: text.primary,
+          borderRadius: 14,
+          borderTopLeftRadius: mine ? 5 : 14,
+          borderTopRightRadius: mine ? 14 : 5,
+          border: mine ? `1px solid ${surface.borderSubtle}` : `1px solid color-mix(in srgb, ${accentColor} 32%, transparent)`,
+        }}
+      >
+        <div className="mb-0.5 flex items-center justify-between gap-2">
+          <span className="truncate text-[10px] font-semibold" style={{ color: mine ? text.muted : accentColor }}>
+            {mine ? "Moi" : message.authorName}
+          </span>
+          <span className="shrink-0 text-[9px]" style={{ color: text.dim }}>
+            {new Date(message.createdAt).toLocaleString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+          </span>
+        </div>
+        <p className="text-[12.5px] leading-relaxed" style={{ color: text.secondary }}>
+          {message.content}
+        </p>
+      </div>
+    </div>
   );
 }
 

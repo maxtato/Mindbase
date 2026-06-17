@@ -2063,26 +2063,33 @@ function QuickInfoTile({
   children: ReactNode;
 }) {
   const Element = editable ? "button" : "div";
+  // Champ « allumé » quand une valeur est renseignée (date posée, personne
+  // assignée, fichiers joints) : fond + bordure + texte en couleur d'accent.
+  const filled = !empty;
   return (
     <Element
       type={editable ? "button" : undefined}
       onClick={onClick}
       className="flex min-w-0 items-center gap-1.5 text-left"
       style={{
-        background: active ? surface.s2 : surface.s3,
-        border: `1px solid ${active ? accentColor : surface.borderSubtle}`,
+        background: active
+          ? surface.s2
+          : filled
+            ? `color-mix(in srgb, ${accentColor} 13%, transparent)`
+            : surface.s3,
+        border: `1px solid ${active || filled ? accentColor : surface.borderSubtle}`,
         borderRadius: 8,
         padding: "6px 8px",
         cursor: editable ? "pointer" : "default",
         transition: "border-color 120ms var(--mb-ease), background-color 120ms var(--mb-ease)",
       }}
     >
-      <TaskPreviewIcon icon={icon} color={empty ? accentColor : text.muted} />
+      <TaskPreviewIcon icon={icon} color={filled ? accentColor : empty ? accentColor : text.muted} />
       <span
         style={{
           fontSize: 10.5,
-          fontWeight: 500,
-          color: empty ? accentColor : text.secondary,
+          fontWeight: filled ? 600 : 500,
+          color: filled ? accentColor : empty ? accentColor : text.secondary,
           minWidth: 0,
           overflow: "hidden",
           textOverflow: "ellipsis",
