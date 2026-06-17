@@ -1463,6 +1463,7 @@ export function QuickInfos({
   projectTeams,
   onUpdate,
   statusSettings,
+  headless = false,
 }: {
   task: Task;
   linkedTeams: ProjectTeam[];
@@ -1471,6 +1472,9 @@ export function QuickInfos({
   projectTeams: ProjectTeam[];
   onUpdate?: TaskExpandedPreviewProps["onUpdate"];
   statusSettings?: ProjectStatusSettings;
+  /** Rendu « nu » (sans la carte FieldShell ni le titre « Informations ») pour
+   *  intégration directe sous le titre dans la barre d'en-tête. */
+  headless?: boolean;
 }) {
   const accountName = useAccountName();
   const fileCount = task.files?.length ?? 0;
@@ -1495,8 +1499,8 @@ export function QuickInfos({
   const [editing, setEditing] = useState<"calendar" | "person" | "file" | null>(null);
   const [showCompletionBlocked, setShowCompletionBlocked] = useState(false);
 
-  return (
-    <FieldShell title="Informations" icon="info" iconColor={text.muted}>
+  const body = (
+    <>
       <div className="grid grid-cols-3 gap-1.5">
         <QuickInfoTile
           icon="calendar"
@@ -1619,6 +1623,15 @@ export function QuickInfos({
           onClose={() => setShowCompletionBlocked(false)}
         />
       )}
+    </>
+  );
+
+  if (headless) {
+    return <div className="flex flex-col gap-2">{body}</div>;
+  }
+  return (
+    <FieldShell title="Informations" icon="info" iconColor={text.muted}>
+      {body}
     </FieldShell>
   );
 }

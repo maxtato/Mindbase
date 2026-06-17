@@ -332,10 +332,11 @@ function TaskDetailModal({
             </button>
           </div>
 
-          {/* Champs « Informations » (date, personne, fichiers, statut, priorité)
-              intégrés à la barre de titre fixe → toujours visibles, hors du
-              scroll de la tâche. */}
+          {/* Champs (date, personne, fichiers, statut, priorité) directement
+              sous le titre, sans carte ni libellé — la barre d'en-tête reste
+              fixe, tout le reste scrolle. */}
           <QuickInfos
+            headless
             task={task}
             linkedTeams={projectTeams.filter((team) => task.teamIds?.includes(team.id))}
             accentColor={accentColor}
