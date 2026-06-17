@@ -9,7 +9,8 @@ import { getDisplayStepTitle } from "@/lib/project-display";
 import { deriveTaskDisplayPriority, deriveTaskStatus } from "@/lib/project-plan";
 import type { ProjectPriority } from "@/lib/project-taxonomy";
 import type { TaskStatus } from "@/lib/mock-data";
-import { getWorkspace } from "@/lib/workspace";
+import { getWorkspace, listEnvironmentOptions } from "@/lib/workspace";
+import { getCustomEnvironments } from "@/lib/environment-store";
 import { getProfile } from "@/lib/account-store";
 import {
   collectAssignablePeople,
@@ -25,7 +26,7 @@ type PriorityFilter = "all" | ProjectPriority;
 export default async function CalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ workspace?: string; project?: string; step?: string; month?: string; status?: string; priority?: string; person?: string }>;
+  searchParams: Promise<{ workspace?: string; env?: string; project?: string; step?: string; month?: string; status?: string; priority?: string; person?: string }>;
 }) {
   const sp = await searchParams;
   const workspace = getWorkspace(sp.workspace);
@@ -34,10 +35,17 @@ export default async function CalendarPage({
   const statusFilter = parseStatusFilter(sp.status);
   const priorityFilter = parsePriorityFilter(sp.priority);
   const me = (await getProfile()).name;
+  const environmentOptions = listEnvironmentOptions(await getCustomEnvironments());
+  const envFilter =
+    typeof sp.env === "string" && environmentOptions.some((option) => option.value === sp.env)
+      ? sp.env
+      : "all";
 
-  const projects = (await getProjectsForWorkspace(workspace)).filter(
+  const allProjects = (await getProjectsForWorkspace(workspace)).filter(
     (project) => project.status !== "archived" && !project.deleted,
   );
+  const projects =
+    envFilter === "all" ? allProjects : allProjects.filter((project) => project.workspace === envFilter);
 
   const selectedProjectId =
     typeof sp.project === "string" && projects.some((project) => project.id === sp.project)
@@ -79,11 +87,13 @@ export default async function CalendarPage({
             basePath="/dashboard/calendar"
             workspace={workspace}
             month={monthParam}
-            signature={`${selectedProjectId}|${selectedStepId}|${statusFilter}|${priorityFilter}|${personFilter}`}
+            signature={`${envFilter}|${selectedProjectId}|${selectedStepId}|${statusFilter}|${priorityFilter}|${personFilter}`}
           />
           <BoardFilterControls
             basePath="/dashboard/calendar"
             workspace={workspace}
+            envFilter={envFilter}
+            environments={environmentOptions}
             projects={projects.map((project) => ({ id: project.id, name: project.name }))}
             steps={projectSteps.map((step) => ({ id: step.id, title: getDisplayStepTitle(step.title) }))}
             projectId={selectedProjectId}
@@ -112,6 +122,7 @@ export default async function CalendarPage({
               projectId={selectedProjectId}
               stepId={selectedStepId}
               person={personFilter}
+              env={envFilter}
               basePath="/dashboard/calendar"
             />
           )}

@@ -8,7 +8,8 @@ import { flattenProjectTasks } from "@/lib/project-insights";
 import { getProjectsForWorkspace } from "@/lib/project-store";
 import { getDisplayStepTitle } from "@/lib/project-display";
 import { deriveTaskStatus } from "@/lib/project-plan";
-import { getWorkspace } from "@/lib/workspace";
+import { getWorkspace, listEnvironmentOptions } from "@/lib/workspace";
+import { getCustomEnvironments } from "@/lib/environment-store";
 import { getProfile } from "@/lib/account-store";
 import {
   collectAssignablePeople,
@@ -23,15 +24,24 @@ type StatusFilter = "open" | "all" | TaskStatus;
 export default async function KanbanPage({
   searchParams,
 }: {
-  searchParams: Promise<{ workspace?: string; project?: string; step?: string; status?: string; person?: string }>;
+  searchParams: Promise<{ workspace?: string; env?: string; project?: string; step?: string; status?: string; person?: string }>;
 }) {
   const sp = await searchParams;
   const workspace = getWorkspace(sp.workspace);
   const statusFilter = parseStatusFilter(sp.status);
   const me = (await getProfile()).name;
-  const projects = (await getProjectsForWorkspace(workspace)).filter(
+  const environmentOptions = listEnvironmentOptions(await getCustomEnvironments());
+  const envFilter =
+    typeof sp.env === "string" && environmentOptions.some((option) => option.value === sp.env)
+      ? sp.env
+      : "all";
+  const allProjects = (await getProjectsForWorkspace(workspace)).filter(
     (project) => project.status !== "archived" && !project.deleted,
   );
+  // Restriction à l'environnement choisi (le filtre projet/étape, les
+  // personnes et les tâches en découlent).
+  const projects =
+    envFilter === "all" ? allProjects : allProjects.filter((project) => project.workspace === envFilter);
 
   const selectedProjectId =
     typeof sp.project === "string" && projects.some((project) => project.id === sp.project)
@@ -73,11 +83,13 @@ export default async function KanbanPage({
             storageKey="mb-filters-kanban"
             basePath="/dashboard/kanban"
             workspace={workspace}
-            signature={`${selectedProjectId}|${selectedStepId}|${statusFilter}|${personFilter}`}
+            signature={`${envFilter}|${selectedProjectId}|${selectedStepId}|${statusFilter}|${personFilter}`}
           />
           <BoardFilterControls
             basePath="/dashboard/kanban"
             workspace={workspace}
+            envFilter={envFilter}
+            environments={environmentOptions}
             projects={projects.map((project) => ({ id: project.id, name: project.name }))}
             steps={projectSteps.map((step) => ({ id: step.id, title: getDisplayStepTitle(step.title) }))}
             projectId={selectedProjectId}

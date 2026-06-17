@@ -123,6 +123,25 @@ export function isBuiltinWorkspace(workspace: string): workspace is BuiltinWorks
   return workspace === "personal" || workspace === "professional";
 }
 
+// Liste des environnements assignables/filtrables : les deux intégrés
+// (Personnel, Pro) suivis des environnements personnalisés. Sert à la fois au
+// filtre « Environnement » des vues et au déplacement d'un projet d'un
+// environnement à un autre.
+export interface EnvironmentOption {
+  value: Workspace;
+  label: string;
+}
+
+export function listEnvironmentOptions(custom: CustomEnvironment[]): EnvironmentOption[] {
+  return [
+    { value: "personal", label: "Personnel" },
+    { value: "professional", label: "Pro" },
+    ...custom
+      .filter((env) => env && typeof env.id === "string")
+      .map((env) => ({ value: env.id, label: env.name || "Environnement" })),
+  ];
+}
+
 export function getWorkspace(param?: string | null): Workspace {
   const v = typeof param === "string" ? param.trim() : "";
   return v.length > 0 ? v : "personal";

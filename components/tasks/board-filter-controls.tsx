@@ -25,6 +25,11 @@ interface StepOption {
   title: string;
 }
 
+interface EnvironmentFilterOption {
+  value: string;
+  label: string;
+}
+
 interface BoardFilterControlsProps {
   basePath: "/dashboard/kanban" | "/dashboard/calendar";
   workspace: Workspace;
@@ -32,6 +37,10 @@ interface BoardFilterControlsProps {
   steps: StepOption[];
   projectId: string;
   stepId: string;
+  /** Filtre « Environnement » : restreint les tâches à un environnement.
+   *  Options = Personnel / Pro / environnements personnalisés. */
+  envFilter?: string;
+  environments?: EnvironmentFilterOption[];
   statusFilter?: StatusFilter;
   /** Si fourni, le pill Statut est affiché. */
   showStatus?: boolean;
@@ -77,6 +86,8 @@ export function BoardFilterControls({
   steps,
   projectId,
   stepId,
+  envFilter = "all",
+  environments = [],
   statusFilter = "open",
   showStatus = false,
   priorityFilter = "all",
@@ -102,20 +113,30 @@ export function BoardFilterControls({
     ...projects.map((project) => ({ value: project.id, label: project.name })),
   ];
 
+  const envOptions: FilterPillOption<string>[] = [
+    { value: "all", label: "Tous les environnements" },
+    ...environments.map((env) => ({ value: env.value, label: env.label, dot: theme.accent })),
+  ];
+
   const stepOptions: FilterPillOption<string>[] = [
     { value: "all", label: "Toutes les étapes" },
     ...steps.map((step) => ({ value: step.id, label: step.title })),
   ];
 
-  function urlFor(next: { projectId?: string; stepId?: string; statusFilter?: StatusFilter; priorityFilter?: PriorityFilter; ownerFilter?: OwnerFilter; personFilter?: string }) {
-    const nextProjectId = next.projectId ?? projectId;
-    const nextStepId = nextProjectId !== projectId ? "all" : next.stepId ?? stepId;
+  function urlFor(next: { envFilter?: string; projectId?: string; stepId?: string; statusFilter?: StatusFilter; priorityFilter?: PriorityFilter; ownerFilter?: OwnerFilter; personFilter?: string }) {
+    const nextEnv = next.envFilter ?? envFilter;
+    // Changer d'environnement réinitialise le projet/l'étape sélectionnés :
+    // ils peuvent ne pas appartenir au nouvel environnement.
+    const envChanged = nextEnv !== envFilter;
+    const nextProjectId = envChanged ? "all" : next.projectId ?? projectId;
+    const nextStepId = envChanged || nextProjectId !== projectId ? "all" : next.stepId ?? stepId;
     const nextStatus = next.statusFilter ?? statusFilter;
     const nextPriority = next.priorityFilter ?? priorityFilter;
     const nextOwner = next.ownerFilter ?? ownerFilter;
     const nextPerson = next.personFilter ?? personFilter;
 
     const params = new URLSearchParams({ workspace });
+    if (nextEnv !== "all") params.set("env", nextEnv);
     if (nextProjectId !== "all") params.set("project", nextProjectId);
     if (nextStepId !== "all") params.set("step", nextStepId);
     if (showStatus && nextStatus !== "open") params.set("status", nextStatus);
@@ -135,6 +156,18 @@ export function BoardFilterControls({
 
   return (
     <FilterPillGroup>
+      {environments.length > 0 && (
+        <FilterPill
+          label="Environnement"
+          value={envFilter}
+          options={envOptions}
+          onChange={(nextEnv) => navigate({ envFilter: nextEnv })}
+          buildHref={(nextEnv) => urlFor({ envFilter: nextEnv })}
+          accentColor={theme.accent}
+          active={envFilter !== "all"}
+          minWidth={190}
+        />
+      )}
       <FilterPill
         label="Projet"
         value={projectId}

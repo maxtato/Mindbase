@@ -12,7 +12,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
-const FILTER_KEYS = ["project", "step", "status", "priority", "owner", "person"] as const;
+const FILTER_KEYS = ["env", "project", "step", "status", "priority", "owner", "person"] as const;
 
 interface BoardFilterPersistenceProps {
   storageKey: string;
