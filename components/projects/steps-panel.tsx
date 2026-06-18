@@ -9,6 +9,8 @@ import {
   completeTaskAction,
   deleteStepAction,
   deleteTaskAction,
+  duplicateStepAction,
+  duplicateTaskAction,
   reorderProjectStepsAction,
   reorderStepTasksAction,
   toggleTaskDoneAction,
@@ -309,6 +311,62 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
       } catch (error) {
         console.error("[delete_step]", error);
         setMutationError("Impossible de supprimer cette étape pour le moment.");
+      }
+    });
+  }
+
+  function handleStepDuplicate(stepId: string) {
+    const sourceIndex = steps.findIndex((step) => step.id === stepId);
+    if (sourceIndex === -1) return;
+    const source = steps[sourceIndex];
+    const newStepId = `s_${crypto.randomUUID().slice(0, 8)}`;
+    const taskIds = source.tasks.map(() => `t_${crypto.randomUUID().slice(0, 8)}`);
+    const clone: Step = {
+      ...source,
+      id: newStepId,
+      title: `${source.title} (copie)`,
+      tasks: source.tasks.map((task, index) => ({ ...task, id: taskIds[index] })),
+    };
+    const nextSteps = renumberSteps([
+      ...steps.slice(0, sourceIndex + 1),
+      clone,
+      ...steps.slice(sourceIndex + 1),
+    ]);
+    setSteps(nextSteps);
+    setMutationError(null);
+    startTransition(async () => {
+      try {
+        await duplicateStepAction(projectId, stepId, { stepId: newStepId, taskIds });
+      } catch (error) {
+        console.error("[duplicate_step]", error);
+        setMutationError("Impossible de dupliquer cette étape pour le moment.");
+      }
+    });
+  }
+
+  function handleTaskDuplicate(stepId: string, taskId: string) {
+    const newTaskId = `t_${crypto.randomUUID().slice(0, 8)}`;
+    const nextSteps = steps.map((step) => {
+      if (step.id !== stepId) return step;
+      const index = step.tasks.findIndex((task) => task.id === taskId);
+      if (index === -1) return step;
+      const source = step.tasks[index];
+      const clone: Task = { ...source, id: newTaskId, title: `${source.title} (copie)` };
+      const tasks = renumberTasks([
+        ...step.tasks.slice(0, index + 1),
+        clone,
+        ...step.tasks.slice(index + 1),
+      ]);
+      return { ...step, tasks, status: deriveStepStatus(tasks) };
+    });
+    setSteps(nextSteps);
+    setMutationError(null);
+    startTransition(async () => {
+      try {
+        await duplicateTaskAction(projectId, stepId, taskId, newTaskId);
+      } catch (error) {
+        console.error("[duplicate_task]", error);
+        setMutationError("Impossible de dupliquer cette tâche pour le moment.");
       }
     });
   }
@@ -756,8 +814,10 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
               onToggleTask={handleToggle}
               onUpdateStep={(input) => handleStepUpdate(step.id, input)}
               onDeleteStep={() => handleStepDelete(step.id)}
+              onDuplicateStep={() => handleStepDuplicate(step.id)}
               onUpdateTask={(taskId, input) => handleTaskUpdate(step.id, taskId, input)}
               onDeleteTask={(taskId) => handleTaskDelete(step.id, taskId)}
+              onDuplicateTask={(taskId) => handleTaskDuplicate(step.id, taskId)}
               onTaskChecklistMutated={(taskId, nextChecklist) => handleChecklistMutated(step.id, taskId, nextChecklist)}
               draggingTaskId={dragState?.type === "task" && dragState.stepId === step.id ? dragState.taskId : null}
               taskDropTarget={taskDropTarget?.stepId === step.id ? taskDropTarget : null}
@@ -888,8 +948,10 @@ function StepCard({
   onToggleTask,
   onUpdateStep,
   onDeleteStep,
+  onDuplicateStep,
   onUpdateTask,
   onDeleteTask,
+  onDuplicateTask,
   onTaskChecklistMutated,
   draggingTaskId,
   taskDropTarget,
@@ -917,8 +979,10 @@ function StepCard({
   onToggleTask: (stepId: string, taskId: string) => void;
   onUpdateStep: (input: StepUpdateInput) => void;
   onDeleteStep: () => void;
+  onDuplicateStep: () => void;
   onUpdateTask: (taskId: string, input: TaskUpdateInput) => void;
   onDeleteTask: (taskId: string) => void;
+  onDuplicateTask: (taskId: string) => void;
   onTaskChecklistMutated: (taskId: string, nextChecklist: ChecklistItem[]) => void;
   draggingTaskId: string | null;
   taskDropTarget: TaskDropTarget | null;
@@ -1082,6 +1146,11 @@ function StepCard({
                   },
                 },
                 {
+                  label: "Dupliquer l'étape",
+                  icon: "copy",
+                  onClick: onDuplicateStep,
+                },
+                {
                   label: "Supprimer l'étape",
                   icon: "trash",
                   tone: "danger",
@@ -1148,6 +1217,7 @@ function StepCard({
                 onToggle={() => onToggleTask(step.id, task.id)}
                 onUpdate={(input) => onUpdateTask(task.id, input)}
                 onDelete={() => onDeleteTask(task.id)}
+                onDuplicate={() => onDuplicateTask(task.id)}
                 onChecklistMutated={(nextChecklist) => onTaskChecklistMutated(task.id, nextChecklist)}
                 onReorderEngage={(x, y, element) => onTaskReorderEngage(task.id, x, y, element)}
               />
@@ -1299,6 +1369,7 @@ function TaskCard({
   onToggle,
   onUpdate,
   onDelete,
+  onDuplicate,
   onChecklistMutated,
   onReorderEngage,
 }: {
@@ -1322,6 +1393,7 @@ function TaskCard({
   onToggle: () => void;
   onUpdate: (input: TaskUpdateInput) => void;
   onDelete: () => void;
+  onDuplicate: () => void;
   onChecklistMutated: (nextChecklist: ChecklistItem[]) => void;
   onReorderEngage: (x: number, y: number, element: HTMLElement) => void;
 }) {
@@ -1588,6 +1660,11 @@ function TaskCard({
                       setRenaming(true);
                       setRenameDraft(task.title);
                     },
+                  },
+                  {
+                    label: "Dupliquer la tâche",
+                    icon: "copy",
+                    onClick: onDuplicate,
                   },
                   {
                     label: "Supprimer la tâche",
@@ -1900,7 +1977,7 @@ function TaskTinyCounter({ icon, value }: { icon: "comment" | "file" | "check"; 
 // tâches pour grouper les actions profondes : renommer, supprimer, etc.
 interface RowSettingsMenuItem {
   label: string;
-  icon?: "pencil" | "trash" | "info";
+  icon?: "pencil" | "trash" | "info" | "copy";
   tone?: "default" | "danger";
   onClick: () => void;
 }
@@ -2000,6 +2077,12 @@ function RowSettingsMenu({
                     <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                       <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4" />
                       <path d="M8 7v4M8 5h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                  )}
+                  {item.icon === "copy" && (
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <rect x="5.5" y="5.5" width="8" height="8" rx="1.4" stroke="currentColor" strokeWidth="1.4" />
+                      <path d="M10.5 5.5V4A1.5 1.5 0 0 0 9 2.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   )}
                   <span style={{ flex: 1 }}>{item.label}</span>
