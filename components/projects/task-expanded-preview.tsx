@@ -1531,7 +1531,19 @@ export function QuickInfos({
     assigneeCount === 0 ? "" : assigneeCount <= 2 ? labelParts.join(", ") : `${labelParts[0]} +${assigneeCount - 1}`;
   const editable = Boolean(onUpdate);
   const [editing, setEditing] = useState<"calendar" | "person" | "file" | null>(null);
+  // Position de la tuile cliquée → ancre du panneau flottant (overlay) qui
+  // remplace l'ancienne expansion en ligne sous la carte.
+  const [editingRect, setEditingRect] = useState<DOMRect | null>(null);
   const [showCompletionBlocked, setShowCompletionBlocked] = useState(false);
+
+  function toggleEditing(kind: "calendar" | "person" | "file", event: React.MouseEvent<HTMLElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setEditing((current) => (current === kind ? null : kind));
+    setEditingRect(rect);
+  }
+  function closeEditing() {
+    setEditing(null);
+  }
 
   const body = (
     <>
@@ -1562,7 +1574,7 @@ export function QuickInfos({
           accentColor={accentColor}
           editable={editable}
           active={editing === "calendar"}
-          onClick={editable ? () => setEditing(editing === "calendar" ? null : "calendar") : undefined}
+          onClick={editable ? (event) => toggleEditing("calendar", event) : undefined}
         >
           {task.dueDate ? formatTaskScheduleLabel(task) : editable ? "Ajouter date" : "—"}
         </QuickInfoTile>
@@ -1572,7 +1584,7 @@ export function QuickInfos({
           accentColor={accentColor}
           editable={editable}
           active={editing === "person"}
-          onClick={editable ? () => setEditing(editing === "person" ? null : "person") : undefined}
+          onClick={editable ? (event) => toggleEditing("person", event) : undefined}
         >
           {ownerLabel || (editable ? "Assigner" : "—")}
         </QuickInfoTile>
@@ -1582,7 +1594,7 @@ export function QuickInfos({
           accentColor={accentColor}
           editable={editable}
           active={editing === "file"}
-          onClick={editable ? () => setEditing(editing === "file" ? null : "file") : undefined}
+          onClick={editable ? (event) => toggleEditing("file", event) : undefined}
         >
           {fileCount > 0 ? `${fileCount} fichier${fileCount > 1 ? "s" : ""}` : editable ? "Joindre" : "—"}
         </QuickInfoTile>
@@ -1595,57 +1607,54 @@ export function QuickInfos({
       </div>
 
       {editing === "calendar" && (
-        <DateEditor
-          task={task}
-          accentColor={accentColor}
-          onSave={(dueDate, dueTime) => {
-            onUpdate?.({ dueDate, dueTime });
-            setEditing(null);
-          }}
-          onClear={() => {
-            onUpdate?.({ dueDate: "", dueTime: "" });
-            setEditing(null);
-          }}
-          onCancel={() => setEditing(null)}
-        />
+        <AnchoredEditorPanel rect={editingRect} width={300} onClose={closeEditing}>
+          <DateEditor
+            task={task}
+            accentColor={accentColor}
+            onSave={(dueDate, dueTime) => {
+              onUpdate?.({ dueDate, dueTime });
+              setEditing(null);
+            }}
+            onClear={() => {
+              onUpdate?.({ dueDate: "", dueTime: "" });
+              setEditing(null);
+            }}
+            onCancel={() => setEditing(null)}
+          />
+        </AnchoredEditorPanel>
       )}
 
       {editing === "person" && (
-        <PersonEditor
-          task={task}
-          projectPeople={projectPeople}
-          projectTeams={projectTeams}
-          accentColor={accentColor}
-          emptyHint={assignEmptyHint}
-          onSave={(next) => {
-            onUpdate?.({ owner: next.owner, assignees: next.assignees, teamIds: next.teamIds });
-            setEditing(null);
-          }}
-          onCancel={() => setEditing(null)}
-        />
+        <AnchoredEditorPanel rect={editingRect} width={320} onClose={closeEditing}>
+          <PersonEditor
+            task={task}
+            projectPeople={projectPeople}
+            projectTeams={projectTeams}
+            accentColor={accentColor}
+            emptyHint={assignEmptyHint}
+            onSave={(next) => {
+              onUpdate?.({ owner: next.owner, assignees: next.assignees, teamIds: next.teamIds });
+              setEditing(null);
+            }}
+            onCancel={() => setEditing(null)}
+          />
+        </AnchoredEditorPanel>
       )}
 
       {editing === "file" && (
-        <div
-          style={{
-            background: surface.s3,
-            border: `1px dashed ${surface.borderSubtle}`,
-            borderRadius: 8,
-            padding: 10,
-            fontSize: 11.5,
-            color: text.muted,
-          }}
-        >
-          La gestion des fichiers passe par un upload dédié, cette interface arrive bientôt.
-          <button
-            type="button"
-            onClick={() => setEditing(null)}
-            className="ml-2 underline"
-            style={{ background: "transparent", border: "none", color: text.secondary, cursor: "pointer" }}
-          >
-            Fermer
-          </button>
-        </div>
+        <AnchoredEditorPanel rect={editingRect} width={300} onClose={closeEditing}>
+          <div style={{ fontSize: 11.5, color: text.muted, lineHeight: 1.5 }}>
+            La gestion des fichiers passe par un upload dédié, cette interface arrive bientôt.
+            <button
+              type="button"
+              onClick={() => setEditing(null)}
+              className="ml-2 underline"
+              style={{ background: "transparent", border: "none", color: text.secondary, cursor: "pointer" }}
+            >
+              Fermer
+            </button>
+          </div>
+        </AnchoredEditorPanel>
       )}
 
       {showCompletionBlocked && (
@@ -1665,6 +1674,89 @@ export function QuickInfos({
     <FieldShell title="Informations" icon="info" iconColor={text.muted}>
       {body}
     </FieldShell>
+  );
+}
+
+// Panneau flottant (overlay) ancré à la tuile cliquée — remplace l'expansion
+// en ligne pour « Ajouter date », « Assigner », « Joindre ». Rendu via portal
+// pour passer au-dessus de la carte sans en pousser le contenu.
+function AnchoredEditorPanel({
+  rect,
+  width = 300,
+  onClose,
+  children,
+}: {
+  rect: DOMRect | null;
+  width?: number;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  useEffect(() => {
+    function handleKey(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    // Fermer si la page défile (le panneau est ancré en position fixe et
+    // dériverait sinon) ou au redimensionnement.
+    function handleScroll() {
+      onClose();
+    }
+    window.addEventListener("keydown", handleKey);
+    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      window.removeEventListener("keydown", handleKey);
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [onClose]);
+
+  if (!rect || typeof document === "undefined") return null;
+
+  const margin = 8;
+  const isMobile = window.innerWidth < 640;
+  const panelWidth = isMobile ? Math.min(window.innerWidth - margin * 2, 360) : width;
+  let left = isMobile ? margin : Math.min(rect.left, window.innerWidth - panelWidth - margin);
+  left = Math.max(margin, left);
+  // Bascule au-dessus de la tuile si la place manque en dessous.
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const flip = spaceBelow < 260 && rect.top > spaceBelow;
+
+  return createPortal(
+    <>
+      <button
+        type="button"
+        aria-hidden
+        tabIndex={-1}
+        onClick={onClose}
+        onPointerDown={(event) => {
+          event.preventDefault();
+          onClose();
+        }}
+        style={{ position: "fixed", inset: 0, zIndex: 9998, background: "transparent", border: "none", cursor: "default", padding: 0 }}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        onClick={(event) => event.stopPropagation()}
+        style={{
+          position: "fixed",
+          ...(flip ? { bottom: window.innerHeight - rect.top + 6 } : { top: rect.bottom + 6 }),
+          left,
+          width: panelWidth,
+          zIndex: 9999,
+          background: surface.s1,
+          border: `1px solid ${surface.border}`,
+          borderRadius: 16,
+          boxShadow: "var(--mb-shadow-md)",
+          padding: 12,
+          maxHeight: "min(70vh, 460px)",
+          overflowY: "auto",
+        }}
+      >
+        {children}
+      </div>
+    </>,
+    document.body,
   );
 }
 
@@ -2096,7 +2188,7 @@ function QuickInfoTile({
   accentColor: string;
   editable: boolean;
   active: boolean;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent<HTMLElement>) => void;
   children: ReactNode;
 }) {
   const Element = editable ? "button" : "div";
@@ -2157,17 +2249,7 @@ function DateEditor({
   const dirty = (date || "") !== (task.dueDate ?? "") || (time || "") !== (task.dueTime ?? "");
 
   return (
-    <div
-      style={{
-        background: surface.s3,
-        border: `1px solid ${surface.borderSubtle}`,
-        borderRadius: 8,
-        padding: 10,
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-      }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <p style={{ fontSize: 10.5, fontWeight: 600, color: text.muted, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>
         Échéance
       </p>
@@ -2293,17 +2375,7 @@ function PersonEditor({
   });
 
   return (
-    <div
-      style={{
-        background: surface.s3,
-        border: `1px solid ${surface.borderSubtle}`,
-        borderRadius: 8,
-        padding: 10,
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-      }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <p style={{ fontSize: 10.5, fontWeight: 600, color: text.muted, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>
         {t("task.assignedPeople")}
       </p>
