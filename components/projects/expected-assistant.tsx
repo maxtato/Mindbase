@@ -5,6 +5,7 @@
 // d'attendu qu'on peut appliquer au champ.
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { useT } from "@/components/i18n/locale-provider";
 import { createPortal } from "react-dom";
 import { refineTaskExpectedAction } from "@/app/dashboard/projects/ai-actions";
 import { surface, text } from "@/lib/design-tokens";
@@ -30,6 +31,7 @@ export function ExpectedAssistant({
   onApply,
   onClose,
 }: ExpectedAssistantProps) {
+  const t = useT();
   const [draft, setDraft] = useState("");
   const [transcript, setTranscript] = useState<ChatMessage[]>([]);
   const [proposed, setProposed] = useState<string | null>(null);
@@ -90,7 +92,7 @@ export function ExpectedAssistant({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Assistant IA, Attendu"
+        aria-label={t("ai.expected.title")}
         className="mb-modal-surface"
         onClick={(event) => event.stopPropagation()}
         style={{
@@ -105,7 +107,7 @@ export function ExpectedAssistant({
         <div className="flex items-start justify-between gap-3 px-5 py-4" style={{ borderBottom: `1px solid ${surface.borderSubtle}` }}>
           <div className="min-w-0">
             <p className="text-sm font-semibold" style={{ color: text.primary }}>
-              Assistant IA, Attendu
+              {t("ai.expected.title")}
             </p>
             <p className="mt-0.5 text-[11px]" style={{ color: text.muted }}>
               Dialogue pour préciser ce qui est attendu ; l&apos;IA propose une formulation à appliquer.

@@ -41,6 +41,7 @@ import { getVisibleTaskOwner } from "@/lib/task-people";
 import { getDisplayStepTitle } from "@/lib/project-display";
 import { deleteTone, TrashIcon } from "@/components/ui/trash-icon";
 import { useT } from "@/components/i18n/locale-provider";
+import { useStatusLabel, usePriorityLabel } from "@/components/i18n/labels";
 
 interface StepsPanelProps {
   projectId: string;
@@ -933,6 +934,7 @@ function StepCard({
 }) {
   const tasks = sortTasks(step.tasks);
   const t = useT();
+  const statusLabel = useStatusLabel();
   const computedStatus = deriveStepStatus(tasks);
   // Indicators date-dépendants (overdue, due-soon, derived priority bumps...)
   // calculés UNIQUEMENT après hydratation. SSR + premier render client
@@ -1028,7 +1030,7 @@ function StepCard({
             ce sous-arbre et casse les onClick en cascade. */}
         <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end" suppressHydrationWarning>
           <StepMetaTag
-            label={statusSettings?.step?.[computedStatus]?.label ?? stepStatusLabels[computedStatus]}
+            label={statusSettings?.step?.[computedStatus]?.label ?? statusLabel(computedStatus, stepStatusLabels[computedStatus])}
             status={computedStatus}
             customColor={statusSettings?.step?.[computedStatus]?.color}
           />
@@ -1191,6 +1193,7 @@ function StepEditForm({
   onCancel: () => void;
   onSave: (input: StepUpdateInput) => void;
 }) {
+  const t = useT();
   const theme = workspaceTheme[workspace];
   const [title, setTitle] = useState(step.title);
   const [description, setDescription] = useState(step.description ?? "");
@@ -1213,14 +1216,14 @@ function StepEditForm({
         value={title}
         onChange={(event) => setTitle(event.target.value)}
         required
-        placeholder="Nom de l'étape"
+        placeholder={t("stepForm.name")}
         className="w-full rounded-lg px-3 py-2 text-xs outline-none"
         style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}` }}
       />
       <textarea
         value={description}
         onChange={(event) => setDescription(event.target.value)}
-        placeholder="Détail optionnel"
+        placeholder={t("stepForm.detail")}
         rows={2}
         className="mt-2 w-full rounded-lg px-3 py-2 text-xs outline-none resize-none"
         style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}` }}
@@ -1328,6 +1331,8 @@ function TaskCard({
   const isTouch = useIsTouchDevice();
   const taskLongPress = useLongPressDrag(({ x, y, element }) => onReorderEngage(x, y, element));
   const taskStatus = deriveTaskStatus(task);
+  const tStatusLabel = useStatusLabel();
+  const tPriorityLabel = usePriorityLabel();
   // overdue/dueSoon dépendent de `new Date()` → pas calculés tant qu'on
   // n'a pas hydraté, sinon SSR vs client iPhone divergent.
   const [hydratedTask, setHydratedTask] = useState(false);
@@ -1335,7 +1340,7 @@ function TaskCard({
   const overdue = hydratedTask && isTaskOverdue(task);
   const dueSoon = hydratedTask && isTaskDueSoon(task);
   const statusMeta = getTaskStatusMeta(taskStatus, statusSettings);
-  const statusLabel = statusSettings?.task?.[taskStatus]?.label ?? taskStatusLabels[taskStatus];
+  const statusLabel = statusSettings?.task?.[taskStatus]?.label ?? tStatusLabel(taskStatus, taskStatusLabels[taskStatus]);
 
   useEffect(() => {
     if (!renaming) setRenameDraft(task.title);
@@ -1526,7 +1531,7 @@ function TaskCard({
             {taskStatus !== "done" && (
               <span className="inline-flex items-center gap-1 font-semibold" style={{ color: displayedPriorityVisual.text }}>
                 <span aria-hidden style={{ width: 6, height: 6, borderRadius: "50%", background: displayedPriorityVisual.text }} />
-                {displayedPriorityVisual.label}
+                {tPriorityLabel(displayedPriority, displayedPriorityVisual.label)}
               </span>
             )}
             <span
@@ -2855,7 +2860,7 @@ function AddStepForm({ projectId, workspace }: { projectId: string; workspace: W
       <input type="hidden" name="workspace" value={workspace} />
       <div className="flex items-center justify-between gap-3 mb-2">
         <p className="text-xs font-semibold" style={{ color: text.primary }}>
-          Nouvelle étape
+          {t("stepForm.new")}
         </p>
         <button
           type="button"
@@ -2863,20 +2868,20 @@ function AddStepForm({ projectId, workspace }: { projectId: string; workspace: W
           className="text-[11px] font-medium"
           style={{ color: text.dim }}
         >
-          Annuler
+          {t("common.cancel")}
         </button>
       </div>
       <div className="grid gap-2" style={{ gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 0.8fr)" }}>
-        <input name="title" required placeholder="Nom de l'étape" className="rounded-lg px-3 py-2 text-xs outline-none" style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}` }} />
+        <input name="title" required placeholder={t("stepForm.name")} className="rounded-lg px-3 py-2 text-xs outline-none" style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}` }} />
         <select name="priority" defaultValue="medium" className="rounded-lg px-3 py-2 text-xs outline-none" style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}` }}>
-          <option value="low">Priorité faible</option>
-          <option value="medium">Priorité moyenne</option>
-          <option value="high">Priorité haute</option>
+          <option value="low">{t("stepForm.priorityLow")}</option>
+          <option value="medium">{t("stepForm.priorityMedium")}</option>
+          <option value="high">{t("stepForm.priorityHigh")}</option>
         </select>
       </div>
-      <textarea name="description" placeholder="Détail optionnel" rows={2} className="mt-2 w-full rounded-lg px-3 py-2 text-xs outline-none resize-none" style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}` }} />
+      <textarea name="description" placeholder={t("stepForm.detail")} rows={2} className="mt-2 w-full rounded-lg px-3 py-2 text-xs outline-none resize-none" style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}` }} />
       <button type="submit" className="mt-2 rounded-lg px-3 py-2 text-xs font-semibold" style={{ background: theme.accent, color: "#FFFFFF", border: "none" }}>
-        Créer l&apos;étape
+        {t("stepForm.create")}
       </button>
     </form>
   );

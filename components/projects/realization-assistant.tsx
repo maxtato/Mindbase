@@ -5,6 +5,7 @@
 // par ligne) qu'on peut appliquer au champ.
 
 import { useEffect, useState, useTransition } from "react";
+import { useT } from "@/components/i18n/locale-provider";
 import { createPortal } from "react-dom";
 import { organizeTaskRealizationAction } from "@/app/dashboard/projects/ai-actions";
 import { surface, text } from "@/lib/design-tokens";
@@ -22,6 +23,7 @@ export function RealizationAssistant({
   onApply,
   onClose,
 }: RealizationAssistantProps) {
+  const t = useT();
   const [draft, setDraft] = useState(currentRealization);
   const [proposed, setProposed] = useState<string[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +70,7 @@ export function RealizationAssistant({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Assistant IA, Réalisation"
+        aria-label={t("ai.realization.title")}
         className="mb-modal-surface"
         onClick={(event) => event.stopPropagation()}
         style={{
@@ -83,7 +85,7 @@ export function RealizationAssistant({
         <div className="flex items-start justify-between gap-3 px-5 py-4" style={{ borderBottom: `1px solid ${surface.borderSubtle}` }}>
           <div className="min-w-0">
             <p className="text-sm font-semibold" style={{ color: text.primary }}>
-              Assistant IA, Réalisation
+              {t("ai.realization.title")}
             </p>
             <p className="mt-0.5 text-[11px]" style={{ color: text.muted }}>
               Décris ce que tu as fait ; l&apos;IA le reformule en actions claires, une par ligne.

@@ -8,6 +8,7 @@ import {
 } from "@/app/dashboard/projects/ai-actions";
 import { surface, text } from "@/lib/design-tokens";
 import { useIsPaidPlan } from "@/components/account/account-context";
+import { useT } from "@/components/i18n/locale-provider";
 
 interface ProjectEvolutionLauncherProps {
   projectId: string;
@@ -25,6 +26,7 @@ const KIND_BADGE: Record<string, { label: string; bg: string; fg: string }> = {
 
 export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvolutionLauncherProps) {
   const isPaid = useIsPaidPlan();
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [transcript, setTranscript] = useState<ChatMessage[]>([]);
@@ -164,7 +166,7 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="Assistant IA, faire évoluer le projet"
+            aria-label={t("ai.evolution.title")}
             className="mb-modal-surface"
             onClick={(event) => event.stopPropagation()}
             style={{
