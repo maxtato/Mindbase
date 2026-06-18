@@ -2327,13 +2327,24 @@ textarea::placeholder {
   }
 
   .mb-calendar-month-pane {
-    overflow-x: auto;
+    /* iPhone : les 7 jours tiennent dans l'écran (pas de scroll horizontal). */
+    overflow-x: hidden;
     padding-bottom: 0.25rem;
   }
 
   .mb-calendar-weekdays,
   .mb-calendar-month-cells {
-    min-width: 680px;
+    /* On laisse les 7 colonnes se réduire à la largeur de l'écran ; un gap
+       resserré (2px) récupère de la place pour chaque jour. */
+    min-width: 0;
+    gap: 2px;
+  }
+
+  /* Cellules étroites sur iPhone → cartes-tâches compactées pour rester
+     lisibles (moins de padding, hauteur mini réduite). */
+  .mb-calendar-month-cells [data-drag-card] {
+    padding: 4px 4px 4px 7px !important;
+    min-height: 0 !important;
   }
 
   /* iPhone : barre du haut projet CONDENSÉE. Elle s'empile en 3 rangées
