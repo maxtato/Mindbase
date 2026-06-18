@@ -12,7 +12,7 @@ import type { Workspace } from "@/lib/workspace";
 import { error, surface, text } from "@/lib/design-tokens";
 import { WORKSPACE_EVENT } from "@/lib/workspace-client";
 import { useT } from "@/components/i18n/locale-provider";
-import { FlatmindWordmark } from "@/components/branding/mindlay-wordmark";
+import { FlatmindWordmark } from "@/components/branding/flatmind-wordmark";
 import { FlatmindLogoMark } from "@/components/branding/flatmind-logo-mark";
 
 const WIDE = 212;
