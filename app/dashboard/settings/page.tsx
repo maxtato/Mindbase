@@ -1,5 +1,7 @@
 import { Topbar } from "@/components/layout/topbar";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { getServerT } from "@/lib/i18n/server";
 import { PushSettings } from "@/components/notifications/push-settings";
 import { ProfileSettings } from "@/components/account/profile-settings";
 import { PlanSettings } from "@/components/account/plan-settings";
@@ -23,10 +25,11 @@ export default async function SettingsPage({
   const theme = workspaceTheme[workspace];
   const profile = await getProfile();
   const teamMembers = await getTeamMembers();
+  const { t } = await getServerT();
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <Topbar title="Paramètres" workspace={workspace} />
+      <Topbar title={t("nav.settingsFull")} workspace={workspace} />
 
       <main className="mb-page-scroll mb-mobile-scroll mx-auto flex w-full max-w-[980px] flex-1 flex-col gap-5 overflow-y-auto px-8 py-7">
         <section
@@ -43,11 +46,10 @@ export default async function SettingsPage({
             Flatmind
           </p>
           <h1 className="mt-3 text-3xl font-bold tracking-tight" style={{ color: text.primary }}>
-            Préférences de l’espace {theme.label.toLowerCase()}
+            {t("settings.title", { space: theme.label.toLowerCase() })}
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6" style={{ color: text.secondary }}>
-            Cette page reste volontairement légère pour l’instant : elle sert de base aux réglages globaux
-            comme le thème, l’agenda et les préférences générales.
+            {t("settings.intro")}
           </p>
         </section>
 
@@ -96,10 +98,29 @@ export default async function SettingsPage({
             }}
           >
             <h2 className="text-sm font-semibold" style={{ color: text.primary }}>
-              Thème
+              {t("settings.language")}
             </h2>
             <p className="mt-2 text-sm leading-6" style={{ color: text.secondary }}>
-              Clair, sombre ou automatique.
+              {t("settings.language.desc")}
+            </p>
+            <div className="mt-4">
+              <LanguageSwitcher />
+            </div>
+          </article>
+
+          <article
+            className="rounded-[22px] p-5"
+            style={{
+              background: surface.s1,
+              border: `1px solid ${surface.borderSubtle}`,
+              boxShadow: "var(--mb-shadow-card)",
+            }}
+          >
+            <h2 className="text-sm font-semibold" style={{ color: text.primary }}>
+              {t("settings.theme")}
+            </h2>
+            <p className="mt-2 text-sm leading-6" style={{ color: text.secondary }}>
+              {t("settings.theme.desc")}
             </p>
             <div className="mt-4">
               <ThemeSwitcher />
@@ -107,8 +128,8 @@ export default async function SettingsPage({
           </article>
 
           {[
-            ["Agenda", "La connexion calendrier sera centralisée ici plus tard."],
-            ["Préférences", "Les réglages avancés pourront être pilotés depuis cet espace."],
+            [t("settings.agenda"), t("settings.agenda.desc")],
+            [t("settings.prefs"), t("settings.prefs.desc")],
           ].map(([title, description]) => (
             <article
               key={title}
@@ -135,10 +156,10 @@ export default async function SettingsPage({
           >
             <div>
               <h2 className="text-sm font-semibold" style={{ color: text.primary }}>
-                Compte
+                {t("settings.account")}
               </h2>
               <p className="mt-1 text-[13px]" style={{ color: text.secondary }}>
-                Se déconnecter de ce compte sur cet appareil.
+                {t("settings.account.desc")}
               </p>
             </div>
             <form action={signOut}>
@@ -147,7 +168,7 @@ export default async function SettingsPage({
                 className="rounded-xl px-4 py-2.5 text-[13px] font-semibold"
                 style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.border}`, cursor: "pointer" }}
               >
-                Se déconnecter
+                {t("settings.signout")}
               </button>
             </form>
           </section>

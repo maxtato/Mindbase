@@ -11,6 +11,7 @@ import { getWorkspace, workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { error, surface, text } from "@/lib/design-tokens";
 import { WORKSPACE_EVENT } from "@/lib/workspace-client";
+import { useT } from "@/components/i18n/locale-provider";
 import { FlatmindWordmark } from "@/components/branding/mindlay-wordmark";
 import { FlatmindLogoMark } from "@/components/branding/flatmind-logo-mark";
 
@@ -37,6 +38,7 @@ interface SidebarProps {
 export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const t = useT();
   // Lit le workspace depuis l'URL côté client uniquement (pas de useSearchParams).
   const [workspaceParam, setWorkspaceParam] = useState<string | null>(initialWorkspace ?? null);
   useEffect(() => {
@@ -96,7 +98,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
     {
       href: "/dashboard",
       exact: true,
-      label: "Dashboard",
+      label: t("nav.dashboard"),
       badge:
         workspaceStats.openBlockersCount > 0
           ? { count: workspaceStats.openBlockersCount, color: error.text, bg: error.bg }
@@ -113,7 +115,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
     {
       href: "/dashboard/projects",
       exact: false,
-      label: "Projets",
+      label: t("nav.projects"),
       badge:
         workspaceStats.projectCount > 0
           ? { count: workspaceStats.projectCount, color: text.sidebar, bg: surface.sidebarPanel }
@@ -132,7 +134,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
     {
       href: "/dashboard/kanban",
       exact: false,
-      label: "Kanban",
+      label: t("nav.kanban"),
       badge:
         workspaceStats.pendingActionsCount > 0
           ? { count: workspaceStats.pendingActionsCount, color: text.sidebar, bg: surface.sidebarPanel }
@@ -148,7 +150,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
     {
       href: "/dashboard/calendar",
       exact: false,
-      label: "Calendrier",
+      label: t("nav.calendar"),
       badge:
         workspaceStats.scheduledTasksCount > 0
           ? { count: workspaceStats.scheduledTasksCount, color: text.sidebar, bg: surface.sidebarPanel }
@@ -316,7 +318,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
             />
           </svg>
           {!collapsed && (
-            <span className="text-[12px] font-medium leading-none">Paramètres</span>
+            <span className="text-[12px] font-medium leading-none">{t("nav.settingsFull")}</span>
           )}
         </Link>
 

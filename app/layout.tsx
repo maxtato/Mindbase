@@ -3,6 +3,9 @@ import { cookies } from "next/headers";
 import { League_Spartan, Pacifico } from "next/font/google";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { MobileTapGuard } from "@/components/layout/mobile-tap-guard";
+import { LocaleProvider } from "@/components/i18n/locale-provider";
+import { getLocale } from "@/lib/i18n/server";
+import { MESSAGES } from "@/lib/i18n/messages";
 import { getCustomEnvironments } from "@/lib/environment-store";
 import { registerCustomEnvironments } from "@/lib/workspace";
 import "./globals.css";
@@ -75,6 +78,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // (violet) figée dans le HTML.
   registerCustomEnvironments(await getCustomEnvironments());
 
+  const locale = await getLocale();
   const cookieStore = await cookies();
   const cookieMode = cookieStore.get("mindbase-theme-mode")?.value;
   const cookieResolved = cookieStore.get("mindbase-theme-resolved")?.value;
@@ -90,12 +94,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       : "light";
 
   return (
-    <html lang="fr" className={`h-full ${leagueSpartan.variable} ${pacifico.variable}`} data-theme={initialTheme} data-theme-mode={initialMode} suppressHydrationWarning>
+    <html lang={locale} className={`h-full ${leagueSpartan.variable} ${pacifico.variable}`} data-theme={initialTheme} data-theme-mode={initialMode} suppressHydrationWarning>
       <body className="h-full" style={{ background: "var(--mb-bg)", color: "var(--mb-text-primary)" }}>
-        <ThemeProvider initialMode={initialMode} initialTheme={initialTheme}>
-          <MobileTapGuard />
-          {children}
-        </ThemeProvider>
+        <LocaleProvider locale={locale} messages={MESSAGES[locale]}>
+          <ThemeProvider initialMode={initialMode} initialTheme={initialTheme}>
+            <MobileTapGuard />
+            {children}
+          </ThemeProvider>
+        </LocaleProvider>
       </body>
     </html>
   );
