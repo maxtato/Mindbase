@@ -11,6 +11,8 @@ import { deriveTaskStatus } from "@/lib/project-plan";
 import { getWorkspace, listEnvironmentOptions } from "@/lib/workspace";
 import { getCustomEnvironments } from "@/lib/environment-store";
 import { getProfile } from "@/lib/account-store";
+import { getStandaloneTasksForWorkspace } from "@/lib/standalone-tasks-store";
+import { standaloneToBoardItem } from "@/lib/standalone-board";
 import { getServerT } from "@/lib/i18n/server";
 import {
   collectAssignablePeople,
@@ -75,6 +77,18 @@ export default async function KanbanPage({
     .filter(({ entry }) => matchStatusFilter(deriveTaskStatus(entry.task), statusFilter))
     .filter(({ project, entry }) => taskVisibleToViewer(project, entry.task, me, personFilter));
 
+  // Tâches autonomes (hors projet) : affichées seulement en vue « tous les
+  // projets » (et tant qu'aucune étape précise n'est filtrée), avec le même
+  // filtre d'environnement et de statut.
+  const standaloneItems =
+    selectedProjectId === "all" && selectedStepId === "all" && personFilter !== PERSON_FILTER_ME
+      ? (await getStandaloneTasksForWorkspace(workspace))
+          .filter((task) => envFilter === "all" || task.workspace === envFilter)
+          .map(standaloneToBoardItem)
+          .filter(({ entry }) => matchStatusFilter(deriveTaskStatus(entry.task), statusFilter))
+      : [];
+  const boardTasks = [...scopedTasks, ...standaloneItems];
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <Topbar title={t("nav.kanban")} workspace={workspace} />
@@ -103,10 +117,10 @@ export default async function KanbanPage({
             people={people}
           />
 
-          {scopedTasks.length === 0 ? (
+          {boardTasks.length === 0 ? (
             <EmptyState title={t("board.empty.title")} hint={t("board.empty.kanban")} />
           ) : (
-            <TasksKanbanBoard tasks={scopedTasks} workspace={workspace} />
+            <TasksKanbanBoard tasks={boardTasks} workspace={workspace} />
           )}
         </div>
       </main>

@@ -17,6 +17,8 @@ import { useIsTouchDevice } from "@/lib/use-touch-device";
 import { useCardDrag, DragGhost, useLongPressDrag, findScrollParent } from "@/lib/use-card-drag";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
 import { useT } from "@/components/i18n/locale-provider";
+import { isStandaloneProjectId } from "@/lib/standalone-board";
+import { updateStandaloneTaskAction } from "@/app/dashboard/tasks/actions";
 
 type TaskSort = "due" | "priority";
 type TaskStatusFilter = "open" | "all" | TaskStatus;
@@ -147,6 +149,11 @@ export function TasksCalendarBoard({
     setPendingDateChange(null);
 
     startTransition(async () => {
+      if (isStandaloneProjectId(item.project.id)) {
+        await updateStandaloneTaskAction(item.entry.task.id, { dueDate: date });
+        router.refresh();
+        return;
+      }
       await updateTaskAction(item.project.id, item.entry.stepId, item.entry.task.id, {
         dueDate: date,
         dueTime: item.entry.task.dueTime,
@@ -605,19 +612,15 @@ function CalendarTaskCard({
     { moveTolerance: 16 },
   );
 
-  return (
-    <TaskDetailLauncher
-      projectId={project.id}
-      workspace={workspace}
-      stepId={entry.stepId}
-      stepTitle={entry.stepTitle}
-      stepDescription={step?.description}
-      task={entry.task}
-      accentColor={project.subcategoryColor}
-      projectPeople={project.people ?? []}
-      projectTeams={project.teams ?? []}
-      statusSettings={project.statusSettings}
-      trigger={({ open }) => (
+  const router = useRouter();
+  const t = useT();
+  const standalone = isStandaloneProjectId(project.id);
+  const activateFor = (open: () => void) =>
+    standalone ? () => router.push(`/dashboard/tasks?workspace=${workspace}`) : (onClickOverride ?? open);
+
+  const renderCard = (open: () => void) => {
+    const activate = activateFor(open);
+    return (
         <div
           data-drag-card
           draggable={!isTouch}
@@ -629,8 +632,7 @@ function CalendarTaskCard({
               return;
             }
             if (dragStartedRef.current) return;
-            if (onClickOverride) onClickOverride();
-            else open();
+            activate();
           }}
           onTouchStart={(event) => {
             const touch = event.touches[0];
@@ -654,8 +656,7 @@ function CalendarTaskCard({
 
             event.preventDefault();
             suppressNextClickRef.current = true;
-            if (onClickOverride) onClickOverride();
-            else open();
+            activate();
             window.setTimeout(() => {
               suppressNextClickRef.current = false;
             }, 350);
@@ -663,8 +664,7 @@ function CalendarTaskCard({
           onKeyDown={(event) => {
             if (event.key === "Enter" || event.key === " ") {
               event.preventDefault();
-              if (onClickOverride) onClickOverride();
-              else open();
+              activate();
             }
           }}
           onDragStart={() => {
@@ -729,11 +729,17 @@ function CalendarTaskCard({
             </p>
           </div>
           <p className="mt-1 truncate text-[10px]" style={{ color: text.muted }}>
-            <span style={{ color: workspaceTheme[project.workspace].accent, fontWeight: 600 }}>
-              {workspaceTheme[project.workspace].label}
-            </span>
-            {" · "}
-            {project.name}
+            {standalone ? (
+              <span style={{ color: workspaceTheme[project.workspace].accent, fontWeight: 600 }}>{t("tasks.freeBadge")}</span>
+            ) : (
+              <>
+                <span style={{ color: workspaceTheme[project.workspace].accent, fontWeight: 600 }}>
+                  {workspaceTheme[project.workspace].label}
+                </span>
+                {" · "}
+                {project.name}
+              </>
+            )}
           </p>
           <span
             aria-hidden
@@ -749,7 +755,23 @@ function CalendarTaskCard({
             }}
           />
         </div>
-      )}
+    );
+  };
+
+  if (standalone) return renderCard(() => {});
+  return (
+    <TaskDetailLauncher
+      projectId={project.id}
+      workspace={workspace}
+      stepId={entry.stepId}
+      stepTitle={entry.stepTitle}
+      stepDescription={step?.description}
+      task={entry.task}
+      accentColor={project.subcategoryColor}
+      projectPeople={project.people ?? []}
+      projectTeams={project.teams ?? []}
+      statusSettings={project.statusSettings}
+      trigger={({ open }) => renderCard(open)}
     />
   );
 }

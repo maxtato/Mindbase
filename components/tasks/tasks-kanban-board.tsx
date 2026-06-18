@@ -18,6 +18,9 @@ import { formatDueLabel, isTaskOverdue, type FlattenedProjectTask } from "@/lib/
 import { deriveTaskDisplayPriority, deriveTaskStatus, taskStatusLabels } from "@/lib/project-plan";
 import { getDisplayStepTitle } from "@/lib/project-display";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
+import { isStandaloneProjectId } from "@/lib/standalone-board";
+import { updateStandaloneTaskAction } from "@/app/dashboard/tasks/actions";
+import { useT } from "@/components/i18n/locale-provider";
 
 type TaskItem = { project: Project; entry: FlattenedProjectTask };
 type VisibleTaskItem = TaskItem & { status: TaskStatus };
@@ -101,12 +104,19 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
     setPendingStatusChange(null);
 
     startTransition(async () => {
-      await updateTaskBoardStatusAction(item.project.id, item.entry.stepId, item.entry.task.id, {
-        status,
-        done: false,
-        blocked: status === "blocked",
-        statusNote: details,
-      });
+      if (isStandaloneProjectId(item.project.id)) {
+        await updateStandaloneTaskAction(item.entry.task.id, {
+          status,
+          comments: details.trim() ? [details.trim()] : undefined,
+        });
+      } else {
+        await updateTaskBoardStatusAction(item.project.id, item.entry.stepId, item.entry.task.id, {
+          status,
+          done: false,
+          blocked: status === "blocked",
+          statusNote: details,
+        });
+      }
       router.refresh();
     });
   }
@@ -120,7 +130,14 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
     setPendingCompletion(null);
 
     startTransition(async () => {
-      await completeTaskAction(item.project.id, item.entry.stepId, item.entry.task.id, input);
+      if (isStandaloneProjectId(item.project.id)) {
+        await updateStandaloneTaskAction(item.entry.task.id, {
+          status: "done",
+          realization: input.details.trim() || undefined,
+        });
+      } else {
+        await completeTaskAction(item.project.id, item.entry.stepId, item.entry.task.id, input);
+      }
       router.refresh();
     });
   }
@@ -331,19 +348,11 @@ function KanbanTaskCard({
     .slice(0, 2)
     .toLocaleUpperCase("fr-FR");
 
-  return (
-    <TaskDetailLauncher
-      projectId={project.id}
-      workspace={workspace}
-      stepId={entry.stepId}
-      stepTitle={entry.stepTitle}
-      stepDescription={step?.description}
-      task={task}
-      accentColor={project.subcategoryColor}
-      projectPeople={project.people ?? []}
-      projectTeams={project.teams ?? []}
-      statusSettings={project.statusSettings}
-      trigger={({ open }) => (
+  const router = useRouter();
+  const t = useT();
+  const standalone = isStandaloneProjectId(project.id);
+
+  const renderArticle = (open: () => void) => (
         <article
           data-drag-card
           draggable={!isTouch}
@@ -448,11 +457,17 @@ function KanbanTaskCard({
               </p>
             </div>
             <p className="mt-1 truncate text-[10px]" style={{ color: text.muted }}>
-              <span style={{ color: workspaceTheme[project.workspace].accent, fontWeight: 600 }}>
-                {workspaceTheme[project.workspace].label}
-              </span>
-              {" · "}
-              {project.name} · {getDisplayStepTitle(entry.stepTitle)}
+              {standalone ? (
+                <span style={{ color: workspaceTheme[project.workspace].accent, fontWeight: 600 }}>{t("tasks.freeBadge")}</span>
+              ) : (
+                <>
+                  <span style={{ color: workspaceTheme[project.workspace].accent, fontWeight: 600 }}>
+                    {workspaceTheme[project.workspace].label}
+                  </span>
+                  {" · "}
+                  {project.name} · {getDisplayStepTitle(entry.stepTitle)}
+                </>
+              )}
             </p>
           </div>
 
@@ -471,7 +486,24 @@ function KanbanTaskCard({
             )}
           </div>
         </article>
-      )}
+  );
+
+  if (standalone) {
+    return renderArticle(() => router.push(`/dashboard/tasks?workspace=${workspace}`));
+  }
+  return (
+    <TaskDetailLauncher
+      projectId={project.id}
+      workspace={workspace}
+      stepId={entry.stepId}
+      stepTitle={entry.stepTitle}
+      stepDescription={step?.description}
+      task={task}
+      accentColor={project.subcategoryColor}
+      projectPeople={project.people ?? []}
+      projectTeams={project.teams ?? []}
+      statusSettings={project.statusSettings}
+      trigger={({ open }) => renderArticle(open)}
     />
   );
 }
