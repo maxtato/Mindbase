@@ -110,6 +110,9 @@ export function NotificationBell() {
               position: "absolute",
               top: -3,
               right: -3,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
               minWidth: 16,
               height: 16,
               padding: "0 4px",
@@ -118,9 +121,10 @@ export function NotificationBell() {
               color: "#FFFFFF",
               fontSize: 9.5,
               fontWeight: 700,
-              lineHeight: "16px",
-              textAlign: "center",
+              lineHeight: 1,
+              fontVariantNumeric: "tabular-nums",
               border: `2px solid ${surface.s1}`,
+              boxSizing: "border-box",
             }}
           >
             {unread > 9 ? "9+" : unread}
