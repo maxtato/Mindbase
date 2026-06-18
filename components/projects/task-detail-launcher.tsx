@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition, type ReactNode } from "react";
+import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { updateTaskAction } from "@/app/dashboard/projects/[id]/actions";
@@ -79,6 +79,11 @@ export function TaskDetailLauncher({
   };
   const [draftTask, setDraftTask] = useState(task);
   const [, startTransition] = useTransition();
+  // Une édition a-t-elle eu lieu pendant que le drawer était ouvert ? Si oui,
+  // on rafraîchit l'arbre serveur à la FERMETURE (pas pendant l'édition, pour
+  // ne pas démonter le drawer) afin que la liste/le tableau et une éventuelle
+  // réouverture reflètent les valeurs persistées (assignation, statut, date…).
+  const dirtyRef = useRef(false);
 
   // Auto-ouvrir le drawer si l'URL contient taskId qui correspond à cette
   // tâche. Permet d'arriver depuis le dashboard ou kanban directement sur
@@ -110,6 +115,7 @@ export function TaskDetailLauncher({
     // fermerait le drawer en plein milieu de l'édition. Les compteurs
     // globaux (sidebar, dashboard) se re-sync à la prochaine navigation.
     setDraftTask((current) => ({ ...current, ...input }));
+    dirtyRef.current = true;
     if (onTaskChange) {
       onTaskChange(input);
     }
@@ -124,6 +130,7 @@ export function TaskDetailLauncher({
     // drawer ne se "ferme" visuellement quand on coche un item ou applique
     // une suggestion IA.
     setDraftTask((current) => ({ ...current, checklist: nextChecklist }));
+    dirtyRef.current = true;
     if (onChecklistChange) {
       onChecklistChange(nextChecklist);
     }
@@ -139,7 +146,21 @@ export function TaskDetailLauncher({
 
   function openTask() {
     setDraftTask(task);
+    dirtyRef.current = false;
     setOpen(true);
+  }
+
+  // Fermeture : on synchronise l'arbre serveur si une édition a eu lieu, pour
+  // que les valeurs persistées (assignation, date, statut…) soient reflétées
+  // partout (liste, tableau, réouverture). Le drawer étant en train de se
+  // fermer, le refresh ne le démonte pas en plein milieu d'une édition.
+  function handleClose() {
+    setOpen(false);
+    clearTaskIdFromUrl();
+    if (dirtyRef.current) {
+      dirtyRef.current = false;
+      startTransition(() => router.refresh());
+    }
   }
 
   return (
@@ -192,10 +213,7 @@ export function TaskDetailLauncher({
           projectPeople={projectPeople}
           projectTeams={projectTeams}
           statusSettings={statusSettings}
-          onClose={() => {
-            setOpen(false);
-            clearTaskIdFromUrl();
-          }}
+          onClose={handleClose}
           onUpdate={handleUpdate}
           onChecklistMutated={handleChecklistMutated}
         />
