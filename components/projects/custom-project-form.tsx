@@ -21,6 +21,7 @@ import { AIProjectCreator, AIProjectCreatorTrigger } from "@/components/projects
 import { useEnvironments } from "@/components/environments/environments-provider";
 import { FilterPill } from "@/components/ui/filter-pill";
 import { useT } from "@/components/i18n/locale-provider";
+import { getAllProjectTemplates, type ProjectTemplateDefinition } from "@/lib/project-templates";
 
 const TASK_STATUS_ORDER: TaskStatus[] = ["todo", "in_progress", "waiting", "blocked", "done"];
 const STEP_STATUS_ORDER: StepStatus[] = ["todo", "in_progress", "waiting", "done"];
@@ -102,6 +103,36 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
   const resolvedCustomColor = normalizeHexColor(customSubcategoryColor, CUSTOM_SUBCATEGORY_DEFAULT_COLOR);
   const [aiOpen, setAiOpen] = useState(false);
 
+  // Champs texte contrôlés → permettent le pré-remplissage par un modèle.
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [objective, setObjective] = useState("");
+  const [context, setContext] = useState("");
+  // Modèle appliqué (galerie). Vide = projet vierge. La création matérialise les
+  // étapes/tâches du modèle côté serveur (templateKey).
+  const [templateKey, setTemplateKey] = useState("");
+  const templates = getAllProjectTemplates();
+  const activeTemplate = templates.find((item) => item.key === templateKey);
+  // Type de projet : fidèle au modèle si appliqué, sinon « exécution » par défaut.
+  const projectType = activeTemplate?.projectType ?? "execution";
+
+  function applyTemplate(tpl: ProjectTemplateDefinition) {
+    if (templateKey === tpl.key) {
+      // Re-clic sur le modèle actif → on le retire (revient en projet vierge).
+      setTemplateKey("");
+      return;
+    }
+    setTemplateKey(tpl.key);
+    // Le modèle est rattaché à son environnement (sa sous-catégorie n'existe que
+    // là) → on bascule l'environnement en conséquence.
+    setTargetWorkspace(tpl.workspace);
+    setSubcategory(tpl.subcategory);
+    setPriority(tpl.priority);
+    setName(tpl.suggestedName);
+    setObjective(tpl.objective);
+    setContext(tpl.context);
+  }
+
   const fieldStyle: CSSProperties = {
     width: "100%",
     border: `1px solid ${surface.borderSubtle}`,
@@ -150,6 +181,84 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
         )}
         <form action={formAction} className="mx-auto grid w-full max-w-[1480px] gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.82fr)_minmax(340px,0.9fr)]">
           <input type="hidden" name="workspace" value={effectiveWorkspace} />
+
+          {/* Galerie de modèles : démarrage pré-rempli (étapes + tâches prêtes).
+              Sélectionner un modèle bascule l'environnement adéquat et pré-remplit
+              le formulaire ; on peut tout ajuster ensuite. */}
+          <section className="mb-card-premium xl:col-span-3 rounded-[22px] p-6" style={{ background: surface.s1 }}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em]" style={{ color: theme.accent }}>
+                  {t("newProject.templatesTitle")}
+                </p>
+                <p className="mt-1 text-[12.5px] leading-relaxed" style={{ color: text.muted }}>
+                  {t("newProject.templatesHint")}
+                </p>
+              </div>
+              {templateKey && (
+                <button
+                  type="button"
+                  onClick={() => setTemplateKey("")}
+                  className="rounded-xl px-3 py-1.5 text-[11px] font-semibold"
+                  style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.border}`, cursor: "pointer" }}
+                >
+                  {t("newProject.fromScratch")}
+                </button>
+              )}
+            </div>
+
+            <div className="mt-4 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+              {templates.map((tpl) => {
+                const selected = templateKey === tpl.key;
+                const tplAccent = workspaceTheme[tpl.workspace].accent;
+                return (
+                  <button
+                    key={tpl.key}
+                    type="button"
+                    onClick={() => applyTemplate(tpl)}
+                    className="mb-card-hover rounded-[16px] p-3 text-left"
+                    style={{
+                      background: selected ? surface.s2 : surface.s3,
+                      border: `1px solid ${selected ? tplAccent : surface.borderSubtle}`,
+                      boxShadow: selected ? `0 0 0 1px ${tplAccent}` : "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <span
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                        style={{ background: tplAccent, color: "#FFFFFF" }}
+                      >
+                        <ProjectCategoryIcon icon={tpl.icon} color="#FFFFFF" size={19} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[13px] font-bold" style={{ color: text.primary }}>
+                            {tpl.label}
+                          </span>
+                          <span
+                            className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em]"
+                            style={{ background: `color-mix(in srgb, ${tplAccent} 14%, transparent)`, color: tplAccent }}
+                          >
+                            {workspaceTheme[tpl.workspace].label}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-[11.5px] leading-snug" style={{ color: text.muted }}>
+                          {tpl.description}
+                        </p>
+                        {selected && (
+                          <span className="mt-1.5 inline-block text-[10px] font-semibold" style={{ color: tplAccent }}>
+                            {t("newProject.templateApplied")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
           {(
             <div className="xl:col-span-3" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <label className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
@@ -163,7 +272,16 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
                   ...BUILTIN_WORKSPACES.map((ws) => ({ value: ws, label: workspaceTheme[ws].label, dot: workspaceTheme[ws].accent })),
                   ...environments.map((env) => ({ value: env.id, label: env.name, dot: theme.accent })),
                 ]}
-                onChange={(value) => setTargetWorkspace(value as Workspace)}
+                onChange={(value) => {
+                  const next = value as Workspace;
+                  setTargetWorkspace(next);
+                  // Un modèle n'est valide que dans son environnement : si on
+                  // change d'environnement, on retire le modèle appliqué.
+                  if (templateKey) {
+                    const tpl = templates.find((item) => item.key === templateKey);
+                    if (tpl && tpl.workspace !== next) setTemplateKey("");
+                  }
+                }}
                 accentColor={theme.accent}
                 minWidth={220}
               />
@@ -171,10 +289,10 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
           )}
           <input type="hidden" name="mode" value="custom" />
           <input type="hidden" name="status" value="preparing" />
-          <input type="hidden" name="projectType" value="execution" />
+          <input type="hidden" name="projectType" value={projectType} />
           <input type="hidden" name="subcategory" value={subcategory} />
           <input type="hidden" name="priority" value={priority} />
-          <input type="hidden" name="templateKey" value="" />
+          <input type="hidden" name="templateKey" value={templateKey} />
           <StatusHiddenInputs
             scope="task"
             baseOrder={TASK_STATUS_ORDER}
@@ -205,16 +323,18 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
 
             <div className="mt-6 grid gap-4">
               <Field label={t("newProject.name")} required errorMessage={state.errors?.name}>
-                <input name="name" placeholder={t("newProject.namePlaceholder")} style={fieldStyle} autoComplete="off" />
+                <input name="name" value={name} onChange={(event) => setName(event.target.value)} placeholder={t("newProject.namePlaceholder")} style={fieldStyle} autoComplete="off" />
               </Field>
 
               <Field label={t("newProject.shortDesc")}>
-                <input name="description" placeholder={t("newProject.shortDescPlaceholder")} style={fieldStyle} />
+                <input name="description" value={description} onChange={(event) => setDescription(event.target.value)} placeholder={t("newProject.shortDescPlaceholder")} style={fieldStyle} />
               </Field>
 
               <Field label={t("newProject.objective")}>
                 <textarea
                   name="objective"
+                  value={objective}
+                  onChange={(event) => setObjective(event.target.value)}
                   placeholder={t("newProject.objectivePlaceholder")}
                   rows={5}
                   style={{ ...fieldStyle, resize: "vertical", lineHeight: 1.5 }}
@@ -224,6 +344,8 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
               <Field label={t("newProject.context")}>
                 <textarea
                   name="context"
+                  value={context}
+                  onChange={(event) => setContext(event.target.value)}
                   placeholder={t("newProject.contextPlaceholder")}
                   rows={5}
                   style={{ ...fieldStyle, resize: "vertical", lineHeight: 1.5 }}

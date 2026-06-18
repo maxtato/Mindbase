@@ -269,6 +269,11 @@ export function getProjectTemplatesForWorkspace(workspace: Workspace) {
   return PROJECT_TEMPLATES.filter((template) => template.workspace === workspace);
 }
 
+/** Tous les modèles (pour la galerie de création). */
+export function getAllProjectTemplates(): ProjectTemplateDefinition[] {
+  return PROJECT_TEMPLATES;
+}
+
 export function getProjectTemplateByKey(templateKey: string | undefined | null) {
   if (!templateKey) return undefined;
   return PROJECT_TEMPLATES.find((template) => template.key === templateKey);
