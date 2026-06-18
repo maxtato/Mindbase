@@ -195,6 +195,14 @@ const fr: Dict = {
   "stepForm.create": "Créer l'étape",
   "common.cancel": "Annuler",
 
+  // Invitation à passer au plan Pro (fonctionnalités verrouillées)
+  "upgrade.badge": "Pro",
+  "upgrade.title": "Fonctionnalité Pro",
+  "upgrade.body":
+    "La création et les assistants IA, la synthèse de projet et la collaboration sont inclus dans le plan Pro.",
+  "upgrade.cta": "Voir le plan Pro",
+  "upgrade.later": "Plus tard",
+
   // Tâches libres (compléments)
   "tasks.newFreeTask": "Nouvelle tâche libre",
   "tasks.ai.proOnly": "IA réservée au plan Pro.",
@@ -530,6 +538,14 @@ const en: Dict = {
   "stepForm.priorityHigh": "High priority",
   "stepForm.create": "Create step",
   "common.cancel": "Cancel",
+
+  // Upgrade prompt (locked Pro features)
+  "upgrade.badge": "Pro",
+  "upgrade.title": "Pro feature",
+  "upgrade.body":
+    "AI creation and assistants, project synthesis and collaboration are included in the Pro plan.",
+  "upgrade.cta": "See the Pro plan",
+  "upgrade.later": "Not now",
 
   // Free tasks (extras)
   "tasks.newFreeTask": "New free task",

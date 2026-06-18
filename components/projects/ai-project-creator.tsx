@@ -18,6 +18,7 @@ import {
 import { surface, text } from "@/lib/design-tokens";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
 import { useIsPaidPlan } from "@/components/account/account-context";
+import { ProLockButton } from "@/components/account/upgrade-prompt";
 import { useT } from "@/components/i18n/locale-provider";
 
 interface AIProjectCreatorProps {
@@ -269,8 +270,21 @@ export function AIProjectCreatorTrigger({ workspace, active, onToggle }: AIProje
   const t = useT();
   const theme = workspaceTheme[workspace];
   const isPaid = useIsPaidPlan();
-  // Création IA réservée au plan Pro : pas de bouton pour les comptes gratuits.
-  if (!isPaid) return null;
+  // Création IA réservée au plan Pro. Plutôt que de masquer le bouton (barre
+  // d'actions qui paraît incomplète), on affiche un bouton verrouillé qui
+  // invite à passer au plan Pro.
+  if (!isPaid) {
+    return (
+      <ProLockButton
+        title={t("upgrade.title")}
+        className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-bold"
+        style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.border}`, cursor: "pointer" }}
+      >
+        <SparkleIcon />
+        {t("aiCreate.openAI")}
+      </ProLockButton>
+    );
+  }
   return (
     <button
       type="button"
