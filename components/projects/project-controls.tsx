@@ -8,6 +8,7 @@ import {
   updateProjectPriorityAction,
   archiveProjectAction,
   deleteProjectAction,
+  duplicateProjectAction,
   updateProjectStatusSettingsAction,
 } from "@/app/dashboard/projects/[id]/actions";
 import { surface, text } from "@/lib/design-tokens";
@@ -278,8 +279,24 @@ export function ProjectDestructiveControls({
     startTransition(() => deleteProjectAction(projectId, workspace));
   }
 
+  function handleDuplicate() {
+    startTransition(() => duplicateProjectAction(projectId, workspace));
+  }
+
   return (
     <div className="flex items-center justify-end gap-2" aria-busy={isPending}>
+      <button
+        onClick={handleDuplicate}
+        className="flex h-9 items-center gap-1.5 px-3 rounded-xl text-xs font-semibold"
+        style={{ background: surface.s2, color: text.muted }}
+        title="Dupliquer le projet"
+      >
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+          <rect x="5.5" y="5.5" width="8" height="8" rx="1.6" stroke="currentColor" strokeWidth="1.4" />
+          <path d="M10.5 5.5V4a1.6 1.6 0 0 0-1.6-1.6H4A1.6 1.6 0 0 0 2.5 4v4.9A1.6 1.6 0 0 0 4 10.5h1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        Dupliquer
+      </button>
       {currentStatus !== "archived" && (
         <button
           onClick={handleArchive}

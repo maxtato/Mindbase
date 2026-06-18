@@ -932,6 +932,43 @@ export async function createProject(input: CreateProjectInput) {
   return project;
 }
 
+// Duplique un projet à l'identique (structure, étapes, tâches, collaborateurs,
+// décisions, risques) avec de nouveaux identifiants. Le suffixe « (copie) » est
+// ajouté au nom ; la conversation d'équipe est repartie à zéro et le journal
+// d'activité démarre par « Projet dupliqué ».
+export async function duplicateProject(projectId: string): Promise<Project | undefined> {
+  return queueWrite(async () => {
+    const projects = await ensureProjectStore();
+    const source = projects.find((project) => project.id === projectId);
+    if (!source) return undefined;
+
+    const now = new Date().toISOString();
+    const createdBy = (await getProfile().catch(() => null))?.name?.trim() || getActiveAccountName();
+    const clonedSteps: Step[] = (source.steps ?? []).map((step) => ({
+      ...step,
+      id: `s_${crypto.randomUUID().slice(0, 8)}`,
+      tasks: step.tasks.map((task) => ({
+        ...task,
+        id: `t_${crypto.randomUUID().slice(0, 8)}`,
+      })),
+    }));
+
+    const copy = normalizeProject({
+      ...source,
+      id: `p_${crypto.randomUUID().slice(0, 8)}`,
+      name: `${source.name} (copie)`,
+      steps: clonedSteps,
+      teamMessages: [],
+      activity: [makeActivity("Projet dupliqué", source.name)],
+      createdBy,
+      updatedAt: now,
+    });
+
+    await persistProjects([copy, ...projects]);
+    return copy;
+  });
+}
+
 export async function addFileToProject(
   projectId: string,
   file: ProjectFile,
