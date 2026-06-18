@@ -21,6 +21,7 @@ import {
   deleteTaskChecklistItem,
   deleteTaskFromStep,
   deleteProject,
+  duplicateProject,
   getProjectById,
   removeFileFromProject,
   removeTaskFileFromProject,
@@ -183,6 +184,13 @@ export async function archiveProjectAction(id: string, workspace: string) {
   // depuis kanban/calendrier/etc., car ces pages restent cachées.
   revalidatePath("/", "layout");
   redirect(`/dashboard/projects?workspace=${workspace}`);
+}
+
+export async function duplicateProjectAction(id: string, workspace: string) {
+  const copy = await duplicateProject(id);
+  // Flush du cache layout pour que la copie apparaisse dans toutes les vues.
+  revalidatePath("/", "layout");
+  redirect(copy ? `/dashboard/projects/${copy.id}?workspace=${workspace}` : `/dashboard/projects?workspace=${workspace}`);
 }
 
 export async function deleteProjectAction(id: string, workspace: string) {
