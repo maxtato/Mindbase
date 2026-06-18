@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { surface, text } from "@/lib/design-tokens";
+import { formatRelativeTime } from "@/lib/date-format";
 
 interface NotificationItem {
   id: string;
@@ -168,7 +169,7 @@ export function NotificationBell() {
                       {item.title}
                     </span>
                     <span className="truncate text-[10.5px]" style={{ color: text.muted }}>
-                      {item.context} · {formatRelative(item.createdAt)}
+                      {item.context} · {formatRelativeTime(item.createdAt)}
                     </span>
                   </span>
                 </button>
@@ -203,15 +204,3 @@ function NotificationIcon({ type }: { type: NotificationItem["type"] }) {
   );
 }
 
-function formatRelative(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  const diff = Date.now() - date.getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return "à l'instant";
-  if (minutes < 60) return `il y a ${minutes} min`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `il y a ${hours} h`;
-  const days = Math.floor(hours / 24);
-  return `il y a ${days} j`;
-}

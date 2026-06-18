@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import type { Project, Task } from "@/lib/mock-data";
-import { formatShortDate } from "@/lib/date-format";
+import { formatRelativeTime } from "@/lib/date-format";
 import { surface, text } from "@/lib/design-tokens";
 
 type Translate = (key: string, vars?: Record<string, string | number>) => string;
@@ -62,7 +62,7 @@ export function ActivityFeedPanel({ entries, workspace, t }: ActivityFeedPanelPr
                 {entryLabel(entry, t)}
               </p>
               <p className="mt-0.5 truncate text-[10.5px]" style={{ color: text.muted }}>
-                {entry.projectName} · {formatRelative(entry.date, t)}
+                {entry.projectName} · {formatRelativeTime(entry.date, t)}
               </p>
             </div>
           </Link>
@@ -111,19 +111,6 @@ function ActivityIcon({ kind }: { kind: ActivityEntry["kind"] }) {
       )}
     </span>
   );
-}
-
-function formatRelative(date: Date, t: Translate): string {
-  const now = Date.now();
-  const diff = now - date.getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return t("activity.rel.now");
-  if (minutes < 60) return t("activity.rel.min", { count: minutes });
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return t("activity.rel.hour", { count: hours });
-  const days = Math.floor(hours / 24);
-  if (days < 7) return t("activity.rel.day", { count: days });
-  return formatShortDate(date);
 }
 
 // Construit le flux d'activité à partir des projets.
