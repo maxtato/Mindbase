@@ -48,9 +48,11 @@ export default async function KanbanPage({
     envFilter === "all" ? allProjects : allProjects.filter((project) => project.workspace === envFilter);
 
   const selectedProjectId =
-    typeof sp.project === "string" && projects.some((project) => project.id === sp.project)
-      ? sp.project
-      : "all";
+    sp.project === "standalone"
+      ? "standalone"
+      : typeof sp.project === "string" && projects.some((project) => project.id === sp.project)
+        ? sp.project
+        : "all";
   const selectedProject = projects.find((project) => project.id === selectedProjectId);
   const projectSteps = selectedProject?.steps ?? [];
   const selectedStepId =
@@ -81,7 +83,7 @@ export default async function KanbanPage({
   // projets » (et tant qu'aucune étape précise n'est filtrée), avec le même
   // filtre d'environnement et de statut.
   const standaloneItems =
-    selectedProjectId === "all" && selectedStepId === "all" && personFilter !== PERSON_FILTER_ME
+    (selectedProjectId === "all" || selectedProjectId === "standalone") && selectedStepId === "all" && personFilter !== PERSON_FILTER_ME
       ? (await getStandaloneTasksForWorkspace(workspace))
           .filter((task) => envFilter === "all" || task.workspace === envFilter)
           .map(standaloneToBoardItem)

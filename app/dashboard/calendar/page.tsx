@@ -52,9 +52,11 @@ export default async function CalendarPage({
     envFilter === "all" ? allProjects : allProjects.filter((project) => project.workspace === envFilter);
 
   const selectedProjectId =
-    typeof sp.project === "string" && projects.some((project) => project.id === sp.project)
-      ? sp.project
-      : "all";
+    sp.project === "standalone"
+      ? "standalone"
+      : typeof sp.project === "string" && projects.some((project) => project.id === sp.project)
+        ? sp.project
+        : "all";
   const selectedProject = projects.find((project) => project.id === selectedProjectId);
   const projectSteps = selectedProject?.steps ?? [];
   const selectedStepId =
@@ -83,7 +85,7 @@ export default async function CalendarPage({
   // Tâches autonomes : visibles dans le calendrier sur leur échéance, en vue
   // « tous les projets », avec les mêmes filtres environnement/statut/priorité.
   const standaloneItems =
-    selectedProjectId === "all" && selectedStepId === "all" && personFilter !== PERSON_FILTER_ME
+    (selectedProjectId === "all" || selectedProjectId === "standalone") && selectedStepId === "all" && personFilter !== PERSON_FILTER_ME
       ? (await getStandaloneTasksForWorkspace(workspace))
           .filter((task) => envFilter === "all" || task.workspace === envFilter)
           .map(standaloneToBoardItem)

@@ -32,7 +32,7 @@ export default async function TasksPage({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <Topbar title={t("nav.tasks")} workspace={workspace} subtitle={t("tasks.subtitle")} />
+      <Topbar title={t("nav.tasks")} workspace={workspace} />
 
       <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-4 py-6 lg:px-6">
         <StandaloneTasksView tasks={tasks} workspace={workspace} />

@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { StandaloneTask } from "@/lib/standalone-tasks-store";
 import type { Workspace } from "@/lib/workspace";
-import { workspaceTheme } from "@/lib/workspace";
+import { workspaceTheme, listEnvironmentOptions } from "@/lib/workspace";
+import { useEnvironments } from "@/components/environments/environments-provider";
 import { surface, text, statusColor, error as errorTokens } from "@/lib/design-tokens";
 import { priorityVisuals } from "@/lib/project-taxonomy";
 import { deriveTaskStatus } from "@/lib/project-plan";
@@ -35,6 +36,14 @@ export function StandaloneTasksView({ tasks, workspace }: { tasks: StandaloneTas
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  // Environnement auquel associer la tâche créée (obligatoire : une tâche
+  // appartient à un environnement). Par défaut l'environnement courant, ou le
+  // premier disponible en vue « Tous ».
+  const environments = useEnvironments();
+  const envOptions = listEnvironmentOptions(environments);
+  const [targetWorkspace, setTargetWorkspace] = useState<string>(
+    workspace !== "all" ? workspace : envOptions[0]?.value ?? "personal",
+  );
 
   function refresh() {
     startTransition(() => router.refresh());
@@ -45,7 +54,7 @@ export function StandaloneTasksView({ tasks, workspace }: { tasks: StandaloneTas
     if (!clean || busy) return;
     setBusy(true);
     try {
-      await createStandaloneTaskAction({ title: clean, workspace });
+      await createStandaloneTaskAction({ title: clean, workspace: targetWorkspace });
       setTitle("");
       router.refresh();
     } finally {
@@ -58,7 +67,7 @@ export function StandaloneTasksView({ tasks, workspace }: { tasks: StandaloneTas
     if (!clean || busy) return;
     setBusy(true);
     try {
-      await generateStandaloneTaskAction({ description: clean, workspace });
+      await generateStandaloneTaskAction({ description: clean, workspace: targetWorkspace });
       setAiText("");
       router.refresh();
     } finally {
@@ -95,10 +104,30 @@ export function StandaloneTasksView({ tasks, workspace }: { tasks: StandaloneTas
     <div className="mx-auto flex w-full max-w-[840px] flex-col gap-4">
       {/* Création : manuelle par défaut, + un bouton « Créer avec l'IA » violet. */}
       <section className="rounded-[20px] p-4" style={{ background: surface.s1, border: `1px solid ${surface.border}` }}>
-        <p className="mb-3 text-[12.5px] font-bold uppercase tracking-[0.1em]" style={{ color: text.primary }}>
+        <p className="text-[12.5px] font-bold uppercase tracking-[0.1em]" style={{ color: text.primary }}>
           {t("tasks.newTask")}
         </p>
+        <p className="mb-3 mt-1 text-[11px]" style={{ color: text.muted }}>
+          {t("tasks.subtitle")}
+        </p>
 
+        <div className="mb-2 flex items-center gap-2">
+          <span className="text-[11px] font-semibold" style={{ color: text.muted }}>
+            {t("filter.environment")}
+          </span>
+          <select
+            value={targetWorkspace}
+            onChange={(event) => setTargetWorkspace(event.target.value)}
+            className="rounded-lg px-2.5 py-1.5 text-xs outline-none"
+            style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.border}` }}
+          >
+            {envOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="flex items-center gap-2">
           <input
             type="text"

@@ -56,7 +56,9 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
   const isAll = workspace === ALL_WORKSPACE;
   // En vue « Tous », on demande dans quel environnement créer le projet.
   const [targetWorkspace, setTargetWorkspace] = useState<Workspace>(isAll ? "personal" : workspace);
-  const effectiveWorkspace = isAll ? targetWorkspace : workspace;
+  // L'environnement est toujours modifiable à la création (même si on arrive
+  // depuis un environnement précis).
+  const effectiveWorkspace = targetWorkspace;
   const theme = workspaceTheme[effectiveWorkspace];
   const [state, formAction, pending] = useActionState(createProjectAction, initialCreateProjectFormState);
   const [subcategory, setSubcategory] = useState<string>(getSubcategoryOptions(effectiveWorkspace)[0]?.key ?? "other");
@@ -145,7 +147,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
         )}
         <form action={formAction} className="mx-auto grid w-full max-w-[1480px] gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.82fr)_minmax(340px,0.9fr)]">
           <input type="hidden" name="workspace" value={effectiveWorkspace} />
-          {isAll && (
+          {(
             <div className="xl:col-span-3" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <label className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
                 Environnement
