@@ -18,6 +18,7 @@ import { deriveTaskDisplayPriority, deriveTaskStatus, taskStatusLabels } from "@
 import { priorityVisuals, type ProjectPriority } from "@/lib/project-taxonomy";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
 import { useAccountName, useIsPaidPlan } from "@/components/account/account-context";
+import { useT } from "@/components/i18n/locale-provider";
 
 interface TaskExpandedPreviewProps {
   task: Task;
@@ -248,7 +249,7 @@ function FieldActions({
   dirty,
   onSave,
   onCancel,
-  saveLabel = "Enregistrer",
+  saveLabel,
   busy = false,
   accentColor,
 }: {
@@ -259,14 +260,15 @@ function FieldActions({
   busy?: boolean;
   accentColor: string;
 }) {
+  const t = useT();
   if (!dirty) return null;
   return (
     <div className="flex items-center gap-1.5">
       <Button variant="primary" size="sm" accentColor={accentColor} onClick={onSave} disabled={busy}>
-        {busy ? "Enregistrement…" : saveLabel}
+        {busy ? t("task.saving") : (saveLabel ?? t("task.save"))}
       </Button>
       <Button variant="ghost" size="sm" onClick={onCancel} disabled={busy}>
-        Annuler
+        {t("task.cancel")}
       </Button>
     </div>
   );
@@ -290,6 +292,7 @@ function ExpectedField({
   stepId?: string;
 }) {
   const initial = task.expected ?? task.description ?? "";
+  const t = useT();
   const [value, setValue] = useState(initial);
   const [assistantOpen, setAssistantOpen] = useState(false);
   useEffect(() => setValue(initial), [initial]);
@@ -301,13 +304,13 @@ function ExpectedField({
 
   return (
     <FieldShell
-      title="Attendu"
+      title={t("task.expected")}
       icon="expected"
       iconColor={accentColor}
       rightSlot={
         aiAvailable ? (
           <AIChip
-            label="Assistant IA"
+            label={t("task.aiAssistant")}
             accentColor={aiAccent}
             onClick={() => setAssistantOpen(true)}
             disabled={!editable}
@@ -573,6 +576,7 @@ function RealizationField({
     () => parseBulletRows(task.realization ?? task.completionDetails ?? ""),
     [task.realization, task.completionDetails],
   );
+  const t = useT();
   const [rows, setRows] = useState<string[]>(initialRows);
   useEffect(() => setRows(initialRows), [initialRows]);
 
@@ -583,13 +587,13 @@ function RealizationField({
 
   return (
     <FieldShell
-      title="Réalisation"
+      title={t("task.realization")}
       icon="realization"
       iconColor={statusColor.green.text}
       rightSlot={
         isPaid ? (
           <AIChip
-            label="Assistant IA"
+            label={t("task.aiAssistant")}
             accentColor={aiAccent}
             onClick={() => setAssistantOpen(true)}
             disabled={!editable}
@@ -641,6 +645,7 @@ function NoteField({
     const joined = (task.comments ?? []).join("\n");
     return parseBulletRows(joined);
   }, [task.comments]);
+  const t = useT();
   const [rows, setRows] = useState<string[]>(initialRows);
   useEffect(() => setRows(initialRows), [initialRows]);
 
@@ -648,7 +653,7 @@ function NoteField({
   const editable = Boolean(onUpdate);
 
   return (
-    <FieldShell title="Note" icon="note" iconColor={text.muted}>
+    <FieldShell title={t("task.note")} icon="note" iconColor={text.muted}>
       <BulletListEditor
         rows={rows}
         onChange={setRows}
@@ -675,16 +680,17 @@ function NoteField({
 // Sans fichier, on affiche « Pas de fichier joint. ».
 function FilesField({ task, accentColor }: { task: Task; accentColor: string }) {
   const files = task.files ?? [];
+  const t = useT();
   return (
     <FieldShell
-      title="Fichiers joints"
+      title={t("task.files")}
       icon="file"
       iconColor={text.muted}
       rightLabel={files.length > 0 ? `${files.length}` : undefined}
     >
       {files.length === 0 ? (
         <p style={{ fontSize: 11.5, color: text.muted, margin: 0, fontStyle: "italic" }}>
-          Pas de fichier joint.
+          {t("task.noFiles")}
         </p>
       ) : (
         <div
@@ -795,6 +801,7 @@ function ChecklistField({
 }) {
   const router = useRouter();
   const checklist = task.checklist ?? [];
+  const t = useT();
   const done = checklist.filter((item) => item.done).length;
   const total = checklist.length;
   const [draft, setDraft] = useState("");
@@ -878,14 +885,14 @@ function ChecklistField({
 
   return (
     <FieldShell
-      title="Checklist"
+      title={t("task.checklist")}
       icon="checklist"
       iconColor={text.muted}
       rightLabel={total > 0 ? `${done}/${total}` : undefined}
       rightSlot={
         aiAvailable ? (
           <AIChip
-            label={aiPending ? "IA…" : "Suggestion IA"}
+            label={aiPending ? t("task.aiThinking") : t("task.aiSuggestion")}
             accentColor={aiAccent}
             onClick={handleAISuggest}
             disabled={aiPending || !editable}
@@ -981,7 +988,7 @@ function ChecklistField({
                 add();
               }
             }}
-            placeholder="Ajouter une sous-action…"
+            placeholder={t("task.addSubaction")}
             className="mb-input"
             style={{ ...fieldInputStyle(), minHeight: 32, padding: "6px 10px" }}
           />
@@ -1147,6 +1154,7 @@ function DiscussionField({
   // (qui fermerait le drawer). Quand le task.discussion serveur les
   // contient, on les filtre pour éviter les doublons.
   const [pendingMessages, setPendingMessages] = useState<TaskDiscussionMessage[]>([]);
+  const t = useT();
   const messages = useMemo(() => {
     const persisted = task.discussion ?? [];
     const persistedKeys = new Set(persisted.map((m) => `${m.authorName}|${m.content}`));
@@ -1252,7 +1260,7 @@ function DiscussionField({
 
   return (
     <FieldShell
-      title="Discussion"
+      title={t("task.discussion")}
       icon="discussion"
       iconColor={text.muted}
       rightLabel={messages.length > 0 ? `${messages.length}` : undefined}
@@ -2190,6 +2198,7 @@ function PersonEditor({
 }) {
   const accountName = useAccountName();
   const firstName = (name: string) => name.trim().toLowerCase().split(" ")[0] ?? "";
+  const t = useT();
   const meFirst = firstName(accountName);
   const isMe = (name: string) => Boolean(meFirst) && firstName(name) === meFirst;
 
@@ -2264,7 +2273,7 @@ function PersonEditor({
       }}
     >
       <p style={{ fontSize: 10.5, fontWeight: 600, color: text.muted, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-        Personnes assignées
+        {t("task.assignedPeople")}
       </p>
 
       {/* Recherche parmi les collaborateurs DÉJÀ ajoutés au projet. On ne
