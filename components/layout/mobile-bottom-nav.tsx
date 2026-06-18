@@ -16,7 +16,6 @@ import type { Workspace } from "@/lib/workspace";
 import { surface, text } from "@/lib/design-tokens";
 import { WORKSPACE_EVENT } from "@/lib/workspace-client";
 import { useT } from "@/components/i18n/locale-provider";
-import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
 
 const NAV_ITEMS = [
   {
@@ -145,7 +144,7 @@ export function MobileBottomNav({ initialWorkspace }: MobileBottomNavProps = {})
 
   return (
     <nav
-      className="shrink-0 flex items-stretch sm:hidden"
+      className="shrink-0 flex items-stretch justify-around sm:hidden"
       style={{
         background: surface.s1,
         borderTop: `1px solid ${surface.borderSubtle}`,
@@ -155,10 +154,6 @@ export function MobileBottomNav({ initialWorkspace }: MobileBottomNavProps = {})
       }}
       aria-label="Navigation principale"
     >
-      {/* Sélecteur d'environnement (pastille) à gauche de la barre. */}
-      <div className="flex shrink-0 items-center border-r pl-2 pr-2" style={{ borderColor: surface.borderSubtle }}>
-        <WorkspaceSwitcher initialWorkspace={initialWorkspace ?? workspace} />
-      </div>
       {NAV_ITEMS.map((item) => {
         const active = isActive(item.href, item.exact);
         return (
