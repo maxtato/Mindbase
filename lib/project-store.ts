@@ -1589,6 +1589,35 @@ export interface CompleteTaskInput {
   details: string;
 }
 
+// Construit une entrée de journal d'activité (alimente la carte « Activité » du
+// projet). Les appelants la préposent à `project.activity` (cap 50).
+function makeActivity(
+  title: string,
+  detail = "",
+  tone: ProjectActivityItem["tone"] = "neutral",
+): ProjectActivityItem {
+  return {
+    id: `act_${crypto.randomUUID().slice(0, 8)}`,
+    date: new Date().toISOString(),
+    title,
+    detail,
+    tone,
+  };
+}
+
+function prependActivity(current: Project, item: ProjectActivityItem): ProjectActivityItem[] {
+  return [item, ...(current.activity ?? [])].slice(0, 50);
+}
+
+// Libellés FR des statuts pour le journal d'activité (texte stocké).
+const TASK_STATUS_FR: Record<TaskStatus, string> = {
+  todo: "À faire",
+  in_progress: "En cours",
+  waiting: "En attente",
+  blocked: "Bloquée",
+  done: "Terminée",
+};
+
 export async function completeTaskWithRealization(
   projectId: string,
   stepId: string,
@@ -1982,6 +2011,7 @@ export async function addStepToProject(
       steps: nextSteps,
       progress: nextProgress,
       status: deriveProjectStatusForMutation(current, nextSteps),
+      activity: prependActivity(current, makeActivity("Étape ajoutée", newStep.title)),
       updatedAt: new Date().toISOString(),
     });
 
@@ -2112,6 +2142,7 @@ export async function addTaskToStep(
       steps: updatedSteps,
       progress: nextProgress,
       status: deriveProjectStatusForMutation(current, updatedSteps),
+      activity: prependActivity(current, makeActivity("Tâche ajoutée", newTask.title)),
       updatedAt: new Date().toISOString(),
     });
 
@@ -2161,6 +2192,10 @@ export async function updateTaskInStep(
       nextDone = false;
       nextBlocked = false;
     }
+    // Changement de statut explicite (hors « terminée », déjà journalisée via la
+    // complétion) → entrée d'activité.
+    const statusChanged =
+      input.status !== undefined && nextStatus !== currentTask.status && nextStatus !== "done";
     const updatedTask: Task = {
       ...currentTask,
       title: nextTitle || currentTask.title,
@@ -2216,6 +2251,9 @@ export async function updateTaskInStep(
       steps: updatedSteps,
       progress: nextProgress,
       status: deriveProjectStatusForMutation(current, updatedSteps),
+      activity: statusChanged
+        ? prependActivity(current, makeActivity("Statut modifié", `${updatedTask.title} → ${TASK_STATUS_FR[nextStatus]}`))
+        : current.activity,
       updatedAt: new Date().toISOString(),
     });
 
