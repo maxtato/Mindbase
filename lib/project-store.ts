@@ -2578,6 +2578,47 @@ export async function addDecisionToProject(
   });
 }
 
+export async function updateProjectDecisionStatus(
+  projectId: string,
+  decisionId: string,
+  status: Decision["status"],
+): Promise<Project | undefined> {
+  return queueWrite(async () => {
+    const projects = await ensureProjectStore();
+    const projectIndex = projects.findIndex((p) => p.id === projectId);
+    if (projectIndex === -1) return undefined;
+    const current = projects[projectIndex];
+    if (!current.decisions.some((d) => d.id === decisionId)) return current;
+    const updated = normalizeProject({
+      ...current,
+      decisions: current.decisions.map((d) => (d.id === decisionId ? { ...d, status } : d)),
+      updatedAt: new Date().toISOString(),
+    });
+    const nextProjects = [...projects];
+    nextProjects[projectIndex] = updated;
+    await persistProjects(nextProjects);
+    return updated;
+  });
+}
+
+export async function deleteProjectDecision(projectId: string, decisionId: string): Promise<Project | undefined> {
+  return queueWrite(async () => {
+    const projects = await ensureProjectStore();
+    const projectIndex = projects.findIndex((p) => p.id === projectId);
+    if (projectIndex === -1) return undefined;
+    const current = projects[projectIndex];
+    const updated = normalizeProject({
+      ...current,
+      decisions: current.decisions.filter((d) => d.id !== decisionId),
+      updatedAt: new Date().toISOString(),
+    });
+    const nextProjects = [...projects];
+    nextProjects[projectIndex] = updated;
+    await persistProjects(nextProjects);
+    return updated;
+  });
+}
+
 export async function addRiskToProject(
   projectId: string,
   risk: Omit<Risk, "id" | "status"> & Partial<Pick<Risk, "status">>,

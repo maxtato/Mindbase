@@ -24,6 +24,9 @@ import {
   duplicateProject,
   duplicateStepInProject,
   duplicateTaskInStep,
+  addDecisionToProject,
+  updateProjectDecisionStatus,
+  deleteProjectDecision,
   getProjectById,
   removeFileFromProject,
   removeTaskFileFromProject,
@@ -271,6 +274,32 @@ export async function duplicateStepAction(
 export async function duplicateTaskAction(projectId: string, stepId: string, taskId: string, newTaskId?: string) {
   await duplicateTaskInStep(projectId, stepId, taskId, newTaskId);
   await finalizeProjectMutation(projectId, `tâche ${taskId} dupliquée manuellement.`);
+}
+
+export async function addDecisionAction(projectId: string, title: string, rationale?: string) {
+  const cleanTitle = cleanActionText(title);
+  if (!cleanTitle) return;
+  await addDecisionToProject(projectId, {
+    title: cleanTitle,
+    rationale: cleanActionText(rationale) || undefined,
+    date: new Date().toISOString(),
+    status: "pending",
+  });
+  await finalizeProjectMutation(projectId, `décision ajoutée : ${cleanTitle}.`);
+}
+
+export async function setDecisionStatusAction(
+  projectId: string,
+  decisionId: string,
+  status: "decided" | "pending" | "revisiting",
+) {
+  await updateProjectDecisionStatus(projectId, decisionId, status);
+  await finalizeProjectMutation(projectId, `statut de décision ${decisionId} → ${status}.`);
+}
+
+export async function deleteDecisionAction(projectId: string, decisionId: string) {
+  await deleteProjectDecision(projectId, decisionId);
+  await finalizeProjectMutation(projectId, `décision ${decisionId} supprimée.`);
 }
 
 export async function updateTaskAction(projectId: string, stepId: string, taskId: string, input: TaskUpdateActionInput) {
