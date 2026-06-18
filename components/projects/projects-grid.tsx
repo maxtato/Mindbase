@@ -36,6 +36,8 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
   const [envFilter, setEnvFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [sortKey, setSortKey] = useState<"recent" | "name" | "progress" | "priority">("recent");
   const theme = workspaceTheme[workspace];
   const t = useT();
 
@@ -94,6 +96,30 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
     .filter((project) => envFilter === "all" || project.workspace === envFilter)
     .filter((project) => priorityFilter === "all" || project.priority === priorityFilter);
 
+  // Recherche par nom / objectif + tri.
+  const query = search.trim().toLowerCase();
+  const searched = query
+    ? filtered.filter(
+        (project) =>
+          project.name.toLowerCase().includes(query) ||
+          (project.objective ?? "").toLowerCase().includes(query),
+      )
+    : filtered;
+  const PRIORITY_RANK: Record<string, number> = { high: 0, medium: 1, low: 2 };
+  const visibleProjects = [...searched].sort((a, b) => {
+    if (sortKey === "name") return a.name.localeCompare(b.name, "fr");
+    if (sortKey === "progress") return (b.progress ?? 0) - (a.progress ?? 0);
+    if (sortKey === "priority") return (PRIORITY_RANK[a.priority] ?? 1) - (PRIORITY_RANK[b.priority] ?? 1);
+    return (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""); // récents
+  });
+
+  const sortOptions: FilterPillOption<"recent" | "name" | "progress" | "priority">[] = [
+    { value: "recent", label: t("sort.recent") },
+    { value: "name", label: t("sort.name") },
+    { value: "progress", label: t("sort.progress") },
+    { value: "priority", label: t("sort.priority") },
+  ];
+
   const archivedCount = projects.filter((p) => p.status === "archived").length;
 
   const statusOptions: FilterPillOption<FilterKey>[] = [
@@ -116,12 +142,21 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
     <>
       <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
         <p className="text-sm shrink-0" style={{ color: text.secondary }}>
-          {filtered.length === 1 ? t("projects.countOne", { count: filtered.length }) : t("projects.countOther", { count: filtered.length })}
+          {visibleProjects.length === 1 ? t("projects.countOne", { count: visibleProjects.length }) : t("projects.countOther", { count: visibleProjects.length })}
           {activeFilter === "all" && ` · ${t("projects.activeSuffix", { count: nonArchived.filter((p) => p.status === "active").length })}`}
           {activeFilter === "archived" && <span className="ml-1.5 text-xs" style={{ color: text.muted }}>{t("projects.archivedSuffix")}</span>}
         </p>
 
         <FilterPillGroup>
+          <input
+            type="text"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={t("projects.search")}
+            aria-label={t("projects.search")}
+            className="mb-input h-[30px] rounded-full px-3 text-[12px] outline-none"
+            style={{ background: surface.s3, color: text.primary, border: `1px solid ${surface.borderSubtle}`, minWidth: 180 }}
+          />
           <FilterPill
             label={t("filter.environment")}
             value={envFilter}
@@ -147,10 +182,18 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
             active={priorityFilter !== "all"}
             accentColor={theme.accent}
           />
+          <FilterPill
+            label={t("filter.sort")}
+            value={sortKey}
+            options={sortOptions}
+            onChange={setSortKey}
+            active={sortKey !== "recent"}
+            accentColor={theme.accent}
+          />
         </FilterPillGroup>
       </div>
 
-      {filtered.length === 0 ? (
+      {visibleProjects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20">
           <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: surface.s1 }}>
             <svg width="22" height="22" viewBox="0 0 16 16" fill="none">
@@ -166,12 +209,12 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
             {t("projects.empty.title")}
           </p>
           <p className="text-xs mt-1" style={{ color: text.muted }}>
-            {t("projects.empty.hint")}
+            {query ? t("projects.noMatch") : t("projects.empty.hint")}
           </p>
         </div>
       ) : (
         <div className="mb-projects-grid mb-stagger">
-          {filtered.map((project) => {
+          {visibleProjects.map((project) => {
             const pendingActions = projectPendingTaskCount(project);
             const openBlockers = project.blockers.filter((blocker) => blocker.status === "open");
             const pendingDecisions = project.decisions.filter((decision) => decision.status === "pending");
