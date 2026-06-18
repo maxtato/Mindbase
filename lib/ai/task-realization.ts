@@ -5,6 +5,7 @@
 // chaque ligne comme une puce.
 
 import { getOpenAIClient, AI_MODEL } from "./client";
+import { aiLocaleDirective } from "./locale";
 
 const SYSTEM_PROMPT = `Tu reçois le texte de "Réalisation" d'une tâche : ce qui a été concrètement fait, livré, décidé ou validé — souvent rédigé en un seul bloc.
 Ta mission : séparer ce texte en ACTIONS distinctes, UNE PAR LIGNE.
@@ -38,7 +39,7 @@ export async function splitTaskRealization(text: string): Promise<string[]> {
       json_schema: { name: "realization_lines", strict: true, schema: SCHEMA },
     },
     messages: [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: SYSTEM_PROMPT + (await aiLocaleDirective()) },
       {
         role: "user",
         content: `Voici le texte de la réalisation à séparer en actions distinctes :\n\n${cleaned}`,

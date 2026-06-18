@@ -3,6 +3,7 @@
 // suggère également la sous-catégorie ("thème") la plus pertinente.
 
 import { getOpenAIClient, AI_MODEL } from "./client";
+import { aiLocaleDirective } from "./locale";
 import { getSubcategoryOptions } from "@/lib/project-taxonomy";
 import type { Workspace } from "@/lib/workspace";
 
@@ -127,7 +128,7 @@ export async function generateProjectSuggestion(
       },
     },
     messages: [
-      { role: "system", content: buildSystemPrompt(workspace) },
+      { role: "system", content: buildSystemPrompt(workspace) + (await aiLocaleDirective()) },
       {
         role: "user",
         content: `Voici la description du projet :\n\n${description.trim()}\n\nPropose une structure complète : nom, objectif, contexte, sous-catégorie (thème) et étapes avec leurs tâches.`,

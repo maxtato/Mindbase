@@ -11,6 +11,7 @@
 // statuts, dates ou checklists.
 
 import { getOpenAIClient, AI_MODEL } from "./client";
+import { aiLocaleDirective } from "./locale";
 import type { Project } from "@/lib/mock-data";
 import { calculateProjectIndicators } from "@/lib/project-plan";
 import { isTaskOverdue, flattenProjectTasks, type FlattenedProjectTask } from "@/lib/project-insights";
@@ -154,7 +155,7 @@ export async function generateProjectSynthesis(project: Project): Promise<AIProj
       },
     },
     messages: [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: SYSTEM_PROMPT + (await aiLocaleDirective()) },
       {
         role: "user",
         content: `Voici l'état du projet :\n\n${snapshot}\n\nRédige la synthèse complète couvrant l'objectif, le contexte, l'état actuel, le résumé, les prochaines étapes et les risques.`,

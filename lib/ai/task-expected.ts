@@ -4,6 +4,7 @@
 // avec le reste du projet et non isolé.
 
 import { getOpenAIClient, AI_MODEL } from "./client";
+import { aiLocaleDirective } from "./locale";
 import type { Project, Task, Step } from "@/lib/mock-data";
 import { buildProjectContextSnapshot } from "./project-context";
 
@@ -45,7 +46,7 @@ export async function improveTaskExpected(input: ImproveTaskExpectedInput): Prom
   const response = await client.chat.completions.create({
     model: AI_MODEL,
     messages: [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: SYSTEM_PROMPT + (await aiLocaleDirective()) },
       { role: "user", content: userMessage },
     ],
   });
@@ -121,7 +122,7 @@ export async function refineTaskExpected(input: {
       json_schema: { name: "expected_refine", strict: true, schema: REFINE_SCHEMA },
     },
     messages: [
-      { role: "system", content: REFINE_SYSTEM_PROMPT },
+      { role: "system", content: REFINE_SYSTEM_PROMPT + (await aiLocaleDirective()) },
       { role: "user", content: context },
       ...dialogue.map((message) => ({ role: message.role, content: message.content })),
     ],
