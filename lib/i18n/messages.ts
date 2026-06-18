@@ -77,6 +77,30 @@ const fr: Dict = {
   "card.decisionsOther": "{count} décisions en attente",
   "card.dueSoonOne": "{count} proche",
   "card.dueSoonOther": "{count} proches",
+
+  // Vues Kanban / Calendrier
+  "board.empty.title": "Aucune tâche dans ce périmètre",
+  "board.empty.kanban": "Élargis le filtre projet ou étape pour voir des tâches.",
+  "board.empty.calendar": "Élargis le filtre projet ou étape pour voir des échéances.",
+  "filter.project": "Projet",
+  "filter.step": "Étape",
+  "filter.person": "Personne",
+  "filter.tasks": "Tâches",
+  "filter.project.all": "Tous",
+  "filter.step.all": "Toutes",
+  "filter.person.all": "Toutes",
+  "filter.person.me": "Moi",
+  "filter.taskStatus.open": "Ouvertes",
+  "filter.taskStatus.todo": "À faire",
+  "filter.taskStatus.inProgress": "En cours",
+  "filter.taskStatus.waiting": "En attente",
+  "filter.taskStatus.blocked": "Bloquées",
+  "filter.taskStatus.done": "Terminées",
+  "filter.taskStatus.all": "Toutes",
+  "filter.owner.all": "Toutes",
+  "filter.owner.mine": "Mes tâches",
+  "calendar.prevMonth": "Mois précédent",
+  "calendar.nextMonth": "Mois suivant",
 };
 
 const en: Dict = {
@@ -150,6 +174,30 @@ const en: Dict = {
   "card.decisionsOther": "{count} pending decisions",
   "card.dueSoonOne": "{count} due soon",
   "card.dueSoonOther": "{count} due soon",
+
+  // Kanban / Calendar views
+  "board.empty.title": "No task in this scope",
+  "board.empty.kanban": "Widen the project or step filter to see tasks.",
+  "board.empty.calendar": "Widen the project or step filter to see due dates.",
+  "filter.project": "Project",
+  "filter.step": "Step",
+  "filter.person": "Person",
+  "filter.tasks": "Tasks",
+  "filter.project.all": "All",
+  "filter.step.all": "All",
+  "filter.person.all": "All",
+  "filter.person.me": "Me",
+  "filter.taskStatus.open": "Open",
+  "filter.taskStatus.todo": "To do",
+  "filter.taskStatus.inProgress": "In progress",
+  "filter.taskStatus.waiting": "Waiting",
+  "filter.taskStatus.blocked": "Blocked",
+  "filter.taskStatus.done": "Done",
+  "filter.taskStatus.all": "All",
+  "filter.owner.all": "All",
+  "filter.owner.mine": "My tasks",
+  "calendar.prevMonth": "Previous month",
+  "calendar.nextMonth": "Next month",
 };
 
 export const MESSAGES: Record<Locale, Dict> = { fr, en };

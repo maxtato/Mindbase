@@ -16,6 +16,7 @@ import { priorityVisuals, type ProjectPriority } from "@/lib/project-taxonomy";
 import { useIsTouchDevice } from "@/lib/use-touch-device";
 import { useCardDrag, DragGhost, useLongPressDrag, findScrollParent } from "@/lib/use-card-drag";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
+import { useT } from "@/components/i18n/locale-provider";
 
 type TaskSort = "due" | "priority";
 type TaskStatusFilter = "open" | "all" | TaskStatus;
@@ -62,6 +63,7 @@ export function TasksCalendarBoard({
   basePath?: string;
 }) {
   const router = useRouter();
+  const t = useT();
   const [, startTransition] = useTransition();
   const [draggingKey, setDraggingKey] = useState<string | null>(null);
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
@@ -179,7 +181,7 @@ export function TasksCalendarBoard({
             className="rounded-full px-3 py-2 text-[11px] font-semibold"
             style={{ background: surface.s3, color: text.secondary, border: `1px solid ${surface.borderSubtle}` }}
           >
-            Mois précédent
+            {t("calendar.prevMonth")}
           </Link>
           <p className="text-[0.82rem] font-bold capitalize" style={{ color: text.primary }}>
             {monthStart.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
@@ -189,7 +191,7 @@ export function TasksCalendarBoard({
             className="rounded-full px-3 py-2 text-[11px] font-semibold"
             style={{ background: surface.s3, color: text.secondary, border: `1px solid ${surface.borderSubtle}` }}
           >
-            Mois suivant
+            {t("calendar.nextMonth")}
           </Link>
         </div>
 

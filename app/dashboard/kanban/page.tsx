@@ -104,7 +104,7 @@ export default async function KanbanPage({
           />
 
           {scopedTasks.length === 0 ? (
-            <EmptyState />
+            <EmptyState title={t("board.empty.title")} hint={t("board.empty.kanban")} />
           ) : (
             <TasksKanbanBoard tasks={scopedTasks} workspace={workspace} />
           )}
@@ -114,14 +114,14 @@ export default async function KanbanPage({
   );
 }
 
-function EmptyState() {
+function EmptyState({ title, hint }: { title: string; hint: string }) {
   return (
     <section className="mb-soft-shadow rounded-[26px] p-10 text-center" style={{ background: surface.s1 }}>
       <p className="text-sm font-semibold" style={{ color: text.primary }}>
-        Aucune tâche dans ce périmètre
+        {title}
       </p>
       <p className="mt-1 text-xs" style={{ color: text.muted }}>
-        Élargis le filtre projet ou étape pour voir des tâches.
+        {hint}
       </p>
     </section>
   );
