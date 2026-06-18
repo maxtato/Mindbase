@@ -20,13 +20,14 @@ import { ProjectTeamChatLauncher } from "@/components/projects/project-team-chat
 import { ProjectMultiView } from "@/components/projects/project-multi-view";
 import { ProjectRailDetails } from "@/components/projects/project-rail-details";
 import { ExpandableText } from "@/components/projects/expandable-text";
+import { ProjectDecisionsCard } from "@/components/projects/project-decisions-card";
 import { resolveProjectSubcategoryDisplay } from "@/lib/project-taxonomy";
 import {
   flattenProjectTasks,
   isTaskOverdue,
   projectPendingTaskCount,
 } from "@/lib/project-insights";
-import type { Decision, Project, ProjectActivityItem, Risk } from "@/lib/mock-data";
+import type { Project, ProjectActivityItem, Risk } from "@/lib/mock-data";
 import { calculateProjectIndicators, calculateProgressFromSteps, deriveTaskDisplayPriority } from "@/lib/project-plan";
 import { getServerT } from "@/lib/i18n/server";
 
@@ -182,20 +183,8 @@ export default async function ProjectDetailPage({
                     )}
                   </ProjectRailCard>
 
-                  {/* Décisions : on surface le registre des arbitrages du projet. */}
-                  {(project.decisions ?? []).length > 0 && (
-                    <ProjectRailCard title={t("project.decisions")} actionLabel={`${project.decisions.length}`}>
-                      <ul className="grid gap-2">
-                        {project.decisions.map((decision) => (
-                          <DecisionItem
-                            key={decision.id}
-                            decision={decision}
-                            statusLabel={t(`decision.${decision.status}`)}
-                          />
-                        ))}
-                      </ul>
-                    </ProjectRailCard>
-                  )}
+                  {/* Décisions : registre interactif (ajout / statut / suppression). */}
+                  <ProjectDecisionsCard projectId={project.id} decisions={project.decisions ?? []} />
 
                   {/* Journal d'activité du projet. */}
                   {(project.activity ?? []).length > 0 && (
@@ -479,38 +468,6 @@ function RiskBullet({ risk }: { risk: Risk }) {
           <span style={{ color: text.muted }}> · {risk.mitigation}</span>
         ) : null}
       </span>
-    </li>
-  );
-}
-
-// Décision : pastille de statut + titre + (optionnel) rationale + date.
-const DECISION_TONE: Record<Decision["status"], string> = {
-  decided: "var(--mb-status-green-text)",
-  pending: "var(--mb-status-yellow-text)",
-  revisiting: "var(--mb-status-blue-text)",
-};
-
-function DecisionItem({ decision, statusLabel }: { decision: Decision; statusLabel: string }) {
-  const tone = DECISION_TONE[decision.status];
-  return (
-    <li className="flex flex-col gap-0.5 text-[11.5px] leading-snug">
-      <span className="flex min-w-0 items-center gap-1.5">
-        <span
-          className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em]"
-          style={{ background: `color-mix(in srgb, ${tone} 16%, transparent)`, color: tone }}
-        >
-          {statusLabel}
-        </span>
-        <span className="min-w-0 flex-1 truncate" style={{ color: text.primary, fontWeight: 600 }}>
-          {decision.title}
-        </span>
-      </span>
-      {decision.rationale ? (
-        <span style={{ color: text.muted }}>{decision.rationale}</span>
-      ) : null}
-      {decision.date ? (
-        <span className="text-[10px]" style={{ color: text.ghost }}>{formatShortDate(decision.date)}</span>
-      ) : null}
     </li>
   );
 }
