@@ -275,6 +275,10 @@ const fr: Dict = {
 
   // Création de projet (formulaire)
   "newProject.back": "Retour",
+  "newProject.templatesTitle": "Partir d'un modèle",
+  "newProject.templatesHint": "Démarrage pré-rempli, avec étapes et tâches prêtes. Tu pourras tout ajuster ensuite.",
+  "newProject.fromScratch": "Partir de zéro",
+  "newProject.templateApplied": "Modèle appliqué",
   "newProject.environment": "Environnement",
   "newProject.subtitle": "Projet personnalisé",
   "newProject.title": "Créer un projet",
@@ -607,6 +611,10 @@ const en: Dict = {
 
   // Project creation (form)
   "newProject.back": "Back",
+  "newProject.templatesTitle": "Start from a template",
+  "newProject.templatesHint": "Pre-filled start, with steps and tasks ready. You can adjust everything afterwards.",
+  "newProject.fromScratch": "Start from scratch",
+  "newProject.templateApplied": "Template applied",
   "newProject.environment": "Environment",
   "newProject.subtitle": "Custom project",
   "newProject.title": "Create a project",
