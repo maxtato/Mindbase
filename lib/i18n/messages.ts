@@ -143,6 +143,31 @@ const fr: Dict = {
   "task.cancel": "Annuler",
   "task.addSubaction": "Ajouter une sous-action…",
   "task.assignedPeople": "Personnes assignées",
+
+  // Statuts & priorités (libellés partagés)
+  "status.todo": "À faire",
+  "status.in_progress": "En cours",
+  "status.waiting": "En attente",
+  "status.blocked": "Bloquée",
+  "status.done": "Terminée",
+  "pr.high": "Haute",
+  "pr.medium": "Moyenne",
+  "pr.low": "Faible",
+
+  // Assistants IA
+  "ai.expected.title": "Assistant IA, Attendu",
+  "ai.realization.title": "Assistant IA, Réalisation",
+  "ai.evolution.title": "Assistant IA",
+
+  // Formulaire nouvelle étape
+  "stepForm.new": "Nouvelle étape",
+  "stepForm.name": "Nom de l'étape",
+  "stepForm.detail": "Détail optionnel",
+  "stepForm.priorityLow": "Priorité faible",
+  "stepForm.priorityMedium": "Priorité moyenne",
+  "stepForm.priorityHigh": "Priorité haute",
+  "stepForm.create": "Créer l'étape",
+  "common.cancel": "Annuler",
 };
 
 const en: Dict = {
@@ -282,6 +307,31 @@ const en: Dict = {
   "task.cancel": "Cancel",
   "task.addSubaction": "Add a sub-action…",
   "task.assignedPeople": "Assigned people",
+
+  // Statuses & priorities (shared labels)
+  "status.todo": "To do",
+  "status.in_progress": "In progress",
+  "status.waiting": "Waiting",
+  "status.blocked": "Blocked",
+  "status.done": "Done",
+  "pr.high": "High",
+  "pr.medium": "Medium",
+  "pr.low": "Low",
+
+  // AI assistants
+  "ai.expected.title": "AI assistant, Expected",
+  "ai.realization.title": "AI assistant, Outcome",
+  "ai.evolution.title": "AI assistant",
+
+  // New step form
+  "stepForm.new": "New step",
+  "stepForm.name": "Step name",
+  "stepForm.detail": "Optional detail",
+  "stepForm.priorityLow": "Low priority",
+  "stepForm.priorityMedium": "Medium priority",
+  "stepForm.priorityHigh": "High priority",
+  "stepForm.create": "Create step",
+  "common.cancel": "Cancel",
 };
 
 export const MESSAGES: Record<Locale, Dict> = { fr, en };

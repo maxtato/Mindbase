@@ -19,6 +19,7 @@ import { priorityVisuals, type ProjectPriority } from "@/lib/project-taxonomy";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
 import { useAccountName, useIsPaidPlan } from "@/components/account/account-context";
 import { useT } from "@/components/i18n/locale-provider";
+import { useStatusLabel, usePriorityLabel } from "@/components/i18n/labels";
 
 interface TaskExpandedPreviewProps {
   task: Task;
@@ -1793,8 +1794,9 @@ function ExpandedStatusPicker({
   onPick: (status: TaskStatus) => void;
 }) {
   const { open, triggerRect, triggerRef, menuRef, toggle, close } = useExpandedPickerMenu();
+  const statusLabel = useStatusLabel();
   const current = deriveTaskStatus(task);
-  const label = statusSettings?.task?.[current]?.label ?? taskStatusLabels[current];
+  const label = statusSettings?.task?.[current]?.label ?? statusLabel(current, taskStatusLabels[current]);
 
   return (
     <>
@@ -1830,7 +1832,7 @@ function ExpandedStatusPicker({
             >
               {STATUS_OPTIONS.map((option) => {
                 const v = getTaskStatusVisual(option, statusSettings);
-                const optionLabel = statusSettings?.task?.[option]?.label ?? taskStatusLabels[option];
+                const optionLabel = statusSettings?.task?.[option]?.label ?? statusLabel(option, taskStatusLabels[option]);
                 const selected = option === current;
                 return (
                   <button
@@ -1881,8 +1883,9 @@ function ExpandedPriorityPicker({
   onPick: (priority: ProjectPriority) => void;
 }) {
   const { open, triggerRect, triggerRef, menuRef, toggle, close } = useExpandedPickerMenu();
+  const priorityLabel = usePriorityLabel();
   const effectiveValue = displayValue ?? value;
-  const visual = priorityVisuals[effectiveValue];
+  const visual = { ...priorityVisuals[effectiveValue], label: priorityLabel(effectiveValue, priorityVisuals[effectiveValue].label) };
   const isAutoEscalated = effectiveValue !== value;
 
   return (
@@ -1919,7 +1922,7 @@ function ExpandedPriorityPicker({
               }}
             >
               {PRIORITY_OPTIONS.map((option) => {
-                const v = priorityVisuals[option];
+                const v = { ...priorityVisuals[option], label: priorityLabel(option, priorityVisuals[option].label) };
                 const selected = option === value;
                 return (
                   <button
