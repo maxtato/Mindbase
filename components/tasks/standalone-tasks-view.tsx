@@ -38,6 +38,7 @@ export function StandaloneTasksView({
   const router = useRouter();
   const t = useT();
   const isPaid = useIsPaidPlan();
+  const accountName = useAccountName();
   const accent = workspaceTheme[workspace].accent;
   const [, startTransition] = useTransition();
   const [busy, setBusy] = useState(false);
@@ -47,6 +48,9 @@ export function StandaloneTasksView({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  // Filtres environnement / personne (comme sur le Kanban et le Calendrier).
+  const [envFilter, setEnvFilter] = useState<string>("all");
+  const [personFilter, setPersonFilter] = useState<string>("all");
   // Environnement auquel associer la tâche créée (obligatoire : une tâche
   // appartient à un environnement). Par défaut l'environnement courant, ou le
   // premier disponible en vue « Tous ».
@@ -102,43 +106,58 @@ export function StandaloneTasksView({
     { value: "medium", label: t("filter.priority.medium"), dot: "var(--mb-status-yellow-text)" },
     { value: "low", label: t("filter.priority.low"), dot: "var(--mb-status-gray-text)" },
   ];
+  const environmentFilterOptions: FilterPillOption<string>[] = [
+    { value: "all", label: t("filter.project.all") },
+    ...envOptions.map((option) => ({ value: option.value, label: option.label, dot: accent })),
+  ];
+  const personFilterOptions: FilterPillOption<string>[] = [
+    { value: "all", label: t("filter.person.all") },
+    { value: "__me", label: t("filter.person.me") },
+    ...people.map((person) => ({ value: person.name, label: person.name })),
+  ];
+
+  // Une tâche est « assignée à » quelqu'un via owner ou assignees.
+  const firstName = (name: string) => name.trim().toLowerCase().split(" ")[0] ?? "";
+  const meFirst = firstName(accountName);
+  function taskMatchesPerson(task: StandaloneTask, person: string) {
+    if (person === "all") return true;
+    const names = [task.owner ?? "", ...(task.assignees ?? [])].map((n) => n.trim()).filter(Boolean);
+    if (person === "__me") return names.some((n) => firstName(n) === meFirst && meFirst !== "");
+    return names.some((n) => n.toLowerCase() === person.toLowerCase());
+  }
 
   const visibleTasks = tasks.filter((task) => {
     const status = deriveTaskStatus(task);
     const statusOk =
       statusFilter === "all" ? true : statusFilter === "open" ? status !== "done" : status === statusFilter;
     const priorityOk = priorityFilter === "all" || (task.priority ?? "medium") === priorityFilter;
-    return statusOk && priorityOk;
+    const envOk = envFilter === "all" || task.workspace === envFilter;
+    const personOk = taskMatchesPerson(task, personFilter);
+    return statusOk && priorityOk && envOk && personOk;
   });
 
   return (
     <div className="mx-auto flex w-full max-w-[840px] flex-col gap-4">
       {/* Création : manuelle par défaut, + un bouton « Créer avec l'IA » violet. */}
       <section className="rounded-[20px] p-4" style={{ background: surface.s1, border: `1px solid ${surface.border}` }}>
-        <p className="text-[12.5px] font-bold uppercase tracking-[0.1em]" style={{ color: text.primary }}>
-          {t("tasks.newTask")}
-        </p>
+        {/* Titre + sélecteur d'environnement (même style que les filtres) côte à côte. */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-[12.5px] font-bold uppercase tracking-[0.1em]" style={{ color: text.primary }}>
+            {t("tasks.newTask")}
+          </p>
+          <FilterPill
+            label={t("filter.environment")}
+            value={targetWorkspace}
+            options={envOptions.map((option) => ({ value: option.value, label: option.label, dot: accent }))}
+            onChange={setTargetWorkspace}
+            accentColor={accent}
+            minWidth={190}
+          />
+        </div>
         <p className="mb-3 mt-1 text-[11px]" style={{ color: text.muted }}>
           {t("tasks.subtitle")}
         </p>
 
-        <div className="mb-2 flex items-center gap-2">
-          <span className="text-[11px] font-semibold" style={{ color: text.muted }}>
-            {t("filter.environment")}
-          </span>
-          <select
-            value={targetWorkspace}
-            onChange={(event) => setTargetWorkspace(event.target.value)}
-            className="rounded-lg px-2.5 py-1.5 text-xs outline-none"
-            style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.border}` }}
-          >
-            {envOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
         <div className="flex items-center gap-2">
           <input
             type="text"
@@ -151,7 +170,7 @@ export function StandaloneTasksView({
               }
             }}
             placeholder={t("tasks.title.placeholder")}
-            className="min-w-0 flex-1 rounded-xl px-3 py-2.5 text-sm outline-none"
+            className="mb-input min-w-0 flex-1 rounded-xl px-3 py-2.5 text-sm outline-none"
             style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.border}` }}
           />
           <button
@@ -209,7 +228,7 @@ export function StandaloneTasksView({
         )}
       </section>
 
-      {/* Filtres statut / priorité */}
+      {/* Filtres : statut · priorité · environnement · personne (comme Kanban/Calendrier) */}
       {tasks.length > 0 && (
         <FilterPillGroup>
           <FilterPill
@@ -228,6 +247,28 @@ export function StandaloneTasksView({
             active={priorityFilter !== "all"}
             accentColor={accent}
           />
+          {envOptions.length > 1 && (
+            <FilterPill
+              label={t("filter.environment")}
+              value={envFilter}
+              options={environmentFilterOptions}
+              onChange={setEnvFilter}
+              active={envFilter !== "all"}
+              accentColor={accent}
+              minWidth={190}
+            />
+          )}
+          {people.length > 0 && (
+            <FilterPill
+              label={t("filter.person")}
+              value={personFilter}
+              options={personFilterOptions}
+              onChange={setPersonFilter}
+              active={personFilter !== "all"}
+              accentColor={accent}
+              minWidth={170}
+            />
+          )}
         </FilterPillGroup>
       )}
 

@@ -19,6 +19,7 @@ import type { StepStatus, TaskStatus } from "@/lib/mock-data";
 import { ProjectCategoryIcon } from "@/components/projects/project-taxonomy-ui";
 import { AIProjectCreator, AIProjectCreatorTrigger } from "@/components/projects/ai-project-creator";
 import { useEnvironments } from "@/components/environments/environments-provider";
+import { FilterPill } from "@/components/ui/filter-pill";
 
 const TASK_STATUS_ORDER: TaskStatus[] = ["todo", "in_progress", "waiting", "blocked", "done"];
 const STEP_STATUS_ORDER: StepStatus[] = ["todo", "in_progress", "waiting", "done"];
@@ -152,19 +153,18 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
               <label className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
                 Environnement
               </label>
-              <select
+              {/* Sélecteur d'environnement : même style que les filtres (pill). */}
+              <FilterPill
+                label="Environnement"
                 value={targetWorkspace}
-                onChange={(event) => setTargetWorkspace(event.target.value)}
-                className="rounded-xl px-3 py-2.5 text-sm outline-none"
-                style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.border}`, maxWidth: 320 }}
-              >
-                {BUILTIN_WORKSPACES.map((ws) => (
-                  <option key={ws} value={ws}>{workspaceTheme[ws].label}</option>
-                ))}
-                {environments.map((env) => (
-                  <option key={env.id} value={env.id}>{env.name}</option>
-                ))}
-              </select>
+                options={[
+                  ...BUILTIN_WORKSPACES.map((ws) => ({ value: ws, label: workspaceTheme[ws].label, dot: workspaceTheme[ws].accent })),
+                  ...environments.map((env) => ({ value: env.id, label: env.name, dot: theme.accent })),
+                ]}
+                onChange={(value) => setTargetWorkspace(value as Workspace)}
+                accentColor={theme.accent}
+                minWidth={220}
+              />
             </div>
           )}
           <input type="hidden" name="mode" value="custom" />
