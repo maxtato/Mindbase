@@ -26,7 +26,7 @@ import {
   isTaskOverdue,
   projectPendingTaskCount,
 } from "@/lib/project-insights";
-import type { Project, Risk } from "@/lib/mock-data";
+import type { Decision, Project, ProjectActivityItem, Risk } from "@/lib/mock-data";
 import { calculateProjectIndicators, calculateProgressFromSteps, deriveTaskDisplayPriority } from "@/lib/project-plan";
 import { getServerT } from "@/lib/i18n/server";
 
@@ -181,6 +181,35 @@ export default async function ProjectDetailPage({
                       </div>
                     )}
                   </ProjectRailCard>
+
+                  {/* Décisions : on surface le registre des arbitrages du projet. */}
+                  {(project.decisions ?? []).length > 0 && (
+                    <ProjectRailCard title={t("project.decisions")} actionLabel={`${project.decisions.length}`}>
+                      <ul className="grid gap-2">
+                        {project.decisions.map((decision) => (
+                          <DecisionItem
+                            key={decision.id}
+                            decision={decision}
+                            statusLabel={t(`decision.${decision.status}`)}
+                          />
+                        ))}
+                      </ul>
+                    </ProjectRailCard>
+                  )}
+
+                  {/* Journal d'activité du projet. */}
+                  {(project.activity ?? []).length > 0 && (
+                    <ProjectRailCard title={t("project.activity")}>
+                      <ul className="grid gap-2">
+                        {[...(project.activity ?? [])]
+                          .sort((a, b) => b.date.localeCompare(a.date))
+                          .slice(0, 8)
+                          .map((item) => (
+                            <ActivityItem key={item.id} item={item} />
+                          ))}
+                      </ul>
+                    </ProjectRailCard>
+                  )}
                 </div>
               </ProjectRailDetails>
             </aside>
@@ -448,6 +477,62 @@ function RiskBullet({ risk }: { risk: Risk }) {
         <span style={{ color: text.primary, fontWeight: 600 }}>{risk.title}</span>
         {risk.mitigation ? (
           <span style={{ color: text.muted }}> · {risk.mitigation}</span>
+        ) : null}
+      </span>
+    </li>
+  );
+}
+
+// Décision : pastille de statut + titre + (optionnel) rationale + date.
+const DECISION_TONE: Record<Decision["status"], string> = {
+  decided: "var(--mb-status-green-text)",
+  pending: "var(--mb-status-yellow-text)",
+  revisiting: "var(--mb-status-blue-text)",
+};
+
+function DecisionItem({ decision, statusLabel }: { decision: Decision; statusLabel: string }) {
+  const tone = DECISION_TONE[decision.status];
+  return (
+    <li className="flex flex-col gap-0.5 text-[11.5px] leading-snug">
+      <span className="flex min-w-0 items-center gap-1.5">
+        <span
+          className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em]"
+          style={{ background: `color-mix(in srgb, ${tone} 16%, transparent)`, color: tone }}
+        >
+          {statusLabel}
+        </span>
+        <span className="min-w-0 flex-1 truncate" style={{ color: text.primary, fontWeight: 600 }}>
+          {decision.title}
+        </span>
+      </span>
+      {decision.rationale ? (
+        <span style={{ color: text.muted }}>{decision.rationale}</span>
+      ) : null}
+      {decision.date ? (
+        <span className="text-[10px]" style={{ color: text.ghost }}>{formatShortDate(decision.date)}</span>
+      ) : null}
+    </li>
+  );
+}
+
+// Élément du journal d'activité : pastille de ton + titre + détail + date.
+const ACTIVITY_TONE: Record<NonNullable<ProjectActivityItem["tone"]>, string> = {
+  neutral: "var(--mb-text-muted)",
+  success: "var(--mb-status-green-text)",
+  warning: "var(--mb-status-yellow-text)",
+  danger: "var(--mb-status-red-text)",
+};
+
+function ActivityItem({ item }: { item: ProjectActivityItem }) {
+  const tone = ACTIVITY_TONE[item.tone ?? "neutral"];
+  return (
+    <li className="flex items-start gap-2 text-[11.5px] leading-snug">
+      <span aria-hidden className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: tone }} />
+      <span className="min-w-0 flex-1">
+        <span style={{ color: text.primary, fontWeight: 600 }}>{item.title}</span>
+        {item.detail ? <span style={{ color: text.muted }}> · {item.detail}</span> : null}
+        {item.date ? (
+          <span className="mt-0.5 block text-[10px]" style={{ color: text.ghost }}>{formatShortDate(item.date)}</span>
         ) : null}
       </span>
     </li>
