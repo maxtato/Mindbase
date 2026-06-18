@@ -969,6 +969,100 @@ export async function duplicateProject(projectId: string): Promise<Project | und
   });
 }
 
+// Duplique une étape (avec ses tâches) juste après l'originale. Les nouveaux ids
+// sont fournis par l'appelant (le steps-panel les génère pour rester synchro
+// avec sa mise à jour optimiste). Repli sur des ids générés si absents.
+export async function duplicateStepInProject(
+  projectId: string,
+  stepId: string,
+  newIds?: { stepId: string; taskIds: string[] },
+): Promise<Project | undefined> {
+  return queueWrite(async () => {
+    const projects = await ensureProjectStore();
+    const projectIndex = projects.findIndex((project) => project.id === projectId);
+    if (projectIndex === -1) return undefined;
+    const current = projects[projectIndex];
+    const steps = current.steps ?? [];
+    const stepIndex = steps.findIndex((step) => step.id === stepId);
+    if (stepIndex === -1) return current;
+
+    const source = steps[stepIndex];
+    const clone: Step = {
+      ...source,
+      id: newIds?.stepId || `s_${crypto.randomUUID().slice(0, 8)}`,
+      title: `${source.title} (copie)`,
+      tasks: source.tasks.map((task, index) => ({
+        ...task,
+        id: newIds?.taskIds[index] || `t_${crypto.randomUUID().slice(0, 8)}`,
+      })),
+    };
+    const nextSteps = [...steps.slice(0, stepIndex + 1), clone, ...steps.slice(stepIndex + 1)].map(
+      (step, index) => ({ ...step, order: index + 1 }),
+    );
+    const updated = normalizeProject({
+      ...current,
+      steps: nextSteps,
+      progress: calculateProgressFromSteps(nextSteps),
+      status: deriveProjectStatusForMutation(current, nextSteps),
+      activity: prependActivity(current, makeActivity("Étape dupliquée", source.title)),
+      updatedAt: new Date().toISOString(),
+    });
+    const nextProjects = [...projects];
+    nextProjects[projectIndex] = updated;
+    await persistProjects(nextProjects);
+    return updated;
+  });
+}
+
+// Duplique une tâche juste après l'originale dans son étape, nouvel id.
+export async function duplicateTaskInStep(
+  projectId: string,
+  stepId: string,
+  taskId: string,
+  newTaskId?: string,
+): Promise<Project | undefined> {
+  return queueWrite(async () => {
+    const projects = await ensureProjectStore();
+    const projectIndex = projects.findIndex((project) => project.id === projectId);
+    if (projectIndex === -1) return undefined;
+    const current = projects[projectIndex];
+    const steps = current.steps ?? [];
+    const stepIndex = steps.findIndex((step) => step.id === stepId);
+    if (stepIndex === -1) return current;
+    const step = steps[stepIndex];
+    const taskIndex = step.tasks.findIndex((task) => task.id === taskId);
+    if (taskIndex === -1) return current;
+
+    const source = step.tasks[taskIndex];
+    const clone: Task = {
+      ...source,
+      id: newTaskId || `t_${crypto.randomUUID().slice(0, 8)}`,
+      title: `${source.title} (copie)`,
+    };
+    const nextTasks = reorderTasks([
+      ...step.tasks.slice(0, taskIndex + 1),
+      clone,
+      ...step.tasks.slice(taskIndex + 1),
+    ]);
+    const updatedStep: Step = { ...step, tasks: nextTasks };
+    updatedStep.status = deriveStepStatus(updatedStep.tasks);
+    const updatedSteps = [...steps];
+    updatedSteps[stepIndex] = updatedStep;
+    const updated = normalizeProject({
+      ...current,
+      steps: updatedSteps,
+      progress: calculateProgressFromSteps(updatedSteps),
+      status: deriveProjectStatusForMutation(current, updatedSteps),
+      activity: prependActivity(current, makeActivity("Tâche dupliquée", source.title)),
+      updatedAt: new Date().toISOString(),
+    });
+    const nextProjects = [...projects];
+    nextProjects[projectIndex] = updated;
+    await persistProjects(nextProjects);
+    return updated;
+  });
+}
+
 export async function addFileToProject(
   projectId: string,
   file: ProjectFile,

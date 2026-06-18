@@ -22,6 +22,8 @@ import {
   deleteTaskFromStep,
   deleteProject,
   duplicateProject,
+  duplicateStepInProject,
+  duplicateTaskInStep,
   getProjectById,
   removeFileFromProject,
   removeTaskFileFromProject,
@@ -255,6 +257,20 @@ export async function updateStepAction(projectId: string, stepId: string, input:
 export async function deleteStepAction(projectId: string, stepId: string) {
   await deleteStepFromProject(projectId, stepId);
   await finalizeProjectMutation(projectId, `étape ${stepId} supprimée manuellement.`);
+}
+
+export async function duplicateStepAction(
+  projectId: string,
+  stepId: string,
+  newIds?: { stepId: string; taskIds: string[] },
+) {
+  await duplicateStepInProject(projectId, stepId, newIds);
+  await finalizeProjectMutation(projectId, `étape ${stepId} dupliquée manuellement.`);
+}
+
+export async function duplicateTaskAction(projectId: string, stepId: string, taskId: string, newTaskId?: string) {
+  await duplicateTaskInStep(projectId, stepId, taskId, newTaskId);
+  await finalizeProjectMutation(projectId, `tâche ${taskId} dupliquée manuellement.`);
 }
 
 export async function updateTaskAction(projectId: string, stepId: string, taskId: string, input: TaskUpdateActionInput) {
