@@ -2,7 +2,6 @@ import { BoardFilterControls } from "@/components/tasks/board-filter-controls";
 import { BoardFilterPersistence } from "@/components/tasks/board-filter-persistence";
 import { TasksKanbanBoard } from "@/components/tasks/tasks-kanban-board";
 import { Topbar } from "@/components/layout/topbar";
-import { surface, text } from "@/lib/design-tokens";
 import type { TaskStatus } from "@/lib/mock-data";
 import { flattenProjectTasks } from "@/lib/project-insights";
 import { getProjectsForWorkspace } from "@/lib/project-store";
@@ -15,6 +14,7 @@ import { getStandaloneTasksForWorkspace } from "@/lib/standalone-tasks-store";
 import { standaloneToBoardItem } from "@/lib/standalone-board";
 import { getTeamMembers } from "@/lib/team-store";
 import { getServerT } from "@/lib/i18n/server";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   collectAssignablePeople,
   isProjectCreator,
@@ -133,19 +133,6 @@ export default async function KanbanPage({
         </div>
       </main>
     </div>
-  );
-}
-
-function EmptyState({ title, hint }: { title: string; hint: string }) {
-  return (
-    <section className="mb-soft-shadow rounded-[22px] p-10 text-center" style={{ background: surface.s1 }}>
-      <p className="text-sm font-semibold" style={{ color: text.primary }}>
-        {title}
-      </p>
-      <p className="mt-1 text-xs" style={{ color: text.muted }}>
-        {hint}
-      </p>
-    </section>
   );
 }
 

@@ -15,6 +15,7 @@ import { useT } from "@/components/i18n/locale-provider";
 import { useStatusLabel, usePriorityLabel } from "@/components/i18n/labels";
 import { FilterPill, FilterPillGroup, type FilterPillOption } from "@/components/ui/filter-pill";
 import { TaskExpandedPreview, QuickInfos } from "@/components/projects/task-expanded-preview";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useAccountName } from "@/components/account/account-context";
 import type { TaskDiscussionMessage } from "@/lib/mock-data";
 import {
@@ -294,9 +295,7 @@ export function StandaloneTasksView({
       )}
 
       {visibleTasks.length === 0 ? (
-        <p className="px-1 py-10 text-center text-sm" style={{ color: text.muted }}>
-          {t("tasks.empty")}
-        </p>
+        <EmptyState title={t("tasks.empty")} />
       ) : (
         <div className="flex flex-col gap-5">
           {groupedTasks.map((group) => (
