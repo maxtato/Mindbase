@@ -28,6 +28,7 @@ import {
 } from "@/lib/project-insights";
 import type { Project, Risk } from "@/lib/mock-data";
 import { calculateProjectIndicators, calculateProgressFromSteps, deriveTaskDisplayPriority } from "@/lib/project-plan";
+import { getServerT } from "@/lib/i18n/server";
 
 export default async function ProjectDetailPage({
   params,
@@ -97,10 +98,11 @@ export default async function ProjectDetailPage({
   const nextActionItems = railSynthesis.nextActions;
   // Legacy actions (projects without steps)
   const pendingLegacyActions = viewerProject.actions.filter((a) => !a.done);
+  const { t } = await getServerT();
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <ProjectPilotHeader project={viewerProject} workspace={workspace} teamMemberNames={teamMemberNames} />
+      <ProjectPilotHeader project={viewerProject} workspace={workspace} teamMemberNames={teamMemberNames} progressLabel={t("project.progress")} />
 
       <div className="mb-project-detail-frame flex-1 min-h-0 overflow-hidden">
         <div className="mb-project-detail-shell mb-mobile-scroll px-5 py-3">
@@ -120,30 +122,30 @@ export default async function ProjectDetailPage({
                 </summary>
                 <div className="mb-project-rail-content flex flex-col gap-3">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="mb-project-rail-title">Synthèse</p>
+                    <p className="mb-project-rail-title">{t("project.synthesis")}</p>
                     <AISynthesisButton projectId={project.id} accentColor={theme.accent} />
                   </div>
-                  <ProjectRailCard title="Objectif" accentColor={theme.accent} icon="target">
+                  <ProjectRailCard title={t("project.objective")} accentColor={theme.accent} icon="target">
                     <ExpandableText className="text-xs leading-relaxed" style={{ color: text.secondary }}>
                       {railSynthesis.objective}
                     </ExpandableText>
                   </ProjectRailCard>
 
-                  <ProjectRailCard title="Résumé du projet">
+                  <ProjectRailCard title={t("project.summary")}>
                     <ExpandableText className="text-xs leading-relaxed" style={{ color: text.secondary }}>
                       {railSynthesis.projectSummary}
                     </ExpandableText>
                   </ProjectRailCard>
 
                   {/* Avancement + Risques fusionnés : ce qui a été fait + risques en puces */}
-                  <ProjectRailCard title="État actuel" accentColor="#F59E0B" icon="pulse">
+                  <ProjectRailCard title={t("project.currentState")} accentColor="#F59E0B" icon="pulse">
                     <ExpandableText className="text-xs leading-relaxed" style={{ color: text.secondary }}>
                       {railSynthesis.currentState}
                     </ExpandableText>
                     {visibleRisks.length > 0 && (
                       <div className="mt-3 pt-3" style={{ borderTop: `1px solid ${surface.borderSubtle}` }}>
                         <p className="text-[10px] font-semibold uppercase tracking-[0.12em] mb-1.5" style={{ color: text.muted }}>
-                          Risques identifiés
+                          {t("project.risks")}
                         </p>
                         <ul className="grid gap-1.5">
                           {visibleRiskItems.map((risk) => (
@@ -153,7 +155,7 @@ export default async function ProjectDetailPage({
                         {hiddenRiskItems.length > 0 && (
                           <details className="mt-2">
                             <summary className="cursor-pointer text-[11px] font-semibold" style={{ color: text.muted }}>
-                              Voir {hiddenRiskItems.length} autre{hiddenRiskItems.length > 1 ? "s" : ""}
+                              {hiddenRiskItems.length === 1 ? t("project.seeMoreOne", { count: hiddenRiskItems.length }) : t("project.seeMoreOther", { count: hiddenRiskItems.length })}
                             </summary>
                             <ul className="mt-1.5 grid gap-1.5">
                               {hiddenRiskItems.map((risk) => (
@@ -166,7 +168,7 @@ export default async function ProjectDetailPage({
                     )}
                   </ProjectRailCard>
 
-                  <ProjectRailCard title="Prochaines actions" actionLabel={nextActionItems.length > 0 ? `${nextActionItems.length}` : undefined}>
+                  <ProjectRailCard title={t("project.nextActions")} actionLabel={nextActionItems.length > 0 ? `${nextActionItems.length}` : undefined}>
                     {nextActionItems.length === 0 ? (
                       <p className="text-xs leading-relaxed" style={{ color: text.muted }}>
                         {project.nextStep}
@@ -193,10 +195,12 @@ function ProjectPilotHeader({
   project,
   workspace,
   teamMemberNames,
+  progressLabel,
 }: {
   project: Project;
   workspace: Project["workspace"];
   teamMemberNames: string[];
+  progressLabel: string;
 }) {
   const theme = workspaceTheme[workspace];
   // Seul le pictogramme du projet garde la couleur de thème (sous-catégorie).
@@ -293,7 +297,7 @@ function ProjectPilotHeader({
                 flexShrink: 0,
               }}
             >
-              Avancement
+              {progressLabel}
             </span>
             <div style={{ width: 90, flexShrink: 0 }}>
               <ProgressBar

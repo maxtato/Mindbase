@@ -40,6 +40,7 @@ import { workspaceTheme, type Workspace } from "@/lib/workspace";
 import { getVisibleTaskOwner } from "@/lib/task-people";
 import { getDisplayStepTitle } from "@/lib/project-display";
 import { deleteTone, TrashIcon } from "@/components/ui/trash-icon";
+import { useT } from "@/components/i18n/locale-provider";
 
 interface StepsPanelProps {
   projectId: string;
@@ -131,6 +132,7 @@ function appendRealization(existing: string | undefined, detail: string) {
 
 export function StepsPanel({ projectId, projectName, workspace, initialSteps, accentColor, projectColor, projectPeople = [], projectTeams = [], statusSettings }: StepsPanelProps) {
   const router = useRouter();
+  const t = useT();
   const orderedSteps = useMemo(() => sortSteps(initialSteps), [initialSteps]);
   const [steps, setSteps] = useState<Step[]>(orderedSteps);
   const [showCompletionCelebration, setShowCompletionCelebration] = useState(false);
@@ -700,24 +702,24 @@ export function StepsPanel({ projectId, projectName, workspace, initialSteps, ac
         {totalTasks > 0 ? (
           <>
             <span className="text-xs" style={{ color: text.muted }}>
-              {doneTasks} / {totalTasks} tâches terminées
+              {t("steps.tasksDone", { done: doneTasks, total: totalTasks })}
             </span>
             <div className="flex items-center gap-2">
               {overdueTasks > 0 && (
                 <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold" style={{ background: errorTokens.bg, color: errorTokens.text, border: `1px solid ${errorTokens.border}` }}>
-                  {overdueTasks} en retard
+                  {t("steps.overdue", { count: overdueTasks })}
                 </span>
               )}
               {dueSoonTasks > 0 && (
                 <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold" style={{ background: statusColor.yellow.bg, color: statusColor.yellow.text, border: `1px solid ${statusColor.yellow.text}` }}>
-                  {dueSoonTasks} échéance{dueSoonTasks > 1 ? "s" : ""} proche{dueSoonTasks > 1 ? "s" : ""}
+                  {dueSoonTasks === 1 ? t("steps.dueSoonOne", { count: dueSoonTasks }) : t("steps.dueSoonOther", { count: dueSoonTasks })}
                 </span>
               )}
             </div>
           </>
         ) : (
           <span className="text-xs" style={{ color: text.muted }}>
-            Ajoutez une première tâche pour commencer le pilotage.
+            {t("steps.firstTask")}
           </span>
         )}
       </div>
@@ -854,16 +856,17 @@ function ProjectCompletionCelebration({
 }
 
 function EmptySteps() {
+  const t = useT();
   return (
     <div
       className="rounded-xl p-5 text-center"
       style={{ background: surface.s2, border: `1px solid ${surface.border}` }}
     >
       <p className="text-sm font-medium mb-1" style={{ color: text.secondary }}>
-        Aucune étape définie
+        {t("steps.empty.title")}
       </p>
       <p className="text-xs" style={{ color: text.dim }}>
-        Ajoute une étape manuellement pour structurer le projet.
+        {t("steps.empty.hint")}
       </p>
     </div>
   );
@@ -929,6 +932,7 @@ function StepCard({
   statusSettings?: ProjectStatusSettings;
 }) {
   const tasks = sortTasks(step.tasks);
+  const t = useT();
   const computedStatus = deriveStepStatus(tasks);
   // Indicators date-dépendants (overdue, due-soon, derived priority bumps...)
   // calculés UNIQUEMENT après hydratation. SSR + premier render client
@@ -1115,7 +1119,7 @@ function StepCard({
               fontStyle: "italic",
             }}
           >
-            Aucune tâche dans cette étape, utilise le bouton ci-dessous pour en ajouter.
+            {t("steps.noTask")}
           </p>
         ) : (
           <div className="mb-task-grid">
@@ -1157,6 +1161,7 @@ function StepCard({
 }
 
 function StepTaskCountTag({ count }: { count: number }) {
+  const t = useT();
   return (
     <span
       style={{
@@ -1170,7 +1175,7 @@ function StepTaskCountTag({ count }: { count: number }) {
         fontVariantNumeric: "tabular-nums",
       }}
     >
-      {count} tâche{count > 1 ? "s" : ""}
+      {count === 1 ? t("steps.taskCountOne", { count }) : t("steps.taskCountOther", { count })}
     </span>
   );
 }
@@ -2814,6 +2819,7 @@ function InlineDeleteConfirm({
 }
 
 function AddStepForm({ projectId, workspace }: { projectId: string; workspace: Workspace }) {
+  const t = useT();
   const [isOpen, setIsOpen] = useState(false);
   const theme = workspaceTheme[workspace];
 
@@ -2822,8 +2828,8 @@ function AddStepForm({ projectId, workspace }: { projectId: string; workspace: W
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        title="Ajouter une étape"
-        aria-label="Ajouter une étape"
+        title={t("steps.addStep")}
+        aria-label={t("steps.addStep")}
         className="self-start inline-flex h-8 w-8 items-center justify-center rounded-lg"
         style={{
           background: surface.s2,
@@ -2877,6 +2883,7 @@ function AddStepForm({ projectId, workspace }: { projectId: string; workspace: W
 }
 
 function AddTaskForm({ projectId, workspace, stepId }: { projectId: string; workspace: Workspace; stepId: string }) {
+  const t = useT();
   const [isOpen, setIsOpen] = useState(false);
   const theme = workspaceTheme[workspace];
 
@@ -2885,8 +2892,8 @@ function AddTaskForm({ projectId, workspace, stepId }: { projectId: string; work
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        title="Ajouter une tâche"
-        aria-label="Ajouter une tâche"
+        title={t("steps.addTask")}
+        aria-label={t("steps.addTask")}
         className="self-start inline-flex h-7 w-7 items-center justify-center rounded-lg"
         style={{
           background: surface.s2,
