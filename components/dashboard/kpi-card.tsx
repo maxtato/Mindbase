@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { surface, text } from "@/lib/design-tokens";
 import { useT } from "@/components/i18n/locale-provider";
+import { useOpenStandalone } from "@/components/dashboard/standalone-open-provider";
 
 export type KpiTone = "neutral" | "info" | "success" | "warn" | "danger" | "critical";
 
@@ -21,6 +22,9 @@ export interface KpiTask {
   href: string;
   meta?: string;
   metaTone?: "default" | "danger" | "warn" | "success";
+  /** Si défini, l'élément ouvre la tâche libre correspondante (drawer) au lieu
+   *  de naviguer vers `href`. */
+  standaloneId?: string;
 }
 
 interface KpiCardProps {
@@ -270,85 +274,7 @@ const KpiPopover = function KpiPopover({
         <ul style={{ display: "flex", flexDirection: "column", gap: 2, margin: 0, padding: 0, listStyle: "none" }}>
           {tasks.map((task) => (
             <li key={task.key}>
-              <Link
-                href={task.href}
-                onClick={onClose}
-                className="block min-w-0 rounded-lg"
-                style={{
-                  display: "block",
-                  padding: "8px 10px",
-                  background: "transparent",
-                  color: text.primary,
-                  textDecoration: "none",
-                  border: `1px solid transparent`,
-                  transition: "background-color 120ms var(--mb-ease), border-color 120ms var(--mb-ease)",
-                }}
-                onMouseEnter={(event) => {
-                  event.currentTarget.style.background = surface.s2;
-                  event.currentTarget.style.borderColor = surface.borderSubtle;
-                }}
-                onMouseLeave={(event) => {
-                  event.currentTarget.style.background = "transparent";
-                  event.currentTarget.style.borderColor = "transparent";
-                }}
-              >
-                <div className="flex min-w-0 items-start gap-2">
-                  <span
-                    aria-hidden
-                    style={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: "50%",
-                      background: task.projectColor,
-                      flexShrink: 0,
-                      marginTop: 5,
-                    }}
-                  />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p
-                      className="mb-task-title"
-                      style={{
-                        margin: 0,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: text.primary,
-                        lineHeight: 1.3,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {task.title}
-                    </p>
-                    <p
-                      style={{
-                        margin: "2px 0 0",
-                        fontSize: 10.5,
-                        color: text.muted,
-                        lineHeight: 1.3,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {task.projectName}
-                    </p>
-                  </div>
-                  {task.meta && (
-                    <span
-                      style={{
-                        fontSize: 10.5,
-                        fontWeight: 600,
-                        color: META_TONE_COLOR[task.metaTone ?? "default"],
-                        flexShrink: 0,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {task.meta}
-                    </span>
-                  )}
-                </div>
-              </Link>
+              <KpiTaskRow task={task} onClose={onClose} />
             </li>
           ))}
         </ul>
@@ -356,3 +282,85 @@ const KpiPopover = function KpiPopover({
     </div>
   );
 };
+
+const ROW_STYLE = {
+  display: "block",
+  padding: "8px 10px",
+  background: "transparent",
+  color: text.primary,
+  textDecoration: "none",
+  border: "1px solid transparent",
+  transition: "background-color 120ms var(--mb-ease), border-color 120ms var(--mb-ease)",
+} as const;
+
+function hoverOn(event: React.MouseEvent<HTMLElement>) {
+  event.currentTarget.style.background = surface.s2;
+  event.currentTarget.style.borderColor = surface.borderSubtle;
+}
+function hoverOff(event: React.MouseEvent<HTMLElement>) {
+  event.currentTarget.style.background = "transparent";
+  event.currentTarget.style.borderColor = "transparent";
+}
+
+function KpiTaskRow({ task, onClose }: { task: KpiTask; onClose: () => void }) {
+  const openStandalone = useOpenStandalone();
+  const content = (
+    <div className="flex min-w-0 items-start gap-2">
+      <span
+        aria-hidden
+        style={{ width: 7, height: 7, borderRadius: "50%", background: task.projectColor, flexShrink: 0, marginTop: 5 }}
+      />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p
+          className="mb-task-title"
+          style={{ margin: 0, fontSize: 12, fontWeight: 600, color: text.primary, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+        >
+          {task.title}
+        </p>
+        <p
+          style={{ margin: "2px 0 0", fontSize: 10.5, color: text.muted, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+        >
+          {task.projectName}
+        </p>
+      </div>
+      {task.meta && (
+        <span style={{ fontSize: 10.5, fontWeight: 600, color: META_TONE_COLOR[task.metaTone ?? "default"], flexShrink: 0, whiteSpace: "nowrap" }}>
+          {task.meta}
+        </span>
+      )}
+    </div>
+  );
+
+  // Tâche libre : on ouvre la tâche en place (drawer) plutôt que de naviguer
+  // vers l'onglet Tâches.
+  if (task.standaloneId) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          onClose();
+          openStandalone(task.standaloneId!);
+        }}
+        className="block min-w-0 rounded-lg"
+        style={{ ...ROW_STYLE, width: "100%", textAlign: "left", cursor: "pointer" }}
+        onMouseEnter={hoverOn}
+        onMouseLeave={hoverOff}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <Link
+      href={task.href}
+      onClick={onClose}
+      className="block min-w-0 rounded-lg"
+      style={ROW_STYLE}
+      onMouseEnter={hoverOn}
+      onMouseLeave={hoverOff}
+    >
+      {content}
+    </Link>
+  );
+}

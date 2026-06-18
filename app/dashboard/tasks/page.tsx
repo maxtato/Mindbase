@@ -41,7 +41,7 @@ export default async function TasksPage({
     <div className="flex h-full flex-col overflow-hidden">
       <Topbar title={t("nav.tasks")} workspace={workspace} />
 
-      <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-4 py-6 lg:px-6">
+      <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-4 py-6 lg:px-8">
         <StandaloneTasksView tasks={tasks} workspace={workspace} people={people} />
       </main>
     </div>

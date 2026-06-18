@@ -39,7 +39,7 @@ export default async function ProjectsPage({
         }
       />
 
-      <div className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-8 py-6 max-w-[1100px] mx-auto w-full">
+      <div className="mb-page-scroll mb-mobile-scroll mx-auto w-full max-w-[1100px] flex-1 overflow-y-auto px-4 py-6 lg:px-8">
         <ProjectsGrid projects={projects} workspace={workspace} qs={qs} />
       </div>
     </div>
