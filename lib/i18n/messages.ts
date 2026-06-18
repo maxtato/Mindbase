@@ -168,6 +168,7 @@ const fr: Dict = {
   "task.cancel": "Annuler",
   "task.addSubaction": "Ajouter une sous-action…",
   "task.assignedPeople": "Personnes assignées",
+  "task.openProject": "Voir le projet",
 
   // Statuts & priorités (libellés partagés)
   "status.todo": "À faire",

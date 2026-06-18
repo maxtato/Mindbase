@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { updateTaskAction } from "@/app/dashboard/projects/[id]/actions";
 import { TaskExpandedPreview, QuickInfos } from "@/components/projects/task-expanded-preview";
 import type { ChecklistItem, ProjectPerson, ProjectStatusSettings, ProjectTeam, Task } from "@/lib/mock-data";
 import { surface, text } from "@/lib/design-tokens";
 import type { Workspace } from "@/lib/workspace";
+import { useT } from "@/components/i18n/locale-provider";
 
 type TaskUpdateInput = Partial<Pick<Task, "title" | "description" | "owner" | "assignees" | "teamIds" | "dueDate" | "dueTime" | "status" | "priority" | "expected" | "realization" | "comments" | "checklist">> & {
   manualNote?: string;
@@ -253,6 +255,7 @@ function TaskDetailModal({
   onUpdate,
   onChecklistMutated,
 }: TaskDetailModalProps) {
+  const t = useT();
   // Fermeture au Escape
   useEffect(() => {
     function handleKey(event: KeyboardEvent) {
@@ -330,6 +333,19 @@ function TaskDetailModal({
                   {stepDescription}
                 </p>
               )}
+              {/* Retour au projet : utile quand la tâche est ouverte depuis le
+                  Kanban ou le Calendrier (pas de contexte projet autour). */}
+              <Link
+                href={`/dashboard/projects/${projectId}?workspace=${workspace}`}
+                onClick={onClose}
+                className="mt-2 inline-flex w-fit items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold"
+                style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.borderSubtle}`, textDecoration: "none" }}
+              >
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M2.5 5.2A1.7 1.7 0 0 1 4.2 3.5h2.3l1.3 1.4h4A1.7 1.7 0 0 1 13.5 6.6v5a1.7 1.7 0 0 1-1.7 1.7H4.2a1.7 1.7 0 0 1-1.7-1.7V5.2Z" stroke="currentColor" strokeWidth="1.35" strokeLinejoin="round" />
+                </svg>
+                {t("task.openProject")}
+              </Link>
             </div>
             <button
               type="button"
