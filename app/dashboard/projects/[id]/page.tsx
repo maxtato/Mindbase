@@ -6,7 +6,7 @@ import { getProjectById } from "@/lib/project-store";
 import { getActiveTeamMemberNames } from "@/lib/team-store";
 import { getProfile } from "@/lib/account-store";
 import { isProjectCreator, taskBelongsToViewerOrTeam } from "@/lib/project-access";
-import { formatShortDate } from "@/lib/date-format";
+import { formatShortDate, formatRelativeTime } from "@/lib/date-format";
 import { getWorkspace, workspaceTheme } from "@/lib/workspace";
 import { syncEnvironmentThemes } from "@/lib/environment-store";
 import { surface, text, severity } from "@/lib/design-tokens";
@@ -194,7 +194,7 @@ export default async function ProjectDetailPage({
                           .sort((a, b) => b.date.localeCompare(a.date))
                           .slice(0, 8)
                           .map((item) => (
-                            <ActivityItem key={item.id} item={item} />
+                            <ActivityItem key={item.id} item={item} t={t} />
                           ))}
                       </ul>
                     </ProjectRailCard>
@@ -480,7 +480,13 @@ const ACTIVITY_TONE: Record<NonNullable<ProjectActivityItem["tone"]>, string> = 
   danger: "var(--mb-status-red-text)",
 };
 
-function ActivityItem({ item }: { item: ProjectActivityItem }) {
+function ActivityItem({
+  item,
+  t,
+}: {
+  item: ProjectActivityItem;
+  t: (key: string, vars?: Record<string, string | number>) => string;
+}) {
   const tone = ACTIVITY_TONE[item.tone ?? "neutral"];
   return (
     <li className="flex items-start gap-2 text-[11.5px] leading-snug">
@@ -489,7 +495,7 @@ function ActivityItem({ item }: { item: ProjectActivityItem }) {
         <span style={{ color: text.primary, fontWeight: 600 }}>{item.title}</span>
         {item.detail ? <span style={{ color: text.muted }}> · {item.detail}</span> : null}
         {item.date ? (
-          <span className="mt-0.5 block text-[10px]" style={{ color: text.ghost }}>{formatShortDate(item.date)}</span>
+          <span className="mt-0.5 block text-[10px]" style={{ color: text.ghost }}>{formatRelativeTime(item.date, t)}</span>
         ) : null}
       </span>
     </li>
