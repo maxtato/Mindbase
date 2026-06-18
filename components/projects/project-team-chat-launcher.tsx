@@ -186,7 +186,7 @@ export function ProjectTeamChatLauncher({
 
       {isOpen && (
         <div className="mb-modal-backdrop fixed inset-0 z-[90] flex items-center justify-center px-4 py-6">
-          <div className="mb-modal-surface w-full max-w-2xl rounded-[28px] p-5" style={{ color: text.primary }}>
+          <div className="mb-modal-surface w-full max-w-2xl rounded-[22px] p-5" style={{ color: text.primary }}>
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: text.dim }}>

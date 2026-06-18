@@ -184,7 +184,7 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
             return (
               <Link key={project.id} href={`/dashboard/projects/${project.id}?${qs}`} className="block group h-full">
                 <div
-                  className="mb-card-premium mb-card-hover overflow-hidden h-full rounded-[26px]"
+                  className="mb-card-premium mb-card-hover overflow-hidden h-full rounded-[22px]"
                   style={{
                     background: surface.s1,
                     border: `1px solid ${surface.border}`,

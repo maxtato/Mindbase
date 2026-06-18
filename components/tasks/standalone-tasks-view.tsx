@@ -160,7 +160,7 @@ export function StandaloneTasksView({
   return (
     <div className="mx-auto flex w-full max-w-[840px] flex-col gap-4">
       {/* Création : manuelle par défaut, + un bouton « Créer avec l'IA » violet. */}
-      <section className="rounded-[20px] p-4" style={{ background: surface.s1, border: `1px solid ${surface.border}` }}>
+      <section className="rounded-[22px] p-4" style={{ background: surface.s1, border: `1px solid ${surface.border}` }}>
         {/* Titre + sélecteur d'environnement (même style que les filtres) côte à côte. */}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-[12.5px] font-bold uppercase tracking-[0.1em]" style={{ color: text.primary }}>
@@ -417,7 +417,7 @@ function StandaloneTaskCard({
 
   return (
     <div
-      className="rounded-[14px]"
+      className="rounded-[16px]"
       style={{ background: surface.s1, border: `1px solid ${surface.borderSubtle}`, boxShadow: "var(--mb-shadow-card)", overflow: "hidden" }}
     >
       <div className="flex items-center gap-2.5 p-3">

@@ -187,7 +187,7 @@ export function TasksCalendarBoard({
         />
       )}
 
-      <section className="mb-soft-shadow min-w-0 rounded-[26px] p-3 xl:flex xl:min-h-0 xl:flex-1 xl:flex-col xl:overflow-hidden" style={{ background: surface.s1 }}>
+      <section className="mb-soft-shadow min-w-0 rounded-[22px] p-3 xl:flex xl:min-h-0 xl:flex-1 xl:flex-col xl:overflow-hidden" style={{ background: surface.s1 }}>
         <div className="mb-3 flex items-center justify-between gap-3 xl:shrink-0">
           <Link
             href={buildBoardHref({ basePath, workspace, view, sort, status: statusFilter, priority: priorityFilter, projectId, stepId, person, env, month: previousMonth })}
@@ -490,7 +490,7 @@ export function TasksCalendarBoard({
           </div>
 
           <aside
-            className="mb-soft-shadow min-h-[180px] rounded-[20px] p-2.5 xl:min-h-0 xl:overflow-y-auto"
+            className="mb-soft-shadow min-h-[180px] rounded-[22px] p-2.5 xl:min-h-0 xl:overflow-y-auto"
             style={{ background: surface.s2 }}
           >
             <div className="mb-2 flex items-start justify-between gap-2 px-1">

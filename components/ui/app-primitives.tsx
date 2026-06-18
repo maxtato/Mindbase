@@ -93,7 +93,7 @@ export function SurfaceCard({
 }: SurfaceCardProps) {
   return (
     <div
-      className={cx("rounded-[30px] p-6", getSurfaceToneClass(tone), className)}
+      className={cx("rounded-[22px] p-6", getSurfaceToneClass(tone), className)}
       style={mergeStyles(getSurfaceToneStyle(tone), style)}
     >
       {children}
@@ -117,7 +117,7 @@ export function WorkspacePanel({
   return (
     <div
       className={cx(
-        "relative overflow-hidden rounded-[30px] p-6 text-white",
+        "relative overflow-hidden rounded-[22px] p-6 text-white",
         theme.panelClassName,
         className
       )}
@@ -205,7 +205,7 @@ export function MetricCard({
   return (
     <div
       className={cx(
-        "rounded-[28px] p-5",
+        "rounded-[22px] p-5",
         getSurfaceToneClass(tone),
         className
       )}
@@ -288,7 +288,7 @@ export function EmptyState({
   return (
     <div
       className={cx(
-        "rounded-[24px] p-6 text-sm leading-7 mb-text-muted",
+        "rounded-[22px] p-6 text-sm leading-7 mb-text-muted",
         getSurfaceToneClass("secondary"),
         className
       )}
@@ -351,7 +351,7 @@ export function TextInput({
     <input
       {...props}
       className={cx(
-        "w-full rounded-[24px] px-4 py-3 outline-none transition",
+        "w-full rounded-[22px] px-4 py-3 outline-none transition",
         getFieldToneClass(tone),
         className
       )}
@@ -369,7 +369,7 @@ export function TextArea({
     <textarea
       {...props}
       className={cx(
-        "w-full rounded-[24px] px-4 py-3 outline-none transition",
+        "w-full rounded-[22px] px-4 py-3 outline-none transition",
         getFieldToneClass(tone),
         className
       )}
@@ -387,7 +387,7 @@ export function SelectField({
     <select
       {...props}
       className={cx(
-        "w-full rounded-[24px] px-4 py-3 outline-none transition",
+        "w-full rounded-[22px] px-4 py-3 outline-none transition",
         getFieldToneClass(tone),
         className
       )}
@@ -405,7 +405,7 @@ export function InlineNotice({
   return (
     <div
       className={cx(
-        "rounded-[24px] px-4 py-3 text-sm",
+        "rounded-[22px] px-4 py-3 text-sm",
         tone === "error"
           ? "mb-notice mb-notice--error"
           : "mb-surface-secondary mb-text-muted",

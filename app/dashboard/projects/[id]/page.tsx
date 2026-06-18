@@ -368,7 +368,7 @@ function ProjectRailCard({
   children: ReactNode;
 }) {
   return (
-    <section className="mb-project-rail-card rounded-[20px] p-3">
+    <section className="mb-project-rail-card rounded-[22px] p-3">
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           {icon && accentColor && (

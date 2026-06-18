@@ -283,7 +283,7 @@ interface CardProps {
 function Card({ title, meta, accent, action, href, children }: CardProps) {
   return (
     <section
-      className="relative flex min-w-0 flex-col gap-3 rounded-[20px] p-4 lg:p-5"
+      className="relative flex min-w-0 flex-col gap-3 rounded-[22px] p-4 lg:p-5"
       style={{
         background: surface.s1,
         border: `1px solid ${surface.borderSubtle}`,
@@ -297,7 +297,7 @@ function Card({ title, meta, accent, action, href, children }: CardProps) {
         <Link
           href={href}
           aria-label={title}
-          className="absolute inset-0 rounded-[20px]"
+          className="absolute inset-0 rounded-[22px]"
           style={{ zIndex: 0 }}
         />
       )}
