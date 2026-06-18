@@ -14,6 +14,7 @@ import { getCustomEnvironments } from "@/lib/environment-store";
 import { getProfile } from "@/lib/account-store";
 import { getStandaloneTasksForWorkspace } from "@/lib/standalone-tasks-store";
 import { standaloneToBoardItem } from "@/lib/standalone-board";
+import { getTeamMembers } from "@/lib/team-store";
 import { getServerT } from "@/lib/i18n/server";
 import {
   collectAssignablePeople,
@@ -94,6 +95,11 @@ export default async function CalendarPage({
       : [];
   const boardTasks = [...scopedTasks, ...standaloneItems];
 
+  // Vivier d'assignation des tâches libres : membres actifs de l'équipe.
+  const standalonePeople = (await getTeamMembers())
+    .filter((member) => member.status === "active")
+    .map((member) => ({ id: member.id, name: member.name }));
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <Topbar title={t("nav.calendar")} workspace={workspace} />
@@ -142,6 +148,7 @@ export default async function CalendarPage({
               person={personFilter}
               env={envFilter}
               basePath="/dashboard/calendar"
+              standalonePeople={standalonePeople}
             />
           )}
         </div>

@@ -10,7 +10,7 @@ import {
 import { generateStandaloneTask } from "@/lib/ai/standalone-task";
 import { assertPaidPlan } from "@/lib/account-plan";
 import { getWorkspace } from "@/lib/workspace";
-import type { ChecklistItem, TaskStatus } from "@/lib/mock-data";
+import type { ChecklistItem, TaskDiscussionMessage, TaskStatus } from "@/lib/mock-data";
 import type { ProjectPriority } from "@/lib/project-taxonomy";
 
 function revalidateTasks() {
@@ -75,6 +75,7 @@ export async function updateStandaloneTaskAction(
     priority?: ProjectPriority;
     comments?: string[];
     checklist?: ChecklistItem[];
+    discussion?: TaskDiscussionMessage[];
   },
 ) {
   await updateStandaloneTask(id, input);

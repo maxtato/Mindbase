@@ -14,7 +14,9 @@ import { useIsPaidPlan } from "@/components/account/account-context";
 import { useT } from "@/components/i18n/locale-provider";
 import { useStatusLabel, usePriorityLabel } from "@/components/i18n/labels";
 import { FilterPill, FilterPillGroup, type FilterPillOption } from "@/components/ui/filter-pill";
-import { TaskExpandedPreview } from "@/components/projects/task-expanded-preview";
+import { TaskExpandedPreview, QuickInfos } from "@/components/projects/task-expanded-preview";
+import { useAccountName } from "@/components/account/account-context";
+import type { TaskDiscussionMessage } from "@/lib/mock-data";
 import {
   createStandaloneTaskAction,
   deleteStandaloneTaskAction,
@@ -23,7 +25,16 @@ import {
   updateStandaloneTaskAction,
 } from "@/app/dashboard/tasks/actions";
 
-export function StandaloneTasksView({ tasks, workspace }: { tasks: StandaloneTask[]; workspace: Workspace }) {
+export function StandaloneTasksView({
+  tasks,
+  workspace,
+  people = [],
+}: {
+  tasks: StandaloneTask[];
+  workspace: Workspace;
+  /** Membres de l'équipe : vivier d'assignation des tâches libres. */
+  people?: Array<{ id: string; name: string }>;
+}) {
   const router = useRouter();
   const t = useT();
   const isPaid = useIsPaidPlan();
@@ -232,6 +243,7 @@ export function StandaloneTasksView({ tasks, workspace }: { tasks: StandaloneTas
               task={task}
               workspace={workspace}
               accent={accent}
+              people={people}
               expanded={expandedId === task.id}
               onToggleExpand={() => setExpandedId((current) => (current === task.id ? null : task.id))}
               onAfterMutation={refresh}
@@ -247,6 +259,7 @@ function StandaloneTaskCard({
   task,
   workspace,
   accent,
+  people,
   expanded,
   onToggleExpand,
   onAfterMutation,
@@ -254,6 +267,7 @@ function StandaloneTaskCard({
   task: StandaloneTask;
   workspace: Workspace;
   accent: string;
+  people: Array<{ id: string; name: string }>;
   expanded: boolean;
   onToggleExpand: () => void;
   onAfterMutation: () => void;
@@ -261,6 +275,7 @@ function StandaloneTaskCard({
   const t = useT();
   const statusLabel = useStatusLabel();
   const priorityLabel = usePriorityLabel();
+  const accountName = useAccountName();
   const [, startTransition] = useTransition();
   const status = deriveTaskStatus(task);
   const isDone = status === "done";
@@ -286,6 +301,19 @@ function StandaloneTaskCard({
       await deleteStandaloneTaskAction(task.id);
       onAfterMutation();
     });
+  }
+
+  async function sendMessage(content: string) {
+    const message: TaskDiscussionMessage = {
+      id: `st_msg_${Date.now()}`,
+      authorName: accountName.trim() || "Moi",
+      content,
+      createdAt: new Date().toISOString(),
+    };
+    await updateStandaloneTaskAction(task.id, {
+      discussion: [...(task.discussion ?? []), message],
+    });
+    onAfterMutation();
   }
 
   return (
@@ -351,12 +379,27 @@ function StandaloneTaskCard({
 
       {expanded && (
         <div className="border-t p-3" style={{ borderColor: surface.borderSubtle, background: surface.s2 }}>
+          {/* Collaboration : statut · date · personne · fichiers · priorité.
+              Vivier d'assignation = membres de l'équipe (pas de projet). */}
+          <div className="mb-3">
+            <QuickInfos
+              headless
+              task={task}
+              linkedTeams={[]}
+              accentColor={accent}
+              projectPeople={people}
+              projectTeams={[]}
+              onUpdate={(input) => update(input)}
+            />
+          </div>
           <TaskExpandedPreview
             task={task}
             accentColor={accent}
             workspace={workspace}
+            projectPeople={people}
             onUpdate={(input) => update(input)}
             onChecklistMutated={(checklist) => update({ checklist })}
+            onSendDiscussionMessage={sendMessage}
           />
           <div className="mt-2 flex justify-end">
             <button

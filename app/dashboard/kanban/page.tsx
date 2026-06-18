@@ -13,6 +13,7 @@ import { getCustomEnvironments } from "@/lib/environment-store";
 import { getProfile } from "@/lib/account-store";
 import { getStandaloneTasksForWorkspace } from "@/lib/standalone-tasks-store";
 import { standaloneToBoardItem } from "@/lib/standalone-board";
+import { getTeamMembers } from "@/lib/team-store";
 import { getServerT } from "@/lib/i18n/server";
 import {
   collectAssignablePeople,
@@ -91,6 +92,11 @@ export default async function KanbanPage({
       : [];
   const boardTasks = [...scopedTasks, ...standaloneItems];
 
+  // Vivier d'assignation des tâches libres : membres actifs de l'équipe.
+  const standalonePeople = (await getTeamMembers())
+    .filter((member) => member.status === "active")
+    .map((member) => ({ id: member.id, name: member.name }));
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <Topbar title={t("nav.kanban")} workspace={workspace} />
@@ -122,7 +128,7 @@ export default async function KanbanPage({
           {boardTasks.length === 0 ? (
             <EmptyState title={t("board.empty.title")} hint={t("board.empty.kanban")} />
           ) : (
-            <TasksKanbanBoard tasks={boardTasks} workspace={workspace} />
+            <TasksKanbanBoard tasks={boardTasks} workspace={workspace} standalonePeople={standalonePeople} />
           )}
         </div>
       </main>

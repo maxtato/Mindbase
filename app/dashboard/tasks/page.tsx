@@ -3,6 +3,7 @@ import { StandaloneTasksView } from "@/components/tasks/standalone-tasks-view";
 import { getStandaloneTasksForWorkspace } from "@/lib/standalone-tasks-store";
 import { getWorkspace } from "@/lib/workspace";
 import { syncEnvironmentThemes } from "@/lib/environment-store";
+import { getTeamMembers } from "@/lib/team-store";
 import { getServerT } from "@/lib/i18n/server";
 
 export default async function TasksPage({
@@ -30,12 +31,18 @@ export default async function TasksPage({
     return b.createdAt.localeCompare(a.createdAt);
   });
 
+  // Vivier d'assignation des tâches libres : membres actifs de l'équipe (il
+  // n'y a pas de projet, donc pas de collaborateurs de projet).
+  const people = (await getTeamMembers())
+    .filter((member) => member.status === "active")
+    .map((member) => ({ id: member.id, name: member.name }));
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <Topbar title={t("nav.tasks")} workspace={workspace} />
 
       <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-4 py-6 lg:px-6">
-        <StandaloneTasksView tasks={tasks} workspace={workspace} />
+        <StandaloneTasksView tasks={tasks} workspace={workspace} people={people} />
       </main>
     </div>
   );
