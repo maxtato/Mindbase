@@ -40,9 +40,6 @@ interface FilterPillProps<T extends string> {
   align?: "start" | "end";
   /** Largeur min optionnelle (sinon largeur naturelle au contenu). */
   minWidth?: number;
-  /** Mode « pastille » : masque le libellé/séparateur, affiche pastille colorée
-   *  + valeur + chevron (compact). */
-  compact?: boolean;
 }
 
 export function FilterPill<T extends string>({
@@ -55,7 +52,6 @@ export function FilterPill<T extends string>({
   accentColor,
   align = "start",
   minWidth,
-  compact = false,
 }: FilterPillProps<T>) {
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -167,15 +163,14 @@ export function FilterPill<T extends string>({
         className="mb-filter-pill"
         data-active={active ? "true" : undefined}
         data-open={open ? "true" : undefined}
-        data-compact={compact ? "true" : undefined}
         style={{
           minWidth,
           ["--mb-filter-accent" as string]: accent,
         } as React.CSSProperties}
       >
-        {!compact && <span className="mb-filter-pill-label">{label}</span>}
-        {!compact && <span className="mb-filter-pill-sep" aria-hidden>·</span>}
-        {selected?.dot && (compact || !active) && (
+        <span className="mb-filter-pill-label">{label}</span>
+        <span className="mb-filter-pill-sep" aria-hidden>·</span>
+        {selected?.dot && !active && (
           <span
             aria-hidden
             className="mb-filter-pill-dot"

@@ -875,17 +875,6 @@ summary {
   color: var(--mb-text-primary);
 }
 
-/* Mode pastille (sélecteur d'environnement) : compact, sans libellé. */
-.mb-filter-pill[data-compact="true"] {
-  padding: 0 8px 0 10px;
-  gap: 5px;
-}
-.mb-filter-pill[data-compact="true"] .mb-filter-pill-value {
-  max-width: 96px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .mb-filter-pill[data-open="true"] {
   background: var(--mb-s1);
   border-color: var(--mb-border-hover);

@@ -11,7 +11,6 @@ import { getWorkspace, workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { error, surface, text } from "@/lib/design-tokens";
 import { WORKSPACE_EVENT } from "@/lib/workspace-client";
-import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
 import { useT } from "@/components/i18n/locale-provider";
 import { FlatmindWordmark } from "@/components/branding/flatmind-wordmark";
 import { FlatmindLogoMark } from "@/components/branding/flatmind-logo-mark";
@@ -254,13 +253,6 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
           </button>
         )}
       </div>
-
-      {/* Sélecteur d'environnement : contrôle visible et persistant (déplié). */}
-      {!collapsed && (
-        <div className="px-2 pb-2">
-          <WorkspaceSwitcher initialWorkspace={initialWorkspace ?? workspace} />
-        </div>
-      )}
 
       {/* Nav items */}
       <nav className="flex flex-col gap-0.5 flex-1 px-2">
