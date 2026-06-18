@@ -12,6 +12,8 @@ import type { TaskStatus } from "@/lib/mock-data";
 import { getWorkspace, listEnvironmentOptions } from "@/lib/workspace";
 import { getCustomEnvironments } from "@/lib/environment-store";
 import { getProfile } from "@/lib/account-store";
+import { getStandaloneTasksForWorkspace } from "@/lib/standalone-tasks-store";
+import { standaloneToBoardItem } from "@/lib/standalone-board";
 import { getServerT } from "@/lib/i18n/server";
 import {
   collectAssignablePeople,
@@ -78,6 +80,18 @@ export default async function CalendarPage({
     .filter(({ entry }) => priorityFilter === "all" || deriveTaskDisplayPriority(entry.task) === priorityFilter)
     .filter(({ project, entry }) => taskVisibleToViewer(project, entry.task, me, personFilter));
 
+  // Tâches autonomes : visibles dans le calendrier sur leur échéance, en vue
+  // « tous les projets », avec les mêmes filtres environnement/statut/priorité.
+  const standaloneItems =
+    selectedProjectId === "all" && selectedStepId === "all" && personFilter !== PERSON_FILTER_ME
+      ? (await getStandaloneTasksForWorkspace(workspace))
+          .filter((task) => envFilter === "all" || task.workspace === envFilter)
+          .map(standaloneToBoardItem)
+          .filter(({ entry }) => matchStatusFilter(deriveTaskStatus(entry.task), statusFilter))
+          .filter(({ entry }) => priorityFilter === "all" || deriveTaskDisplayPriority(entry.task) === priorityFilter)
+      : [];
+  const boardTasks = [...scopedTasks, ...standaloneItems];
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <Topbar title={t("nav.calendar")} workspace={workspace} />
@@ -110,11 +124,11 @@ export default async function CalendarPage({
             month={monthParam}
           />
 
-          {scopedTasks.length === 0 ? (
+          {boardTasks.length === 0 ? (
             <EmptyState title={t("board.empty.title")} hint={t("board.empty.calendar")} />
           ) : (
             <TasksCalendarBoard
-              tasks={scopedTasks}
+              tasks={boardTasks}
               workspace={workspace}
               view="calendar"
               sort="due"
