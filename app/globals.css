@@ -360,6 +360,19 @@ body {
   animation: mb-rise 360ms var(--mb-ease) both;
 }
 
+/* Squelettes de chargement (perçu premium) — dégradé qui balaie le bloc.
+   Le bloc « prefers-reduced-motion » global plus bas neutralise l'animation. */
+@keyframes mb-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.mb-skeleton {
+  background-image: linear-gradient(90deg, var(--mb-s2) 25%, var(--mb-s3) 50%, var(--mb-s2) 75%);
+  background-size: 200% 100%;
+  animation: mb-skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 12px;
+}
+
 /* Apparition échelonnée des enfants directs (listes/grilles) — effet « cascade »
    léger. Au-delà de 8, les éléments apparaissent sans délai (perf + sobriété). */
 .mb-stagger > * {
