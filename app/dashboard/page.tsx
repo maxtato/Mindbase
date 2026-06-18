@@ -321,7 +321,6 @@ function EnvironmentBreakdown({
         <li key={row.value} className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between gap-3">
             <span className="flex min-w-0 items-center gap-2">
-              <span aria-hidden className="inline-block h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: row.accent }} />
               <span className="truncate text-[12.5px] font-semibold" style={{ color: text.primary }}>
                 {row.label}
               </span>
