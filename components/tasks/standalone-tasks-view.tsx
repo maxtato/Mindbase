@@ -17,6 +17,7 @@ import { FilterPill, FilterPillGroup, type FilterPillOption } from "@/components
 import { TaskExpandedPreview, QuickInfos } from "@/components/projects/task-expanded-preview";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useAccountName } from "@/components/account/account-context";
+import { ProLockButton } from "@/components/account/upgrade-prompt";
 import type { TaskDiscussionMessage } from "@/lib/mock-data";
 import {
   createStandaloneTaskAction,
@@ -206,17 +207,29 @@ export function StandaloneTasksView({
           </button>
         </div>
 
-        {/* Bouton « Créer avec l'IA » (violet, comme les autres entrées IA). */}
+        {/* Bouton « Créer avec l'IA » (violet, comme les autres entrées IA).
+            Plan gratuit → bouton verrouillé qui invite au plan Pro. */}
         <div className="mt-2.5">
-          <button
-            type="button"
-            onClick={() => setAiOpen((current) => !current)}
-            className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-bold"
-            style={{ background: accent, color: "#FFFFFF", border: "none", cursor: "pointer", boxShadow: "0 2px 8px -2px rgba(16, 24, 40, 0.16)", opacity: aiOpen ? 0.9 : 1 }}
-          >
-            <SparkleIcon />
-            {t("tasks.ai.generate")}
-          </button>
+          {isPaid ? (
+            <button
+              type="button"
+              onClick={() => setAiOpen((current) => !current)}
+              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-bold"
+              style={{ background: accent, color: "#FFFFFF", border: "none", cursor: "pointer", boxShadow: "0 2px 8px -2px rgba(16, 24, 40, 0.16)", opacity: aiOpen ? 0.9 : 1 }}
+            >
+              <SparkleIcon />
+              {t("tasks.ai.generate")}
+            </button>
+          ) : (
+            <ProLockButton
+              title={t("upgrade.title")}
+              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-bold"
+              style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.border}`, cursor: "pointer" }}
+            >
+              <SparkleIcon />
+              {t("tasks.ai.generate")}
+            </ProLockButton>
+          )}
         </div>
 
         {aiOpen && (

@@ -8,6 +8,7 @@ import {
 } from "@/app/dashboard/projects/ai-actions";
 import { surface, text } from "@/lib/design-tokens";
 import { useIsPaidPlan } from "@/components/account/account-context";
+import { ProLockButton } from "@/components/account/upgrade-prompt";
 import { useT } from "@/components/i18n/locale-provider";
 
 interface ProjectEvolutionLauncherProps {
@@ -124,8 +125,20 @@ export function ProjectEvolutionLauncher({ projectId, accentColor }: ProjectEvol
 
   const selectedCount = selected.size;
 
-  // IA réservée au plan Pro : on masque l'entrée pour les comptes gratuits.
-  if (!isPaid) return null;
+  // IA réservée au plan Pro. On garde une entrée visible (verrouillée) pour ne
+  // pas laisser un trou dans la barre d'actions du projet → invite au plan Pro.
+  if (!isPaid) {
+    return (
+      <ProLockButton
+        title={t("upgrade.title")}
+        className="mb-pilot-ai-button inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-bold"
+        style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.border}`, cursor: "pointer", whiteSpace: "nowrap" }}
+      >
+        <SparkleIcon />
+        Assistant IA
+      </ProLockButton>
+    );
+  }
 
   return (
     <>
