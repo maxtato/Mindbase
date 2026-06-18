@@ -144,7 +144,7 @@ export default async function ProjectDetailPage({
                     </ExpandableText>
                     {visibleRisks.length > 0 && (
                       <div className="mt-3 pt-3" style={{ borderTop: `1px solid ${surface.borderSubtle}` }}>
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] mb-1.5" style={{ color: text.muted }}>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-1.5" style={{ color: text.muted }}>
                           {t("project.risks")}
                         </p>
                         <ul className="grid gap-1.5">

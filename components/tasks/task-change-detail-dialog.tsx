@@ -58,7 +58,7 @@ export function TaskChangeDetailDialog({
         <div className="px-5 py-4" style={{ background: surface.s2, borderBottom: `1px solid ${surface.borderSubtle}` }}>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: text.muted }}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
                 Mise à jour manuelle
               </p>
               <h3 className="mt-1 text-base font-semibold leading-tight" style={{ color: text.primary }}>

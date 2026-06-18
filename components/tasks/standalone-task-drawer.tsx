@@ -117,7 +117,7 @@ export function StandaloneTaskDrawer({
           <span aria-hidden style={{ position: "absolute", insetInline: 0, top: 0, height: 3, background: accent }} />
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
-              <p className="text-[10.5px] font-semibold uppercase tracking-[0.12em]" style={{ color: accent }}>
+              <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: accent }}>
                 {t("tasks.freeBadge")}
               </p>
               <h2

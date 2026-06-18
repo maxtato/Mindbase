@@ -27,7 +27,7 @@ export function PlanSettings({ initialPlan }: { initialPlan: AccountPlan }) {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: text.muted }}>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
           Abonnement
         </p>
         <h2 className="mt-1 text-lg font-bold" style={{ color: text.primary }}>

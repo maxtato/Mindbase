@@ -212,7 +212,7 @@ export function MetricCard({
       style={mergeStyles(getSurfaceToneStyle(tone), style)}
     >
       <p
-        className="text-xs uppercase tracking-[0.2em]"
+        className="text-xs uppercase tracking-[0.14em]"
         style={isAccentTone ? { color: "#46375D" } : textStyles.soft}
       >
         {label}

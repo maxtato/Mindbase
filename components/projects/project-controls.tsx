@@ -726,7 +726,7 @@ function StatusSettingsEditor({
 
       {hiddenBaseStatuses.length > 0 && (
         <div className="mt-3 rounded-2xl p-3" style={{ background: surface.s1, border: `1px dashed ${surface.borderSubtle}` }}>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: text.muted }}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
             Statuts masqués
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">

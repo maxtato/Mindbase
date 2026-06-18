@@ -612,7 +612,7 @@ function TaskDetailDrawerInner({
                 className="mb-2 flex w-full items-center justify-between gap-3 text-left"
                 style={{ color: text.muted, cursor: "pointer" }}
               >
-                <span className="text-[11px] font-semibold uppercase tracking-[0.12em]">Checklist</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">Checklist</span>
                 <span className="text-[11px] font-semibold" style={{ color: checklist.length > 0 ? text.secondary : uiAccent }}>
                   {checklist.length > 0 ? `${completed}/${checklist.length}` : "Ajouter"}
                 </span>
@@ -856,7 +856,7 @@ function TaskDetailDrawerInner({
                   />
                   {projectTeams.length > 0 && (
                     <div className="rounded-xl p-3" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
-                      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: text.muted }}>
+                      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
                         Équipes liées
                       </p>
                       <div className="flex flex-wrap gap-2">

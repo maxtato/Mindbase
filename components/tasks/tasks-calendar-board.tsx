@@ -210,7 +210,7 @@ export function TasksCalendarBoard({
 
         <div className="grid min-w-0 gap-3 xl:min-h-0 xl:flex-1 xl:grid-cols-[minmax(0,1fr)_282px]">
           <div ref={monthPaneRef} className="mb-calendar-month-pane min-w-0 xl:flex xl:min-h-0 xl:flex-col">
-            <div className="mb-calendar-weekdays grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-[0.12em] xl:shrink-0" style={{ color: text.muted }}>
+            <div className="mb-calendar-weekdays grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-[0.14em] xl:shrink-0" style={{ color: text.muted }}>
               {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((day) => (
                 <span key={day} className="py-1.5">
                   {day}
@@ -414,7 +414,7 @@ export function TasksCalendarBoard({
                                         flexShrink: 0,
                                       }}
                                     >
-                                      <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: text.muted }}>
+                                      <span className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
                                         {total} tâches · {cell.date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
                                       </span>
                                       <button

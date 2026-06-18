@@ -171,7 +171,7 @@ export function ProjectCollaborationLauncher({
           >
             <header className="flex shrink-0 items-start justify-between gap-4 px-5 py-4" style={{ background: surface.s2 }}>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: accentColor }}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: accentColor }}>
                   Collaboration projet
                 </p>
                 <h2 className="mt-1 text-lg font-bold">Personnes & équipes</h2>
@@ -229,7 +229,7 @@ export function ProjectCollaborationLauncher({
                 <Panel title="Ajouter une personne">
                   {availableMembers.length > 0 && (
                     <div className="mb-3">
-                      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: text.muted }}>
+                      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
                         Membres de mon équipe
                       </p>
                       <div className="flex flex-wrap gap-1.5">
@@ -364,7 +364,7 @@ function MemberPicker({
 }) {
   return (
     <div className="grid gap-1.5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.1em]" style={{ color: text.muted }}>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
         Membres, touche une personne pour l’associer
       </p>
       {people.length === 0 ? (

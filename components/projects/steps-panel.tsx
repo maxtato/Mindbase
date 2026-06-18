@@ -822,7 +822,7 @@ function ProjectCompletionCelebration({
               </svg>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] mb-1" style={{ color: theme.accentText }}>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] mb-1" style={{ color: theme.accentText }}>
                 Projet terminé
               </p>
               <h3 className="text-lg font-bold leading-tight" style={{ color: text.primary }}>
@@ -3034,7 +3034,7 @@ function CreateTaskDrawer({
             style={{ background: surface.s1, borderBottom: `1px solid ${surface.borderSubtle}` }}
           >
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: text.muted }}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
                 Nouvelle tâche
               </p>
               <textarea
@@ -3372,7 +3372,7 @@ function CreateTaskSecondaryAction({
 function CreateTaskSecondaryField({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="rounded-xl p-2.5" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
-      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: text.muted }}>
+      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
         {title}
       </p>
       {children}

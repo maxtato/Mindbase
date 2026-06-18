@@ -195,7 +195,7 @@ export function TasksKanbanBoard({
             onClick={(event) => event.stopPropagation()}
           >
             <div className="p-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: errorTokens.text }}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: errorTokens.text }}>
                 Checklist incomplète
               </p>
               <h3 className="mt-1 text-base font-semibold leading-tight" style={{ color: text.primary }}>

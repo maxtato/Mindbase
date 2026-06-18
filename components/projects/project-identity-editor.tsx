@@ -176,7 +176,7 @@ export function ProjectIdentityEditor({
             zIndex: 1000,
           }}
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: text.muted }}>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
             Identité du projet
           </p>
 

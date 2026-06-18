@@ -163,7 +163,7 @@ export function StandaloneTasksView({
       <section className="rounded-[22px] p-4" style={{ background: surface.s1, border: `1px solid ${surface.border}` }}>
         {/* Titre + sélecteur d'environnement (même style que les filtres) côte à côte. */}
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-[12.5px] font-bold uppercase tracking-[0.1em]" style={{ color: text.primary }}>
+          <p className="text-[12.5px] font-bold uppercase tracking-[0.14em]" style={{ color: text.primary }}>
             {t("tasks.newFreeTask")}
           </p>
           <FilterPill
@@ -302,7 +302,7 @@ export function StandaloneTasksView({
           {groupedTasks.map((group) => (
             <div key={group.key} className="flex flex-col gap-2.5">
               <div className="flex items-center gap-2 px-1">
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: text.muted }}>
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
                   {t(groupLabelKey[group.key])}
                 </h3>
                 <span className="text-[11px] font-semibold" style={{ color: text.ghost }}>
