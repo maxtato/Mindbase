@@ -5,14 +5,17 @@
 import type { TaskStatus } from "@/lib/mock-data";
 import { surface, text } from "@/lib/design-tokens";
 
+type Translate = (key: string, vars?: Record<string, string | number>) => string;
+
 const STATUS_ORDER: TaskStatus[] = ["todo", "in_progress", "waiting", "blocked", "done"];
 
-const STATUS_LABELS: Record<TaskStatus, string> = {
-  todo: "À faire",
-  in_progress: "En cours",
-  waiting: "En attente",
-  blocked: "Bloquées",
-  done: "Terminées",
+// Libellés (pluriel) alignés sur les filtres Kanban/Calendrier.
+const STATUS_LABEL_KEY: Record<TaskStatus, string> = {
+  todo: "filter.taskStatus.todo",
+  in_progress: "filter.taskStatus.inProgress",
+  waiting: "filter.taskStatus.waiting",
+  blocked: "filter.taskStatus.blocked",
+  done: "filter.taskStatus.done",
 };
 
 // Aligné avec TASK_STATUS_DEFAULT_COLORS (app/dashboard/projects/actions.ts).
@@ -27,6 +30,7 @@ const STATUS_COLOR: Record<TaskStatus, string> = {
 
 interface StatusStackedBarProps {
   breakdown: Record<TaskStatus, number>;
+  t: Translate;
 }
 
 // L'anneau utilise un viewBox fixe (100×100) et un width 100% pour s'adapter
@@ -42,13 +46,13 @@ const GAP_LENGTH = (GAP_DEG / 360) * CIRCUMFERENCE;
 // Seuil minimum (en fraction du cercle) pour afficher un nombre sur un arc.
 // En dessous, l'arc est trop petit pour lire confortablement le label.
 const MIN_LABEL_FRACTION = 0.06;
-export function StatusStackedBar({ breakdown }: StatusStackedBarProps) {
+export function StatusStackedBar({ breakdown, t }: StatusStackedBarProps) {
   const total = STATUS_ORDER.reduce((sum, status) => sum + (breakdown[status] ?? 0), 0);
 
   if (total === 0) {
     return (
       <p className="text-xs" style={{ color: text.muted }}>
-        Aucune tâche structurée pour le moment.
+        {t("dashboard.donut.empty")}
       </p>
     );
   }
@@ -89,7 +93,7 @@ export function StatusStackedBar({ breakdown }: StatusStackedBarProps) {
         strokeDasharray={`${length} ${CIRCUMFERENCE - length}`}
         strokeDashoffset={-cumOffset}
       >
-        <title>{`${STATUS_LABELS[status]} · ${count}`}</title>
+        <title>{`${t(STATUS_LABEL_KEY[status])} · ${count}`}</title>
       </circle>
     );
     if (fraction >= MIN_LABEL_FRACTION) {
@@ -143,7 +147,7 @@ export function StatusStackedBar({ breakdown }: StatusStackedBarProps) {
           viewBox={`0 0 ${SIZE} ${SIZE}`}
           preserveAspectRatio="xMidYMid meet"
           role="img"
-          aria-label="Répartition des tâches par statut"
+          aria-label={t("dashboard.card.distribution")}
         >
           {/* Anneau de fond très subtil */}
           <circle
@@ -186,7 +190,7 @@ export function StatusStackedBar({ breakdown }: StatusStackedBarProps) {
               fontWeight: 600,
             }}
           >
-            tâche{total > 1 ? "s" : ""}
+            {t(total > 1 ? "dashboard.taskUnitOther" : "dashboard.taskUnitOne")}
           </span>
         </div>
       </div>
@@ -209,7 +213,7 @@ export function StatusStackedBar({ breakdown }: StatusStackedBarProps) {
                 className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ background: STATUS_COLOR[status], opacity: empty ? 0.4 : 1 }}
               />
-              <span style={{ fontWeight: 600 }}>{STATUS_LABELS[status]}</span>
+              <span style={{ fontWeight: 600 }}>{t(STATUS_LABEL_KEY[status])}</span>
             </li>
           );
         })}

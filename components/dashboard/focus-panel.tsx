@@ -3,12 +3,22 @@ import { surface, text, error as errorTokens, statusColor } from "@/lib/design-t
 import { getHealthVisual } from "@/lib/project-health";
 import type { DailyFocus, FocusAction, FocusAttentionProject, FocusTone } from "@/lib/project-focus";
 
+type Translate = (key: string, vars?: Record<string, string | number>) => string;
+
 interface FocusPanelProps {
   focus: DailyFocus;
   dateLabel: string;
   accent: string;
-  workspaceLabel: string;
+  t: Translate;
 }
+
+// Libellés de niveau de santé (traduits) pour les pastilles d'attention.
+const HEALTH_LABEL_KEY: Record<string, string> = {
+  healthy: "health.healthy",
+  watch: "health.watch",
+  risk: "health.risk",
+  critical: "health.critical",
+};
 
 const TONE: Record<FocusTone, { bg: string; fg: string }> = {
   danger: { bg: errorTokens.bg, fg: errorTokens.text },
@@ -19,7 +29,7 @@ const TONE: Record<FocusTone, { bg: string; fg: string }> = {
 
 // Bloc « Focus / Aujourd'hui » : la première chose qu'on voit en arrivant.
 // Répond à « qu'est-ce que je fais maintenant et qu'est-ce qui dérive ? ».
-export function FocusPanel({ focus, dateLabel, accent, workspaceLabel }: FocusPanelProps) {
+export function FocusPanel({ focus, dateLabel, accent, t }: FocusPanelProps) {
   return (
     <section
       className="relative flex flex-col gap-4 rounded-[22px] p-5 lg:p-6"
@@ -30,8 +40,10 @@ export function FocusPanel({ focus, dateLabel, accent, workspaceLabel }: FocusPa
       }}
     >
       <div className="min-w-0">
+        {/* Tableau de bord commun à tous les environnements → pas de libellé
+            d'environnement ici, juste la date. */}
         <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: accent }}>
-          Focus · {workspaceLabel} · {dateLabel}
+          Focus · {dateLabel}
         </p>
         <h1
           className="mt-1.5 text-[1.5rem] font-bold leading-tight sm:text-[1.95rem]"
@@ -42,22 +54,22 @@ export function FocusPanel({ focus, dateLabel, accent, workspaceLabel }: FocusPa
       </div>
 
       {focus.allClear ? (
-        <AllClear />
+        <AllClear label={t("focus.allClear")} />
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
-          <FocusColumn title="À faire en priorité" count={focus.actions.length}>
+          <FocusColumn title={t("focus.priorityTitle")} count={focus.actions.length}>
             {focus.actions.length === 0 ? (
-              <Muted label="Aucune action urgente. Profite-en pour préparer la suite." />
+              <Muted label={t("focus.priorityEmpty")} />
             ) : (
               focus.actions.map((action) => <ActionRow key={action.key} action={action} />)
             )}
           </FocusColumn>
 
-          <FocusColumn title="Projets à surveiller" count={focus.counts.attention}>
+          <FocusColumn title={t("focus.watchTitle")} count={focus.counts.attention}>
             {focus.attention.length === 0 ? (
-              <Muted label="Aucun projet en dérive. Tout avance sereinement." />
+              <Muted label={t("focus.watchEmpty")} />
             ) : (
-              focus.attention.map((project) => <AttentionRow key={project.key} project={project} />)
+              focus.attention.map((project) => <AttentionRow key={project.key} project={project} label={t(HEALTH_LABEL_KEY[project.level] ?? "health.watch")} />)
             )}
           </FocusColumn>
         </div>
@@ -114,7 +126,7 @@ function ActionRow({ action }: { action: FocusAction }) {
   );
 }
 
-function AttentionRow({ project }: { project: FocusAttentionProject }) {
+function AttentionRow({ project, label }: { project: FocusAttentionProject; label: string }) {
   const visual = getHealthVisual(project.level);
   return (
     <Link
@@ -130,7 +142,7 @@ function AttentionRow({ project }: { project: FocusAttentionProject }) {
           className="shrink-0 rounded-full px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.06em]"
           style={{ background: visual.bg, color: visual.text }}
         >
-          {visual.label}
+          {label}
         </span>
       </span>
       <span className="text-[11px] leading-snug" style={{ color: text.muted }}>
@@ -144,7 +156,7 @@ function AttentionRow({ project }: { project: FocusAttentionProject }) {
   );
 }
 
-function AllClear() {
+function AllClear({ label }: { label: string }) {
   return (
     <div
       className="flex items-center gap-3 rounded-xl px-4 py-4"
@@ -154,7 +166,7 @@ function AllClear() {
         ✓
       </span>
       <p className="text-[12.5px] font-medium" style={{ color: statusColor.green.text }}>
-        Rien ne réclame ton attention pour l'instant. Tout est planifié et sous contrôle.
+        {label}
       </p>
     </div>
   );

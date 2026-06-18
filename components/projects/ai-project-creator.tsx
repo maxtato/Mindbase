@@ -18,6 +18,7 @@ import {
 import { surface, text } from "@/lib/design-tokens";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
 import { useIsPaidPlan } from "@/components/account/account-context";
+import { useT } from "@/components/i18n/locale-provider";
 
 interface AIProjectCreatorProps {
   workspace: Workspace;
@@ -26,6 +27,7 @@ interface AIProjectCreatorProps {
 }
 
 export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCreatorProps) {
+  const t = useT();
   const isPaid = useIsPaidPlan();
   const theme = workspaceTheme[workspace];
   const subcategoryOptions = getSubcategoryOptions(workspace);
@@ -92,13 +94,13 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: theme.accent }}>
-            Création assistée IA
+            {t("aiCreate.eyebrow")}
           </p>
           <h2 className="mt-1 text-base font-bold" style={{ color: text.primary }}>
-            Décris ton projet, l&apos;IA propose la structure
+            {t("aiCreate.title")}
           </h2>
           <p className="mt-1 text-xs leading-relaxed" style={{ color: text.muted }}>
-            L&apos;IA propose un objectif, des étapes et des tâches avec un attendu pour chacune. Tu peux ensuite ajuster.
+            {t("aiCreate.desc")}
           </p>
         </div>
         <button
@@ -107,7 +109,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
           className="rounded-xl px-2.5 py-1 text-xs"
           style={{ background: surface.s2, color: text.muted, border: `1px solid ${surface.borderSubtle}`, cursor: "pointer" }}
         >
-          Fermer
+          {t("aiCreate.close")}
         </button>
       </div>
 
@@ -115,7 +117,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
         <textarea
           value={description}
           onChange={(event) => setDescription(event.target.value)}
-          placeholder="Ex : Organiser un road trip aux USA en juillet pour 4 personnes, gérer le budget, l'itinéraire, l'hébergement et l'administratif."
+          placeholder={t("aiCreate.placeholder")}
           rows={5}
           className="w-full rounded-2xl px-4 py-3 text-sm outline-none"
           style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.borderSubtle}`, resize: "vertical", lineHeight: 1.5 }}
@@ -138,7 +140,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
           }}
         >
           <SparkleIcon />
-          {pending ? "Génération…" : suggestion ? "Régénérer" : "Générer la proposition"}
+          {pending ? t("aiCreate.generating") : suggestion ? t("aiCreate.regenerate") : t("aiCreate.generate")}
         </button>
       </div>
 
@@ -151,19 +153,19 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
       {suggestion && (
         <div className="mt-5 grid gap-4">
           <div className="rounded-2xl p-3 sm:p-4" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>Nom</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>{t("aiCreate.name")}</p>
             <p className="mt-1 text-base font-bold" style={{ color: text.primary }}>{suggestion.name}</p>
 
-            <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>Objectif</p>
+            <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>{t("aiCreate.objective")}</p>
             <p className="mt-1 text-sm" style={{ color: text.secondary }}>{suggestion.objective}</p>
 
-            <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>Contexte</p>
+            <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>{t("aiCreate.context")}</p>
             <p className="mt-1 text-sm" style={{ color: text.secondary }}>{suggestion.context}</p>
           </div>
 
           <div className="rounded-2xl p-3 sm:p-4" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
             <p className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
-              Étapes proposées ({suggestion.steps.length})
+              {t("aiCreate.stepsProposed", { count: suggestion.steps.length })}
             </p>
             <ol className="mt-2 grid gap-3">
               {suggestion.steps.map((step, index) => (
@@ -182,7 +184,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
                             sur petit écran (iPhone). */}
                         <p className="text-[12px] font-semibold" style={{ color: text.primary, overflowWrap: "anywhere", lineHeight: 1.4 }}>· {task.title}</p>
                         <p className="mt-0.5 text-[11px]" style={{ color: text.muted, overflowWrap: "anywhere", lineHeight: 1.4 }}>
-                          <span style={{ color: theme.accent, fontWeight: 600 }}>Attendu :</span> {task.expected}
+                          <span style={{ color: theme.accent, fontWeight: 600 }}>{t("aiCreate.expectedPrefix")}</span> {task.expected}
                         </p>
                       </li>
                     ))}
@@ -195,7 +197,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
-                Catégorie
+                {t("aiCreate.category")}
               </span>
               <select
                 value={subcategory}
@@ -210,7 +212,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
             </label>
             <label className="block">
               <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
-                Priorité
+                {t("aiCreate.priority")}
               </span>
               <select
                 value={priority}
@@ -239,7 +241,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
                 opacity: createPending ? 0.7 : 1,
               }}
             >
-              {createPending ? "Création…" : "Créer ce projet"}
+              {createPending ? t("aiCreate.creating") : t("aiCreate.createProject")}
             </button>
             <button
               type="button"
@@ -248,7 +250,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
               className="rounded-2xl px-4 py-2.5 text-xs font-semibold"
               style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.borderSubtle}`, cursor: "pointer" }}
             >
-              Effacer la proposition
+              {t("aiCreate.clear")}
             </button>
           </div>
         </div>
@@ -264,6 +266,7 @@ interface AIProjectCreatorTriggerProps {
 }
 
 export function AIProjectCreatorTrigger({ workspace, active, onToggle }: AIProjectCreatorTriggerProps) {
+  const t = useT();
   const theme = workspaceTheme[workspace];
   const isPaid = useIsPaidPlan();
   // Création IA réservée au plan Pro : pas de bouton pour les comptes gratuits.
@@ -283,7 +286,7 @@ export function AIProjectCreatorTrigger({ workspace, active, onToggle }: AIProje
       }}
     >
       <SparkleIcon />
-      {active ? "Fermer l'IA" : "Créer avec l'IA"}
+      {active ? t("aiCreate.closeAI") : t("aiCreate.openAI")}
     </button>
   );
 }

@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { surface, text } from "@/lib/design-tokens";
+import { useT } from "@/components/i18n/locale-provider";
 
 export type KpiTone = "neutral" | "info" | "success" | "warn" | "danger" | "critical";
 
@@ -52,6 +53,7 @@ const META_TONE_COLOR: Record<NonNullable<KpiTask["metaTone"]>, string> = {
 };
 
 export function KpiCard({ label, value, hint, tone = "neutral", href, tasks, emptyLabel }: KpiCardProps) {
+  const t = useT();
   const palette = TONE_PALETTE[tone];
   const showPopover = Array.isArray(tasks);
   const [open, setOpen] = useState(false);
@@ -156,7 +158,7 @@ export function KpiCard({ label, value, hint, tone = "neutral", href, tasks, emp
                 anchor={triggerRect}
                 title={label}
                 tasks={tasks ?? []}
-                emptyLabel={emptyLabel ?? "Aucune tâche concernée."}
+                emptyLabel={emptyLabel ?? t("dashboard.kpi.emptyDefault")}
                 onClose={() => setOpen(false)}
               />,
               document.body,

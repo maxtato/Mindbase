@@ -13,6 +13,8 @@ import { daysFromToday, todayKey } from "@/lib/timezone";
 
 export type FocusTone = "danger" | "warn" | "info" | "neutral";
 
+type Translate = (key: string, vars?: Record<string, string | number>) => string;
+
 export interface FocusAction {
   key: string;
   title: string;
@@ -46,15 +48,15 @@ export interface DailyFocus {
   allClear: boolean;
 }
 
-function dueTag(daysUntil: number): { tag: string; tone: FocusTone; weight: number } | null {
-  if (daysUntil < 0) return { tag: "En retard", tone: "danger", weight: 1000 - daysUntil };
-  if (daysUntil === 0) return { tag: "Aujourd'hui", tone: "warn", weight: 800 };
-  if (daysUntil === 1) return { tag: "Demain", tone: "warn", weight: 600 };
-  if (daysUntil <= 3) return { tag: `Dans ${daysUntil} j`, tone: "info", weight: 400 - daysUntil };
+function dueTag(daysUntil: number, t: Translate): { tag: string; tone: FocusTone; weight: number } | null {
+  if (daysUntil < 0) return { tag: t("focus.tag.overdue"), tone: "danger", weight: 1000 - daysUntil };
+  if (daysUntil === 0) return { tag: t("focus.tag.today"), tone: "warn", weight: 800 };
+  if (daysUntil === 1) return { tag: t("focus.tag.tomorrow"), tone: "warn", weight: 600 };
+  if (daysUntil <= 3) return { tag: t("focus.tag.inDays", { count: daysUntil }), tone: "info", weight: 400 - daysUntil };
   return null;
 }
 
-function buildActions(projects: Project[], workspace: Workspace, now: Date): FocusAction[] {
+function buildActions(projects: Project[], workspace: Workspace, t: Translate, now: Date): FocusAction[] {
   const actions: FocusAction[] = [];
 
   for (const project of projects) {
@@ -70,13 +72,13 @@ function buildActions(projects: Project[], workspace: Workspace, now: Date): Foc
 
       let descriptor: { tag: string; tone: FocusTone; weight: number } | null = null;
       if (overdue && task.dueDate) {
-        descriptor = { tag: "En retard", tone: "danger", weight: 1000 + (daysUntil !== null ? -daysUntil : 0) };
+        descriptor = { tag: t("focus.tag.overdue"), tone: "danger", weight: 1000 + (daysUntil !== null ? -daysUntil : 0) };
       } else if (daysUntil !== null) {
-        descriptor = dueTag(daysUntil);
+        descriptor = dueTag(daysUntil, t);
       }
       // Tâche prioritaire sans échéance imminente → on la remonte quand même.
       if (!descriptor && highPriority) {
-        descriptor = { tag: "Prioritaire", tone: "info", weight: 300 };
+        descriptor = { tag: t("focus.tag.priority"), tone: "info", weight: 300 };
       }
       if (!descriptor) continue;
 
@@ -100,9 +102,9 @@ function buildActions(projects: Project[], workspace: Workspace, now: Date): Foc
   return actions.slice(0, 5);
 }
 
-function buildAttention(projects: Project[], now: Date): { list: FocusAttentionProject[]; total: number } {
+function buildAttention(projects: Project[], t: Translate, now: Date): { list: FocusAttentionProject[]; total: number } {
   const scored = projects
-    .map((project) => ({ project, health: computeProjectHealth(project, now) }))
+    .map((project) => ({ project, health: computeProjectHealth(project, t, now) }))
     .filter(({ health }) => health.level === "risk" || health.level === "critical")
     .sort((a, b) => b.health.score - a.health.score);
 
@@ -137,28 +139,26 @@ function countToday(projects: Project[], now: Date) {
   return { dueToday, overdue };
 }
 
-function buildBrief(counts: { dueToday: number; overdue: number; attention: number }): string {
+function buildBrief(counts: { dueToday: number; overdue: number; attention: number }, t: Translate): string {
   const parts: string[] = [];
-  if (counts.overdue > 0) parts.push(`${counts.overdue} tâche${counts.overdue > 1 ? "s" : ""} en retard`);
-  if (counts.dueToday > 0) parts.push(`${counts.dueToday} tâche${counts.dueToday > 1 ? "s" : ""} pour aujourd'hui`);
-  if (counts.attention > 0) parts.push(`${counts.attention} projet${counts.attention > 1 ? "s" : ""} à surveiller`);
+  if (counts.overdue > 0) parts.push(t(counts.overdue > 1 ? "focus.brief.overdueOther" : "focus.brief.overdueOne", { count: counts.overdue }));
+  if (counts.dueToday > 0) parts.push(t(counts.dueToday > 1 ? "focus.brief.todayOther" : "focus.brief.todayOne", { count: counts.dueToday }));
+  if (counts.attention > 0) parts.push(t(counts.attention > 1 ? "focus.brief.attentionOther" : "focus.brief.attentionOne", { count: counts.attention }));
 
-  // Pas de préfixe « Aujourd'hui : » → évite la répétition avec « pour
-  // aujourd'hui ». On démarre directement par les compteurs.
-  if (parts.length === 0) return "Tout est sous contrôle, rien d'urgent aujourd'hui.";
+  if (parts.length === 0) return t("focus.brief.allClear");
   if (parts.length === 1) return `${parts[0]}.`;
-  return `${parts.slice(0, -1).join(", ")} et ${parts[parts.length - 1]}.`;
+  return `${parts.slice(0, -1).join(", ")} ${t("focus.join.and")} ${parts[parts.length - 1]}.`;
 }
 
-export function buildDailyFocus(projects: Project[], workspace: Workspace, now = new Date()): DailyFocus {
+export function buildDailyFocus(projects: Project[], workspace: Workspace, t: Translate, now = new Date()): DailyFocus {
   const open = projects.filter((project) => project.status !== "completed");
-  const actions = buildActions(open, workspace, now);
-  const { list: attention, total: attentionTotal } = buildAttention(open, now);
+  const actions = buildActions(open, workspace, t, now);
+  const { list: attention, total: attentionTotal } = buildAttention(open, t, now);
   const { dueToday, overdue } = countToday(open, now);
   const counts = { dueToday, overdue, attention: attentionTotal };
 
   return {
-    brief: buildBrief(counts),
+    brief: buildBrief(counts, t),
     actions,
     attention,
     counts,
@@ -166,7 +166,8 @@ export function buildDailyFocus(projects: Project[], workspace: Workspace, now =
   };
 }
 
-export function formatFocusDate(now = new Date()): string {
-  const formatted = now.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+export function formatFocusDate(locale = "fr", now = new Date()): string {
+  const intlLocale = locale === "en" ? "en-US" : "fr-FR";
+  const formatted = now.toLocaleDateString(intlLocale, { weekday: "long", day: "numeric", month: "long" });
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }

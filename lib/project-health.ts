@@ -11,6 +11,10 @@ import { daysFromToday } from "@/lib/timezone";
 
 export type HealthLevel = "healthy" | "watch" | "risk" | "critical";
 
+// Fonction de traduction injectée (depuis getServerT côté serveur). Permet de
+// produire les explications de santé dans la langue de l'utilisateur.
+type Translate = (key: string, vars?: Record<string, string | number>) => string;
+
 export interface ProjectHealth {
   level: HealthLevel;
   score: number;
@@ -108,7 +112,7 @@ function formatDueLabel(daysUntil: number, dueKey: string): string {
   return formatShortDate(new Date(`${dueKey}T12:00:00`));
 }
 
-export function computeProjectHealth(project: Project, now = new Date()): ProjectHealth {
+export function computeProjectHealth(project: Project, t: Translate, now = new Date()): ProjectHealth {
   const indicators = calculateProjectIndicators(project);
   const allEntries = flattenProjectTasks(project);
   const openEntries = allEntries.filter((entry) => deriveTaskStatus(entry.task) !== "done");
@@ -160,58 +164,58 @@ export function computeProjectHealth(project: Project, now = new Date()): Projec
     }
   }
   if (highPriorityHotCount > 0) {
-    causes.push(`${highPriorityHotCount} tâche${highPriorityHotCount > 1 ? "s" : ""} prioritaire${highPriorityHotCount > 1 ? "s" : ""} bloquée${highPriorityHotCount > 1 ? "s" : ""} ou en retard`);
+    causes.push(t(highPriorityHotCount > 1 ? "health.cause.hotOther" : "health.cause.hotOne", { count: highPriorityHotCount }));
   }
   if (plainBlockedCount > 0) {
-    causes.push(`${plainBlockedCount} tâche${plainBlockedCount > 1 ? "s" : ""} bloquée${plainBlockedCount > 1 ? "s" : ""}`);
+    causes.push(t(plainBlockedCount > 1 ? "health.cause.blockedOther" : "health.cause.blockedOne", { count: plainBlockedCount }));
   }
   if (plainOverdueCount > 0) {
-    causes.push(`${plainOverdueCount} tâche${plainOverdueCount > 1 ? "s" : ""} en retard`);
+    causes.push(t(plainOverdueCount > 1 ? "health.cause.overdueOther" : "health.cause.overdueOne", { count: plainOverdueCount }));
   }
 
   // Inactivité projet
   if (inactivityDays >= 30) {
     score += 5;
-    causes.push(`Aucune activité depuis ${inactivityDays} jours`);
+    causes.push(t("health.cause.inactivity", { count: inactivityDays }));
   } else if (inactivityDays >= 14) {
     score += 2;
-    causes.push(`Aucune activité depuis ${inactivityDays} jours`);
+    causes.push(t("health.cause.inactivity", { count: inactivityDays }));
   }
 
   // Aucune prochaine tâche active
   const hasActiveNext = inProgressEntries.length > 0 || soonest !== null;
   if (!hasActiveNext && openEntries.length > 0) {
     score += 3;
-    causes.push("Aucune prochaine tâche planifiée");
+    causes.push(t("health.cause.noNext"));
   }
 
   // Échéance proche + faible avancement
   if (soonestIsClose && lowProgress && project.progress < 70) {
     score += 4;
-    causes.push("Échéance proche avec un avancement encore faible");
+    causes.push(t("health.cause.dueLowProgress"));
   }
 
   // Risques manuels
   if (highManualRisks > 0) {
     score += highManualRisks * 4;
-    causes.push(`${highManualRisks} risque${highManualRisks > 1 ? "s" : ""} signalé${highManualRisks > 1 ? "s" : ""} (sévérité élevée)`);
+    causes.push(t(highManualRisks > 1 ? "health.cause.riskHighOther" : "health.cause.riskHighOne", { count: highManualRisks }));
   }
   if (mediumManualRisks > 0) {
     score += mediumManualRisks * 2;
-    causes.push(`${mediumManualRisks} risque${mediumManualRisks > 1 ? "s" : ""} signalé${mediumManualRisks > 1 ? "s" : ""} (sévérité moyenne)`);
+    causes.push(t(mediumManualRisks > 1 ? "health.cause.riskMediumOther" : "health.cause.riskMediumOne", { count: mediumManualRisks }));
   }
 
   // Beaucoup de tâches en attente / bloquées
   if (totalTasks > 0 && waitingOrBlockedCount / totalTasks > 0.4) {
     score += 4;
     const pct = Math.round((waitingOrBlockedCount / totalTasks) * 100);
-    causes.push(`${pct}% des tâches sont en attente ou bloquées`);
+    causes.push(t("health.cause.waitingBlockedPct", { pct }));
   }
 
   // Étapes entièrement bloquées
   if (blockedSteps > 0) {
     score += blockedSteps * 4;
-    causes.push(`${blockedSteps} étape${blockedSteps > 1 ? "s" : ""} entièrement bloquée${blockedSteps > 1 ? "s" : ""}`);
+    causes.push(t(blockedSteps > 1 ? "health.cause.blockedStepsOther" : "health.cause.blockedStepsOne", { count: blockedSteps }));
   }
 
   // ─── Niveau ─────────────────────────────────────────────────────────────
@@ -219,10 +223,10 @@ export function computeProjectHealth(project: Project, now = new Date()): Projec
     score <= 2 ? "healthy" : score <= 6 ? "watch" : score <= 11 ? "risk" : "critical";
 
   // ─── Cause principale courte ───────────────────────────────────────────
-  const causeShort = formatCauseShort(level, causes);
+  const causeShort = formatCauseShort(level, causes, t);
 
   // ─── Action recommandée ────────────────────────────────────────────────
-  const nextAction = pickNextAction({
+  const nextAction = pickNextAction(t, {
     project,
     highPriorityHotEntry: openEntries.find(
       (entry) => isHighPriorityTask(entry.task) && (deriveTaskStatus(entry.task) === "blocked" || isTaskOverdue(entry.task)),
@@ -253,14 +257,22 @@ export function computeProjectHealth(project: Project, now = new Date()): Projec
   };
 }
 
-function formatCauseShort(level: HealthLevel, causes: string[]): string {
+function formatCauseShort(level: HealthLevel, causes: string[], t: Translate): string {
   if (causes.length === 0) {
-    return "Le projet avance sans signal d'alerte.";
+    return t("health.cause.none");
   }
   const top = causes.slice(0, 2);
-  const prefix = level === "critical" ? "Critique car" : level === "risk" ? "À risque car" : level === "watch" ? "À surveiller :" : "OK :";
+  const prefix =
+    level === "critical"
+      ? t("health.cause.prefix.critical")
+      : level === "risk"
+        ? t("health.cause.prefix.risk")
+        : level === "watch"
+          ? t("health.cause.prefix.watch")
+          : t("health.cause.prefix.ok");
+  const and = t("focus.join.and");
   if (top.length === 1) return `${prefix} ${lowerFirst(top[0])}.`;
-  return `${prefix} ${lowerFirst(top[0])} et ${lowerFirst(top[1])}.`;
+  return `${prefix} ${lowerFirst(top[0])} ${and} ${lowerFirst(top[1])}.`;
 }
 
 function lowerFirst(value: string) {
@@ -268,59 +280,41 @@ function lowerFirst(value: string) {
   return value.charAt(0).toLocaleLowerCase("fr-FR") + value.slice(1);
 }
 
-function pickNextAction(input: {
-  project: Project;
-  highPriorityHotEntry?: FlattenedProjectTask;
-  blockedEntry?: FlattenedProjectTask;
-  overdueEntry?: FlattenedProjectTask;
-  hasActiveNext: boolean;
-  soonestEntry?: FlattenedProjectTask;
-  soonestIsClose: boolean;
-  lowProgress: boolean;
-  highManualRisks?: { id: string; title: string };
-}): ProjectHealth["nextAction"] {
+function pickNextAction(
+  t: Translate,
+  input: {
+    project: Project;
+    highPriorityHotEntry?: FlattenedProjectTask;
+    blockedEntry?: FlattenedProjectTask;
+    overdueEntry?: FlattenedProjectTask;
+    hasActiveNext: boolean;
+    soonestEntry?: FlattenedProjectTask;
+    soonestIsClose: boolean;
+    lowProgress: boolean;
+    highManualRisks?: { id: string; title: string };
+  },
+): ProjectHealth["nextAction"] {
   const projectHref = `/dashboard/projects/${input.project.id}?workspace=${input.project.workspace}`;
 
   if (input.highPriorityHotEntry) {
-    return {
-      label: `Débloquer : ${truncate(input.highPriorityHotEntry.task.title, 60)}`,
-      href: projectHref,
-    };
+    return { label: t("health.action.unblock", { title: truncate(input.highPriorityHotEntry.task.title, 60) }), href: projectHref };
   }
   if (input.blockedEntry) {
-    return {
-      label: `Débloquer la tâche : ${truncate(input.blockedEntry.task.title, 60)}`,
-      href: projectHref,
-    };
+    return { label: t("health.action.unblockTask", { title: truncate(input.blockedEntry.task.title, 60) }), href: projectHref };
   }
   if (input.overdueEntry) {
-    return {
-      label: `Replanifier : ${truncate(input.overdueEntry.task.title, 60)}`,
-      href: projectHref,
-    };
+    return { label: t("health.action.reschedule", { title: truncate(input.overdueEntry.task.title, 60) }), href: projectHref };
   }
   if (!input.hasActiveNext) {
-    return {
-      label: "Définir la prochaine action",
-      href: projectHref,
-    };
+    return { label: t("health.action.defineNext"), href: projectHref };
   }
   if (input.soonestIsClose && input.lowProgress) {
-    return {
-      label: "Revoir les priorités avant l'échéance",
-      href: projectHref,
-    };
+    return { label: t("health.action.reviewPriorities"), href: projectHref };
   }
   if (input.highManualRisks) {
-    return {
-      label: `Traiter le risque : ${truncate(input.highManualRisks.title, 60)}`,
-      href: projectHref,
-    };
+    return { label: t("health.action.treatRisk", { title: truncate(input.highManualRisks.title, 60) }), href: projectHref };
   }
-  return {
-    label: "Ouvrir le projet",
-    href: projectHref,
-  };
+  return { label: t("health.action.openProject"), href: projectHref };
 }
 
 function truncate(value: string, max: number) {

@@ -4,6 +4,7 @@ import { buildDailyFocus } from "@/lib/project-focus";
 import { getSubscriptions, removeSubscriptions } from "@/lib/push/push-store";
 import { sendPush, isPushConfigured, type PushPayload } from "@/lib/push/web-push";
 import type { Workspace } from "@/lib/workspace";
+import { getServerT } from "@/lib/i18n/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,12 +35,13 @@ export async function GET(request: Request) {
   let dueToday = 0;
   let attention = 0;
   let topAction: string | null = null;
+  const { t } = await getServerT();
 
   for (const workspace of WORKSPACES) {
     const projects = (await getProjectsForWorkspace(workspace)).filter(
       (project) => project.status !== "archived" && !project.deleted,
     );
-    const focus = buildDailyFocus(projects, workspace);
+    const focus = buildDailyFocus(projects, workspace, t);
     overdue += focus.counts.overdue;
     dueToday += focus.counts.dueToday;
     attention += focus.counts.attention;

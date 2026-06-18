@@ -157,6 +157,7 @@ export function StandaloneTaskDrawer({
             projectPeople={people}
             projectTeams={[]}
             onUpdate={handleUpdate}
+            assignEmptyHint={t("tasks.assignEmptyHint")}
           />
         </header>
 

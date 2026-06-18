@@ -7,25 +7,40 @@ import type { Project, Task } from "@/lib/mock-data";
 import { formatShortDate } from "@/lib/date-format";
 import { surface, text } from "@/lib/design-tokens";
 
+type Translate = (key: string, vars?: Record<string, string | number>) => string;
+
 export interface ActivityEntry {
   id: string;
   date: Date;
   kind: "task-done" | "risk-added" | "project-updated" | "project-created";
   projectId: string;
   projectName: string;
-  text: string;
+  /** Partie dynamique (titre de tâche / risque) interpolée dans le libellé traduit. */
+  detail?: string;
 }
 
 interface ActivityFeedPanelProps {
   entries: ActivityEntry[];
   workspace: string;
+  t: Translate;
 }
 
-export function ActivityFeedPanel({ entries, workspace }: ActivityFeedPanelProps) {
+function entryLabel(entry: ActivityEntry, t: Translate): string {
+  switch (entry.kind) {
+    case "task-done":
+      return t("activity.taskDone", { title: entry.detail ?? "" });
+    case "risk-added":
+      return t("activity.riskOpened", { title: entry.detail ?? "" });
+    default:
+      return t("activity.projectUpdated");
+  }
+}
+
+export function ActivityFeedPanel({ entries, workspace, t }: ActivityFeedPanelProps) {
   if (entries.length === 0) {
     return (
       <p className="text-xs" style={{ color: text.muted }}>
-        Aucune activité récente détectée.
+        {t("activity.empty")}
       </p>
     );
   }
@@ -44,10 +59,10 @@ export function ActivityFeedPanel({ entries, workspace }: ActivityFeedPanelProps
             <ActivityIcon kind={entry.kind} />
             <div className="min-w-0 flex-1">
               <p className="truncate" style={{ color: text.primary }}>
-                {entry.text}
+                {entryLabel(entry, t)}
               </p>
               <p className="mt-0.5 truncate text-[10.5px]" style={{ color: text.muted }}>
-                {entry.projectName} · {formatRelative(entry.date)}
+                {entry.projectName} · {formatRelative(entry.date, t)}
               </p>
             </div>
           </Link>
@@ -98,16 +113,16 @@ function ActivityIcon({ kind }: { kind: ActivityEntry["kind"] }) {
   );
 }
 
-function formatRelative(date: Date): string {
+function formatRelative(date: Date, t: Translate): string {
   const now = Date.now();
   const diff = now - date.getTime();
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return "à l'instant";
-  if (minutes < 60) return `il y a ${minutes} min`;
+  if (minutes < 1) return t("activity.rel.now");
+  if (minutes < 60) return t("activity.rel.min", { count: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `il y a ${hours} h`;
+  if (hours < 24) return t("activity.rel.hour", { count: hours });
   const days = Math.floor(hours / 24);
-  if (days < 7) return `il y a ${days} j`;
+  if (days < 7) return t("activity.rel.day", { count: days });
   return formatShortDate(date);
 }
 
@@ -128,7 +143,6 @@ export function buildActivityFeed(projects: Project[]): ActivityEntry[] {
         kind: "project-updated",
         projectId: project.id,
         projectName: project.name,
-        text: "Projet mis à jour",
       });
     }
 
@@ -145,7 +159,7 @@ export function buildActivityFeed(projects: Project[]): ActivityEntry[] {
           kind: "task-done",
           projectId: project.id,
           projectName: project.name,
-          text: `Tâche terminée : ${task.title}`,
+          detail: task.title,
         });
       }
     }
@@ -161,7 +175,7 @@ export function buildActivityFeed(projects: Project[]): ActivityEntry[] {
         kind: "risk-added",
         projectId: project.id,
         projectName: project.name,
-        text: `Risque ouvert : ${top.title}`,
+        detail: top.title,
       });
     }
   }
