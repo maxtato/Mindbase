@@ -47,6 +47,16 @@ const NAV_ITEMS = [
     ),
   },
   {
+    href: "/dashboard/tasks",
+    labelKey: "nav.tasks",
+    exact: false,
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
+        <path d="M2.5 4.5 4 6l2.2-2.6M2.5 11 4 12.5l2.2-2.6M8.5 5h5M8.5 11.5h5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
     href: "/dashboard/kanban",
     labelKey: "nav.kanban",
     exact: false,

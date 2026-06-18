@@ -132,6 +132,17 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
       ),
     },
     {
+      href: "/dashboard/tasks",
+      exact: false,
+      label: t("nav.tasks"),
+      badge: undefined,
+      icon: (
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+          <path d="M2.5 4.5 4 6l2.2-2.6M2.5 11 4 12.5l2.2-2.6M8.5 5h5M8.5 11.5h5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+    },
+    {
       href: "/dashboard/kanban",
       exact: false,
       label: t("nav.kanban"),
