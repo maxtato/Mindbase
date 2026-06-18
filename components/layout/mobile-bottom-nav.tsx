@@ -15,11 +15,12 @@ import { getWorkspace, workspaceTheme } from "@/lib/workspace";
 import type { Workspace } from "@/lib/workspace";
 import { surface, text } from "@/lib/design-tokens";
 import { WORKSPACE_EVENT } from "@/lib/workspace-client";
+import { useT } from "@/components/i18n/locale-provider";
 
 const NAV_ITEMS = [
   {
     href: "/dashboard",
-    label: "Accueil",
+    labelKey: "nav.home",
     exact: true,
     icon: (
       <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
@@ -32,7 +33,7 @@ const NAV_ITEMS = [
   },
   {
     href: "/dashboard/projects",
-    label: "Projets",
+    labelKey: "nav.projects",
     exact: false,
     icon: (
       <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
@@ -47,7 +48,7 @@ const NAV_ITEMS = [
   },
   {
     href: "/dashboard/kanban",
-    label: "Kanban",
+    labelKey: "nav.kanban",
     exact: false,
     icon: (
       <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
@@ -59,7 +60,7 @@ const NAV_ITEMS = [
   },
   {
     href: "/dashboard/calendar",
-    label: "Calendrier",
+    labelKey: "nav.calendar",
     exact: false,
     icon: (
       <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
@@ -70,7 +71,7 @@ const NAV_ITEMS = [
   },
   {
     href: "/dashboard/settings",
-    label: "Réglages",
+    labelKey: "nav.settings",
     exact: false,
     icon: (
       <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
@@ -94,6 +95,7 @@ interface MobileBottomNavProps {
 
 export function MobileBottomNav({ initialWorkspace }: MobileBottomNavProps = {}) {
   const pathname = usePathname();
+  const t = useT();
   // Lit le workspace depuis l'URL côté client uniquement — évite useSearchParams
   // (et donc le Suspense boundary qui casse le rendu sur iOS Safari streaming).
   // L'init avec initialWorkspace évite le flash de couleur au premier rendu.
@@ -159,7 +161,7 @@ export function MobileBottomNav({ initialWorkspace }: MobileBottomNavProps = {})
             }}
           >
             {item.icon}
-            <span style={{ lineHeight: 1 }}>{item.label}</span>
+            <span style={{ lineHeight: 1 }}>{t(item.labelKey)}</span>
           </Link>
         );
       })}
