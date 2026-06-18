@@ -14,12 +14,19 @@ export default async function TasksPage({
   await syncEnvironmentThemes();
   const workspace = getWorkspace(sp.workspace);
   const { t } = await getServerT();
-  // Tri : à faire d'abord (par date d'échéance puis création), terminées en bas.
+  // Tri façon liste de tâches : à faire d'abord, classées par échéance (la plus
+  // proche en haut, sans date à la fin) puis priorité, puis création ; les
+  // tâches terminées en bas (les plus récentes d'abord).
+  const priorityRank: Record<string, number> = { high: 0, medium: 1, low: 2 };
   const tasks = (await getStandaloneTasksForWorkspace(workspace)).slice().sort((a, b) => {
     if (a.done !== b.done) return a.done ? 1 : -1;
+    if (a.done && b.done) return (b.completedAt ?? b.createdAt).localeCompare(a.completedAt ?? a.createdAt);
     const da = a.dueDate ?? "9999-12-31";
     const db = b.dueDate ?? "9999-12-31";
     if (da !== db) return da.localeCompare(db);
+    const pa = priorityRank[a.priority ?? "medium"] ?? 1;
+    const pb = priorityRank[b.priority ?? "medium"] ?? 1;
+    if (pa !== pb) return pa - pb;
     return b.createdAt.localeCompare(a.createdAt);
   });
 

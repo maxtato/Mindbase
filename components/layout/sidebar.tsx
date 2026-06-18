@@ -23,6 +23,7 @@ interface SidebarWorkspaceStats {
   pendingActionsCount: number;
   scheduledTasksCount: number;
   openBlockersCount: number;
+  standaloneOpenCount: number;
 }
 
 interface SidebarProps {
@@ -68,6 +69,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
     pendingActionsCount: 0,
     scheduledTasksCount: 0,
     openBlockersCount: 0,
+    standaloneOpenCount: 0,
   };
 
   const w = collapsed ? COLLAPSED : WIDE;
@@ -135,7 +137,10 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
       href: "/dashboard/tasks",
       exact: false,
       label: t("nav.tasks"),
-      badge: undefined,
+      badge:
+        workspaceStats.standaloneOpenCount > 0
+          ? { count: workspaceStats.standaloneOpenCount, color: text.sidebar, bg: surface.sidebarPanel }
+          : undefined,
       icon: (
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
           <path d="M2.5 4.5 4 6l2.2-2.6M2.5 11 4 12.5l2.2-2.6M8.5 5h5M8.5 11.5h5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
