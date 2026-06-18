@@ -5,6 +5,7 @@ import { CommandTrigger } from "@/components/search/command-trigger";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { FlatmindWordmark } from "@/components/branding/flatmind-wordmark";
 import { FlatmindLogoMark } from "@/components/branding/flatmind-logo-mark";
+import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
 
 interface TopbarProps {
   title: string;
@@ -79,6 +80,10 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
                 {subtitle}
               </p>
             ) : null}
+            {/* Sélecteur d'environnement sur mobile (la sidebar le porte sur desktop). */}
+            <div className="mt-1.5 sm:hidden">
+              <WorkspaceSwitcher initialWorkspace={workspace} minWidth={150} />
+            </div>
           </>
         )}
       </div>
