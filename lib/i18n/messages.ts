@@ -15,6 +15,21 @@ const fr: Dict = {
   "nav.calendar": "Calendrier",
   "nav.settings": "Réglages",
   "nav.settingsFull": "Paramètres",
+  "nav.tasks": "Tâches",
+
+  // Onglet Tâches (autonomes)
+  "tasks.subtitle": "Tes tâches personnelles, hors projet.",
+  "tasks.newTask": "Nouvelle tâche",
+  "tasks.manual": "Manuel",
+  "tasks.withAI": "Avec l'IA",
+  "tasks.title.placeholder": "Titre de la tâche…",
+  "tasks.create": "Créer",
+  "tasks.ai.placeholder": "Décris ta tâche, l'IA la crée (avec la date si tu la mentionnes)…",
+  "tasks.ai.generate": "Générer avec l'IA",
+  "tasks.ai.generating": "Génération…",
+  "tasks.empty": "Aucune tâche pour l'instant. Crée ta première tâche ci-dessus.",
+  "tasks.delete": "Supprimer",
+  "tasks.freeBadge": "Tâche libre",
 
   // Réglages
   "settings.title": "Préférences de l'espace {space}",
@@ -179,6 +194,21 @@ const en: Dict = {
   "nav.calendar": "Calendar",
   "nav.settings": "Settings",
   "nav.settingsFull": "Settings",
+  "nav.tasks": "Tasks",
+
+  // Tasks tab (standalone)
+  "tasks.subtitle": "Your personal tasks, outside projects.",
+  "tasks.newTask": "New task",
+  "tasks.manual": "Manual",
+  "tasks.withAI": "With AI",
+  "tasks.title.placeholder": "Task title…",
+  "tasks.create": "Create",
+  "tasks.ai.placeholder": "Describe your task, AI creates it (with the date if you mention it)…",
+  "tasks.ai.generate": "Generate with AI",
+  "tasks.ai.generating": "Generating…",
+  "tasks.empty": "No task yet. Create your first task above.",
+  "tasks.delete": "Delete",
+  "tasks.freeBadge": "Free task",
 
   // Settings
   "settings.title": "{space} space preferences",
