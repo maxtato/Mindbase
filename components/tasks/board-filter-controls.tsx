@@ -10,6 +10,7 @@ import type { ProjectPriority } from "@/lib/project-taxonomy";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
 import { FilterPill, FilterPillGroup, type FilterPillOption } from "@/components/ui/filter-pill";
 import { PERSON_FILTER_ALL, PERSON_FILTER_ME } from "@/lib/project-access";
+import { useT } from "@/components/i18n/locale-provider";
 
 type StatusFilter = "open" | "all" | TaskStatus;
 type PriorityFilter = "all" | ProjectPriority;
@@ -57,28 +58,6 @@ interface BoardFilterControlsProps {
   month?: string;
 }
 
-const STATUS_FILTERS: FilterPillOption<StatusFilter>[] = [
-  { value: "open", label: "Ouvertes" },
-  { value: "todo", label: "À faire", dot: "var(--mb-status-gray-text)" },
-  { value: "in_progress", label: "En cours", dot: "var(--mb-status-yellow-text)" },
-  { value: "waiting", label: "En attente", dot: "var(--mb-status-blue-text)" },
-  { value: "blocked", label: "Bloquées", dot: "var(--mb-status-red-text)" },
-  { value: "done", label: "Terminées", dot: "var(--mb-status-green-text)" },
-  { value: "all", label: "Toutes" },
-];
-
-const PRIORITY_FILTERS: FilterPillOption<PriorityFilter>[] = [
-  { value: "all", label: "Toutes" },
-  { value: "high", label: "Haute", dot: "var(--mb-status-red-text)" },
-  { value: "medium", label: "Moyenne", dot: "var(--mb-status-yellow-text)" },
-  { value: "low", label: "Basse", dot: "var(--mb-status-green-text)" },
-];
-
-const OWNER_FILTERS: FilterPillOption<OwnerFilter>[] = [
-  { value: "all", label: "Toutes" },
-  { value: "mine", label: "Mes tâches" },
-];
-
 export function BoardFilterControls({
   basePath,
   workspace,
@@ -101,25 +80,46 @@ export function BoardFilterControls({
 }: BoardFilterControlsProps) {
   const router = useRouter();
   const theme = workspaceTheme[workspace];
+  const t = useT();
+
+  const STATUS_FILTERS: FilterPillOption<StatusFilter>[] = [
+    { value: "open", label: t("filter.taskStatus.open") },
+    { value: "todo", label: t("filter.taskStatus.todo"), dot: "var(--mb-status-gray-text)" },
+    { value: "in_progress", label: t("filter.taskStatus.inProgress"), dot: "var(--mb-status-yellow-text)" },
+    { value: "waiting", label: t("filter.taskStatus.waiting"), dot: "var(--mb-status-blue-text)" },
+    { value: "blocked", label: t("filter.taskStatus.blocked"), dot: "var(--mb-status-red-text)" },
+    { value: "done", label: t("filter.taskStatus.done"), dot: "var(--mb-status-green-text)" },
+    { value: "all", label: t("filter.taskStatus.all") },
+  ];
+  const PRIORITY_FILTERS: FilterPillOption<PriorityFilter>[] = [
+    { value: "all", label: t("filter.priority.all") },
+    { value: "high", label: t("filter.priority.high"), dot: "var(--mb-status-red-text)" },
+    { value: "medium", label: t("filter.priority.medium"), dot: "var(--mb-status-yellow-text)" },
+    { value: "low", label: t("filter.priority.low"), dot: "var(--mb-status-green-text)" },
+  ];
+  const OWNER_FILTERS: FilterPillOption<OwnerFilter>[] = [
+    { value: "all", label: t("filter.owner.all") },
+    { value: "mine", label: t("filter.owner.mine") },
+  ];
 
   const personOptions: FilterPillOption<string>[] = [
-    { value: PERSON_FILTER_ALL, label: "Toutes" },
-    { value: PERSON_FILTER_ME, label: "Moi" },
+    { value: PERSON_FILTER_ALL, label: t("filter.person.all") },
+    { value: PERSON_FILTER_ME, label: t("filter.person.me") },
     ...people.map((name) => ({ value: name, label: name })),
   ];
 
   const projectOptions: FilterPillOption<string>[] = [
-    { value: "all", label: "Tous" },
+    { value: "all", label: t("filter.project.all") },
     ...projects.map((project) => ({ value: project.id, label: project.name })),
   ];
 
   const envOptions: FilterPillOption<string>[] = [
-    { value: "all", label: "Tous" },
+    { value: "all", label: t("filter.project.all") },
     ...environments.map((env) => ({ value: env.value, label: env.label, dot: theme.accent })),
   ];
 
   const stepOptions: FilterPillOption<string>[] = [
-    { value: "all", label: "Toutes" },
+    { value: "all", label: t("filter.step.all") },
     ...steps.map((step) => ({ value: step.id, label: step.title })),
   ];
 
@@ -158,7 +158,7 @@ export function BoardFilterControls({
     <FilterPillGroup>
       {environments.length > 0 && (
         <FilterPill
-          label="Environnement"
+          label={t("filter.environment")}
           value={envFilter}
           options={envOptions}
           onChange={(nextEnv) => navigate({ envFilter: nextEnv })}
@@ -169,7 +169,7 @@ export function BoardFilterControls({
         />
       )}
       <FilterPill
-        label="Projet"
+        label={t("filter.project")}
         value={projectId}
         options={projectOptions}
         onChange={(nextProjectId) => navigate({ projectId: nextProjectId })}
@@ -180,7 +180,7 @@ export function BoardFilterControls({
       />
       {projectId !== "all" && steps.length > 0 && (
         <FilterPill
-          label="Étape"
+          label={t("filter.step")}
           value={stepId}
           options={stepOptions}
           onChange={(nextStepId) => navigate({ stepId: nextStepId })}
@@ -192,7 +192,7 @@ export function BoardFilterControls({
       )}
       {showStatus && (
         <FilterPill
-          label="Statut"
+          label={t("filter.status")}
           value={statusFilter}
           options={STATUS_FILTERS}
           onChange={(nextStatus) => navigate({ statusFilter: nextStatus })}
@@ -203,7 +203,7 @@ export function BoardFilterControls({
       )}
       {showPriority && (
         <FilterPill
-          label="Priorité"
+          label={t("filter.priority")}
           value={priorityFilter}
           options={PRIORITY_FILTERS}
           onChange={(nextPriority) => navigate({ priorityFilter: nextPriority })}
@@ -217,7 +217,7 @@ export function BoardFilterControls({
           « Mes tâches » et permet de cibler n'importe quel collaborateur. */}
       {showPerson ? (
         <FilterPill
-          label="Personne"
+          label={t("filter.person")}
           value={personFilter}
           options={personOptions}
           onChange={(nextPerson) => navigate({ personFilter: nextPerson })}
@@ -229,7 +229,7 @@ export function BoardFilterControls({
       ) : (
         showOwner && (
           <FilterPill
-            label="Tâches"
+            label={t("filter.tasks")}
             value={ownerFilter}
             options={OWNER_FILTERS}
             onChange={(nextOwner) => navigate({ ownerFilter: nextOwner })}
