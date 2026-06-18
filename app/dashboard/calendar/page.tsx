@@ -104,7 +104,7 @@ export default async function CalendarPage({
     <div className="flex h-full flex-col overflow-hidden">
       <Topbar title={t("nav.calendar")} workspace={workspace} />
 
-      <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-3 py-4 lg:px-4 xl:overflow-hidden">
+      <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-4 py-6 lg:px-8 xl:overflow-hidden">
         <div className="flex w-full flex-col gap-3 xl:h-full xl:min-h-0">
           <BoardFilterPersistence
             storageKey="mb-filters-calendar"

@@ -101,7 +101,7 @@ export default async function KanbanPage({
     <div className="flex h-full flex-col overflow-hidden">
       <Topbar title={t("nav.kanban")} workspace={workspace} />
 
-      <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-3 py-5 lg:px-4">
+      <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-4 py-6 lg:px-8">
         <div className="flex w-full flex-col gap-4">
           <BoardFilterPersistence
             storageKey="mb-filters-kanban"

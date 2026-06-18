@@ -181,7 +181,7 @@ export default async function DashboardPage({
         }
       />
 
-      <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-4 py-5 lg:px-6">
+      <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-4 py-6 lg:px-8">
         <StandaloneOpenProvider tasks={standaloneTasks} people={standalonePeople} workspace={workspace}>
         <div className="mx-auto flex w-full max-w-[1480px] flex-col gap-4">
           {/* Focus proactif : la première chose visible — quoi faire maintenant

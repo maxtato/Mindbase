@@ -31,7 +31,7 @@ export default async function SettingsPage({
     <div className="flex h-full flex-col overflow-hidden">
       <Topbar title={t("nav.settingsFull")} workspace={workspace} />
 
-      <main className="mb-page-scroll mb-mobile-scroll mx-auto flex w-full max-w-[980px] flex-1 flex-col gap-5 overflow-y-auto px-8 py-7">
+      <main className="mb-page-scroll mb-mobile-scroll mx-auto flex w-full max-w-[980px] flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 lg:px-8">
         <section
           className="rounded-[26px] p-7"
           style={{
