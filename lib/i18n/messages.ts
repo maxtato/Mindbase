@@ -126,6 +126,23 @@ const fr: Dict = {
   "steps.noTask": "Aucune tâche dans cette étape, utilise le bouton ci-dessous pour en ajouter.",
   "steps.addTask": "Ajouter une tâche",
   "steps.addStep": "Ajouter une étape",
+
+  // Fiche de tâche (champs)
+  "task.expected": "Attendu",
+  "task.realization": "Réalisation",
+  "task.checklist": "Checklist",
+  "task.note": "Note",
+  "task.discussion": "Discussion",
+  "task.files": "Fichiers joints",
+  "task.noFiles": "Pas de fichier joint.",
+  "task.aiAssistant": "Assistant IA",
+  "task.aiSuggestion": "Suggestion IA",
+  "task.aiThinking": "IA…",
+  "task.save": "Enregistrer",
+  "task.saving": "Enregistrement…",
+  "task.cancel": "Annuler",
+  "task.addSubaction": "Ajouter une sous-action…",
+  "task.assignedPeople": "Personnes assignées",
 };
 
 const en: Dict = {
@@ -248,6 +265,23 @@ const en: Dict = {
   "steps.noTask": "No task in this step, use the button below to add one.",
   "steps.addTask": "Add a task",
   "steps.addStep": "Add a step",
+
+  // Task card (fields)
+  "task.expected": "Expected",
+  "task.realization": "Outcome",
+  "task.checklist": "Checklist",
+  "task.note": "Note",
+  "task.discussion": "Discussion",
+  "task.files": "Attached files",
+  "task.noFiles": "No attached file.",
+  "task.aiAssistant": "AI assistant",
+  "task.aiSuggestion": "AI suggestion",
+  "task.aiThinking": "AI…",
+  "task.save": "Save",
+  "task.saving": "Saving…",
+  "task.cancel": "Cancel",
+  "task.addSubaction": "Add a sub-action…",
+  "task.assignedPeople": "Assigned people",
 };
 
 export const MESSAGES: Record<Locale, Dict> = { fr, en };
