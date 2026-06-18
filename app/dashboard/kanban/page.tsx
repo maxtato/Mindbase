@@ -11,6 +11,7 @@ import { deriveTaskStatus } from "@/lib/project-plan";
 import { getWorkspace, listEnvironmentOptions } from "@/lib/workspace";
 import { getCustomEnvironments } from "@/lib/environment-store";
 import { getProfile } from "@/lib/account-store";
+import { getServerT } from "@/lib/i18n/server";
 import {
   collectAssignablePeople,
   isProjectCreator,
@@ -30,6 +31,7 @@ export default async function KanbanPage({
   const workspace = getWorkspace(sp.workspace);
   const statusFilter = parseStatusFilter(sp.status);
   const me = (await getProfile()).name;
+  const { t } = await getServerT();
   const environmentOptions = listEnvironmentOptions(await getCustomEnvironments());
   const envFilter =
     typeof sp.env === "string" && environmentOptions.some((option) => option.value === sp.env)
@@ -75,7 +77,7 @@ export default async function KanbanPage({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <Topbar title="Kanban" workspace={workspace} />
+      <Topbar title={t("nav.kanban")} workspace={workspace} />
 
       <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-3 py-5 lg:px-4">
         <div className="flex w-full flex-col gap-4">

@@ -23,6 +23,7 @@ import { KpiCard, type KpiTask } from "@/components/dashboard/kpi-card";
 import { FocusPanel } from "@/components/dashboard/focus-panel";
 import { buildDailyFocus, formatFocusDate } from "@/lib/project-focus";
 import { resolveProjectSubcategoryDisplay } from "@/lib/project-taxonomy";
+import { getServerT } from "@/lib/i18n/server";
 
 type DashboardTask = {
   project: Project;
@@ -106,23 +107,24 @@ export default async function DashboardPage({
   // Bloc « Focus / Aujourd'hui » : actions prioritaires + projets qui dérivent.
   const focus = buildDailyFocus(projects, workspace);
   const focusDate = formatFocusDate();
+  const { t } = await getServerT();
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <Topbar
-        title="Dashboard"
+        title={t("nav.dashboard")}
         workspace={workspace}
         action={
           <Link
             href={`/dashboard/projects/new?${qs}`}
-            aria-label="Nouveau projet"
+            aria-label={t("common.newProject")}
             className="flex items-center gap-1.5 rounded-xl text-xs font-bold whitespace-nowrap px-2 py-2 sm:px-3.5"
             style={{ background: theme.accent, color: "#fff" }}
           >
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
               <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
-            <span className="hidden sm:inline">Nouveau projet</span>
+            <span className="hidden sm:inline">{t("common.newProject")}</span>
           </Link>
         }
       />
@@ -146,25 +148,25 @@ export default async function DashboardPage({
               ouvert). KPI projets reste un lien vers la liste des projets. */}
           <section className="mb-rise grid grid-cols-3 gap-3" style={{ animationDelay: "70ms" }}>
             <KpiCard
-              label="Projets"
+              label={t("dashboard.kpi.projects")}
               value={kpiProjects}
               tone="info"
               tasks={projectsKpi}
-              emptyLabel="Aucun projet ouvert."
+              emptyLabel={t("dashboard.kpi.empty.projects")}
             />
             <KpiCard
-              label="Tâches ouvertes"
+              label={t("dashboard.kpi.openTasks")}
               value={kpiTasks}
               tone={kpiTasks > 0 ? "warn" : "neutral"}
               tasks={openTasksKpi}
-              emptyLabel="Aucune tâche ouverte."
+              emptyLabel={t("dashboard.kpi.empty.openTasks")}
             />
             <KpiCard
-              label="En retard"
+              label={t("dashboard.kpi.overdue")}
               value={kpiOverdue}
               tone={kpiOverdue > 0 ? "critical" : "neutral"}
               tasks={overdueTasksKpi}
-              emptyLabel="Aucune tâche en retard."
+              emptyLabel={t("dashboard.kpi.empty.overdue")}
             />
           </section>
 
@@ -175,8 +177,8 @@ export default async function DashboardPage({
               et les popovers KPI. */}
           <div className="mb-rise grid gap-4 lg:grid-cols-2" style={{ animationDelay: "140ms" }}>
             <Card
-              title="Répartition des tâches"
-              meta={totalTasks > 0 ? `${totalTasks} tâche${totalTasks > 1 ? "s" : ""}` : undefined}
+              title={t("dashboard.card.distribution")}
+              meta={totalTasks > 0 ? t("projects.tasksCount", { count: totalTasks }) : undefined}
               accent={theme.accent}
               href={`/dashboard/kanban?${qs}`}
             >
@@ -184,7 +186,7 @@ export default async function DashboardPage({
             </Card>
 
             <Card
-              title="Activité récente"
+              title={t("dashboard.card.activity")}
               meta={activityFeed.length > 0 ? `${activityFeed.length}` : undefined}
               accent={theme.accent}
             >

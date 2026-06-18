@@ -12,6 +12,7 @@ import type { TaskStatus } from "@/lib/mock-data";
 import { getWorkspace, listEnvironmentOptions } from "@/lib/workspace";
 import { getCustomEnvironments } from "@/lib/environment-store";
 import { getProfile } from "@/lib/account-store";
+import { getServerT } from "@/lib/i18n/server";
 import {
   collectAssignablePeople,
   isProjectCreator,
@@ -35,6 +36,7 @@ export default async function CalendarPage({
   const statusFilter = parseStatusFilter(sp.status);
   const priorityFilter = parsePriorityFilter(sp.priority);
   const me = (await getProfile()).name;
+  const { t } = await getServerT();
   const environmentOptions = listEnvironmentOptions(await getCustomEnvironments());
   const envFilter =
     typeof sp.env === "string" && environmentOptions.some((option) => option.value === sp.env)
@@ -78,7 +80,7 @@ export default async function CalendarPage({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <Topbar title="Calendrier" workspace={workspace} />
+      <Topbar title={t("nav.calendar")} workspace={workspace} />
 
       <main className="mb-page-scroll mb-mobile-scroll flex-1 overflow-y-auto px-3 py-4 lg:px-4 xl:overflow-hidden">
         <div className="flex w-full flex-col gap-3 xl:h-full xl:min-h-0">
