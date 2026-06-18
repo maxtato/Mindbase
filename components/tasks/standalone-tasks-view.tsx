@@ -136,6 +136,27 @@ export function StandaloneTasksView({
     return statusOk && priorityOk && envOk && personOk;
   });
 
+  // Regroupement par échéance, façon liste de tâches : En retard · Aujourd'hui ·
+  // Demain · Cette semaine · À venir · Sans date · Terminées. Les groupes vides
+  // ne sont pas affichés.
+  const todayKey = toDateKey(new Date());
+  const tomorrowKey = toDateKey(addDays(new Date(), 1));
+  const weekEndKey = toDateKey(addDays(new Date(), 7));
+  function bucketOf(task: StandaloneTask): GroupKey {
+    if (deriveTaskStatus(task) === "done") return "done";
+    const due = task.dueDate;
+    if (!due) return "noDate";
+    if (due < todayKey) return "overdue";
+    if (due === todayKey) return "today";
+    if (due === tomorrowKey) return "tomorrow";
+    if (due <= weekEndKey) return "thisWeek";
+    return "upcoming";
+  }
+  const groupedTasks = GROUP_ORDER.map((key) => ({
+    key,
+    tasks: visibleTasks.filter((task) => bucketOf(task) === key),
+  })).filter((group) => group.tasks.length > 0);
+
   return (
     <div className="mx-auto flex w-full max-w-[840px] flex-col gap-4">
       {/* Création : manuelle par défaut, + un bouton « Créer avec l'IA » violet. */}
@@ -143,7 +164,7 @@ export function StandaloneTasksView({
         {/* Titre + sélecteur d'environnement (même style que les filtres) côte à côte. */}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-[12.5px] font-bold uppercase tracking-[0.1em]" style={{ color: text.primary }}>
-            {t("tasks.newTask")}
+            {t("tasks.newFreeTask")}
           </p>
           <FilterPill
             label={t("filter.environment")}
@@ -210,7 +231,7 @@ export function StandaloneTasksView({
             <div className="flex items-center justify-between gap-2">
               {!isPaid && (
                 <span className="text-[11px]" style={{ color: text.muted }}>
-                  IA réservée au plan Pro.
+                  {t("tasks.ai.proOnly")}
                 </span>
               )}
               <button
@@ -277,23 +298,60 @@ export function StandaloneTasksView({
           {t("tasks.empty")}
         </p>
       ) : (
-        <div className="flex flex-col gap-2.5">
-          {visibleTasks.map((task) => (
-            <StandaloneTaskCard
-              key={task.id}
-              task={task}
-              workspace={workspace}
-              accent={accent}
-              people={people}
-              expanded={expandedId === task.id}
-              onToggleExpand={() => setExpandedId((current) => (current === task.id ? null : task.id))}
-              onAfterMutation={refresh}
-            />
+        <div className="flex flex-col gap-5">
+          {groupedTasks.map((group) => (
+            <div key={group.key} className="flex flex-col gap-2.5">
+              <div className="flex items-center gap-2 px-1">
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: text.muted }}>
+                  {t(groupLabelKey[group.key])}
+                </h3>
+                <span className="text-[11px] font-semibold" style={{ color: text.ghost }}>
+                  · {group.tasks.length}
+                </span>
+              </div>
+              {group.tasks.map((task) => (
+                <StandaloneTaskCard
+                  key={task.id}
+                  task={task}
+                  workspace={workspace}
+                  accent={accent}
+                  people={people}
+                  expanded={expandedId === task.id}
+                  onToggleExpand={() => setExpandedId((current) => (current === task.id ? null : task.id))}
+                  onAfterMutation={refresh}
+                />
+              ))}
+            </div>
           ))}
         </div>
       )}
     </div>
   );
+}
+
+const GROUP_ORDER = ["overdue", "today", "tomorrow", "thisWeek", "upcoming", "noDate", "done"] as const;
+type GroupKey = (typeof GROUP_ORDER)[number];
+const groupLabelKey: Record<GroupKey, string> = {
+  overdue: "tasks.group.overdue",
+  today: "tasks.group.today",
+  tomorrow: "tasks.group.tomorrow",
+  thisWeek: "tasks.group.thisWeek",
+  upcoming: "tasks.group.upcoming",
+  noDate: "tasks.group.noDate",
+  done: "tasks.group.done",
+};
+
+function toDateKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function addDays(date: Date, days: number): Date {
+  const next = new Date(date);
+  next.setDate(date.getDate() + days);
+  return next;
 }
 
 function StandaloneTaskCard({
@@ -431,6 +489,7 @@ function StandaloneTaskCard({
               projectPeople={people}
               projectTeams={[]}
               onUpdate={(input) => update(input)}
+              assignEmptyHint={t("tasks.assignEmptyHint")}
             />
           </div>
           <TaskExpandedPreview

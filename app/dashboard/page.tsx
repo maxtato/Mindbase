@@ -11,8 +11,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Topbar } from "@/components/layout/topbar";
 import { getProjectsForWorkspace } from "@/lib/project-store";
-import { getWorkspace, workspaceTheme } from "@/lib/workspace";
-import { syncEnvironmentThemes } from "@/lib/environment-store";
+import { getWorkspace, workspaceTheme, listEnvironmentOptions, ALL_WORKSPACE } from "@/lib/workspace";
+import { syncEnvironmentThemes, getCustomEnvironments } from "@/lib/environment-store";
 import { flattenProjectTasks, isTaskOverdue, type FlattenedProjectTask } from "@/lib/project-insights";
 import { deriveTaskStatus } from "@/lib/project-plan";
 import { surface, text, error as errorTokens, statusColor } from "@/lib/design-tokens";
@@ -88,7 +88,8 @@ export default async function DashboardPage({
   });
 
   const openTasksKpi = openTasks.map((item) => toKpiTask(item));
-  const overdueTasksKpi = overdueTasks.map((item) => toKpiTask(item, "En retard", "danger"));
+  const { t, locale } = await getServerT();
+  const overdueTasksKpi = overdueTasks.map((item) => toKpiTask(item, t("dashboard.overdueTag"), "danger"));
 
   // Liste des projets ouverts pour le popover du KPI « Projets » : on peut
   // scroller et cliquer sur un projet pour l'ouvrir (comme les tâches).
@@ -97,7 +98,7 @@ export default async function DashboardPage({
     return {
       key: project.id,
       title: project.name,
-      projectName: `${remaining} tâche${remaining > 1 ? "s" : ""} restante${remaining > 1 ? "s" : ""}`,
+      projectName: t(remaining > 1 ? "dashboard.projectRemainingOther" : "dashboard.projectRemainingOne", { count: remaining }),
       projectColor: resolveProjectSubcategoryDisplay(project).color,
       href: `/dashboard/projects/${project.id}?workspace=${workspace}`,
       meta: `${Math.max(0, Math.min(100, Math.round(project.progress ?? 0)))}%`,
@@ -105,9 +106,31 @@ export default async function DashboardPage({
   });
 
   // Bloc « Focus / Aujourd'hui » : actions prioritaires + projets qui dérivent.
-  const focus = buildDailyFocus(projects, workspace);
-  const focusDate = formatFocusDate();
-  const { t } = await getServerT();
+  const focus = buildDailyFocus(projects, workspace, t);
+  const focusDate = formatFocusDate(locale);
+
+  // Répartition par environnement (tableau de bord commun) : on agrège TOUS
+  // les environnements, indépendamment du filtre courant, pour donner une vue
+  // « ce qu'il y a en Perso / Pro / autre ».
+  const allEnvProjects = (await getProjectsForWorkspace(ALL_WORKSPACE)).filter(
+    (project) => project.status !== "archived" && !project.deleted,
+  );
+  const envBreakdown = listEnvironmentOptions(await getCustomEnvironments())
+    .map((option) => {
+      const envProjects = allEnvProjects.filter((project) => project.workspace === option.value);
+      const openProjectCount = envProjects.filter((project) => project.status !== "completed").length;
+      const openTaskCount = envProjects
+        .flatMap((project) => flattenProjectTasks(project))
+        .filter((entry) => deriveTaskStatus(entry.task) !== "done").length;
+      return {
+        value: option.value,
+        label: option.label,
+        accent: workspaceTheme[option.value]?.accent ?? theme.accent,
+        openProjects: openProjectCount,
+        openTasks: openTaskCount,
+      };
+    })
+    .filter((row) => row.openProjects > 0 || row.openTasks > 0);
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -138,7 +161,7 @@ export default async function DashboardPage({
               focus={focus}
               dateLabel={focusDate}
               accent={theme.accent}
-              workspaceLabel={theme.label}
+              t={t}
             />
           </div>
 
@@ -182,7 +205,7 @@ export default async function DashboardPage({
               accent={theme.accent}
               href={`/dashboard/kanban?${qs}`}
             >
-              <StatusStackedBar breakdown={breakdown} />
+              <StatusStackedBar breakdown={breakdown} t={t} />
             </Card>
 
             <Card
@@ -190,9 +213,22 @@ export default async function DashboardPage({
               meta={activityFeed.length > 0 ? `${activityFeed.length}` : undefined}
               accent={theme.accent}
             >
-              <ActivityFeedPanel entries={activityFeed} workspace={workspace} />
+              <ActivityFeedPanel entries={activityFeed} workspace={workspace} t={t} />
             </Card>
           </div>
+
+          {/* Répartition par environnement — tableau de bord commun. */}
+          {envBreakdown.length > 0 && (
+            <div className="mb-rise" style={{ animationDelay: "160ms" }}>
+              <Card title={t("dashboard.card.byEnvironment")} accent={theme.accent}>
+                <EnvironmentBreakdown
+                  rows={envBreakdown}
+                  projectsLabel={t("dashboard.kpi.projects")}
+                  tasksLabel={t("dashboard.kpi.openTasks")}
+                />
+              </Card>
+            </div>
+          )}
         </div>
       </main>
     </div>
@@ -256,6 +292,53 @@ function Card({ title, meta, accent, action, href, children }: CardProps) {
         {children}
       </div>
     </section>
+  );
+}
+
+interface EnvBreakdownRow {
+  value: string;
+  label: string;
+  accent: string;
+  openProjects: number;
+  openTasks: number;
+}
+
+// Petit graphique « par environnement » : une barre proportionnelle aux tâches
+// ouvertes de chaque environnement + les compteurs projets/tâches.
+function EnvironmentBreakdown({
+  rows,
+  projectsLabel,
+  tasksLabel,
+}: {
+  rows: EnvBreakdownRow[];
+  projectsLabel: string;
+  tasksLabel: string;
+}) {
+  const maxTasks = Math.max(1, ...rows.map((row) => row.openTasks));
+  return (
+    <ul className="flex flex-col gap-3">
+      {rows.map((row) => (
+        <li key={row.value} className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between gap-3">
+            <span className="flex min-w-0 items-center gap-2">
+              <span aria-hidden className="inline-block h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: row.accent }} />
+              <span className="truncate text-[12.5px] font-semibold" style={{ color: text.primary }}>
+                {row.label}
+              </span>
+            </span>
+            <span className="shrink-0 text-[11px] font-semibold tabular-nums" style={{ color: text.muted }}>
+              {row.openProjects} {projectsLabel.toLowerCase()} · {row.openTasks} {tasksLabel.toLowerCase()}
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full" style={{ background: surface.s2 }}>
+            <div
+              className="h-full rounded-full"
+              style={{ width: `${Math.round((row.openTasks / maxTasks) * 100)}%`, background: row.accent, minWidth: row.openTasks > 0 ? 6 : 0 }}
+            />
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }
 

@@ -20,6 +20,7 @@ import { ProjectCategoryIcon } from "@/components/projects/project-taxonomy-ui";
 import { AIProjectCreator, AIProjectCreatorTrigger } from "@/components/projects/ai-project-creator";
 import { useEnvironments } from "@/components/environments/environments-provider";
 import { FilterPill } from "@/components/ui/filter-pill";
+import { useT } from "@/components/i18n/locale-provider";
 
 const TASK_STATUS_ORDER: TaskStatus[] = ["todo", "in_progress", "waiting", "blocked", "done"];
 const STEP_STATUS_ORDER: StepStatus[] = ["todo", "in_progress", "waiting", "done"];
@@ -53,6 +54,7 @@ interface CustomProjectFormProps {
 
 export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
   const router = useRouter();
+  const t = useT();
   const environments = useEnvironments();
   const isAll = workspace === ALL_WORKSPACE;
   // En vue « Tous », on demande dans quel environnement créer le projet.
@@ -127,7 +129,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
             className="text-sm font-semibold"
             style={{ color: text.muted }}
           >
-            ← Retour
+            ← {t("newProject.back")}
           </button>
           <AIProjectCreatorTrigger
             workspace={effectiveWorkspace}
@@ -151,11 +153,11 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
           {(
             <div className="xl:col-span-3" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <label className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
-                Environnement
+                {t("newProject.environment")}
               </label>
               {/* Sélecteur d'environnement : même style que les filtres (pill). */}
               <FilterPill
-                label="Environnement"
+                label={t("newProject.environment")}
                 value={targetWorkspace}
                 options={[
                   ...BUILTIN_WORKSPACES.map((ws) => ({ value: ws, label: workspaceTheme[ws].label, dot: workspaceTheme[ws].accent })),
@@ -192,37 +194,37 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
 
           <section className="mb-card-premium rounded-[30px] p-6" style={{ background: surface.s1 }}>
             <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: theme.accent }}>
-              Projet personnalisé
+              {t("newProject.subtitle")}
             </p>
             <h1 className="mt-2 text-2xl font-bold" style={{ color: text.primary }}>
-              Créer un projet
+              {t("newProject.title")}
             </h1>
             <p className="mt-2 text-sm leading-relaxed" style={{ color: text.muted }}>
-              Pose les bases du projet. Les étapes et les tâches seront ajoutées ensuite depuis la fiche projet.
+              {t("newProject.intro")}
             </p>
 
             <div className="mt-6 grid gap-4">
-              <Field label="Nom du projet" required errorMessage={state.errors?.name}>
-                <input name="name" placeholder="Ex: Agrandissement maison" style={fieldStyle} autoComplete="off" />
+              <Field label={t("newProject.name")} required errorMessage={state.errors?.name}>
+                <input name="name" placeholder={t("newProject.namePlaceholder")} style={fieldStyle} autoComplete="off" />
               </Field>
 
-              <Field label="Description courte">
-                <input name="description" placeholder="Une phrase pour résumer le projet." style={fieldStyle} />
+              <Field label={t("newProject.shortDesc")}>
+                <input name="description" placeholder={t("newProject.shortDescPlaceholder")} style={fieldStyle} />
               </Field>
 
-              <Field label="Objectif">
+              <Field label={t("newProject.objective")}>
                 <textarea
                   name="objective"
-                  placeholder="Quel résultat concret veux-tu obtenir ?"
+                  placeholder={t("newProject.objectivePlaceholder")}
                   rows={5}
                   style={{ ...fieldStyle, resize: "vertical", lineHeight: 1.5 }}
                 />
               </Field>
 
-              <Field label="Contexte">
+              <Field label={t("newProject.context")}>
                 <textarea
                   name="context"
-                  placeholder="Contraintes, informations utiles, éléments déjà connus."
+                  placeholder={t("newProject.contextPlaceholder")}
                   rows={5}
                   style={{ ...fieldStyle, resize: "vertical", lineHeight: 1.5 }}
                 />
@@ -232,14 +234,14 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
 
           <section className="mb-card-premium rounded-[30px] p-6" style={{ background: surface.s1 }}>
             <h2 className="text-sm font-bold" style={{ color: text.primary }}>
-              Thème du projet
+              {t("newProject.theme")}
             </h2>
             <p className="mt-1 text-xs leading-relaxed" style={{ color: text.muted }}>
-              Le thème donne la couleur principale du projet dans les listes, le dashboard et la page projet.
+              {t("newProject.themeDesc")}
             </p>
 
             <div className="mt-5 grid gap-4">
-              <Field label="Catégorie" errorMessage={state.errors?.subcategory}>
+              <Field label={t("newProject.category")} errorMessage={state.errors?.subcategory}>
                 <div className="grid grid-cols-2 gap-2">
                   {getSubcategoryOptions(effectiveWorkspace).map((option) => {
                     const selected = subcategory === option.key;
@@ -265,7 +267,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
                         <span className="block text-xs font-bold">{option.label}</span>
                         {selected && (
                           <span className="mt-1 block text-[10px] font-semibold" style={{ color: option.color }}>
-                            Sélectionné
+                            {t("newProject.selected")}
                           </span>
                         )}
                       </button>
@@ -277,16 +279,16 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
               {isCustomSubcategory && (
                 <div className="rounded-2xl p-3" style={{ background: surface.s3, border: `1px solid ${surface.borderSubtle}` }}>
                   <div className="grid gap-3">
-                    <Field label="Nom de la catégorie" errorMessage={state.errors?.customSubcategoryLabel}>
+                    <Field label={t("newProject.categoryName")} errorMessage={state.errors?.customSubcategoryLabel}>
                       <input
                         name="customSubcategoryLabel"
                         value={customSubcategoryLabel}
                         onChange={(event) => setCustomSubcategoryLabel(event.target.value)}
-                        placeholder="Ex: Jardin"
+                        placeholder={t("newProject.categoryNamePlaceholder")}
                         style={fieldStyle}
                       />
                     </Field>
-                    <Field label="Couleur personnalisée" errorMessage={state.errors?.customSubcategoryColor}>
+                    <Field label={t("newProject.customColor")} errorMessage={state.errors?.customSubcategoryColor}>
                       <div className="flex items-center gap-2">
                         <input
                           type="color"
@@ -294,7 +296,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
                           onChange={(event) => setCustomSubcategoryColor(event.target.value)}
                           className="h-11 w-12 rounded-xl"
                           style={{ border: "none", background: surface.s2, cursor: "pointer" }}
-                          aria-label="Couleur personnalisée"
+                          aria-label={t("newProject.customColor")}
                         />
                         <input
                           name="customSubcategoryColor"
@@ -308,7 +310,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
                 </div>
               )}
 
-              <Field label="Priorité" errorMessage={state.errors?.priority}>
+              <Field label={t("newProject.priority")} errorMessage={state.errors?.priority}>
                 <select
                   value={priority}
                   onChange={(event) => setPriority(event.target.value as ProjectPriority)}
@@ -327,15 +329,15 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
           <aside className="mb-card-premium grid content-start gap-4 rounded-[30px] p-6" style={{ background: surface.s1 }}>
             <div>
               <h2 className="text-sm font-bold" style={{ color: text.primary }}>
-                Personnalisation des statuts
+                {t("newProject.statusCustomTitle")}
               </h2>
               <p className="mt-1 text-xs leading-relaxed" style={{ color: text.muted }}>
-                Renomme et recolorise les statuts pour qu'ils correspondent à ton vocabulaire.
+                {t("newProject.statusCustomDesc")}
               </p>
             </div>
 
             <CreationStatusEditor
-              title="Tâches"
+              title={t("newProject.statusTasks")}
               rows={taskStatuses}
               accentColor={theme.accent}
               onChange={setTaskStatuses}
@@ -345,7 +347,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
               scope="task"
             />
             <CreationStatusEditor
-              title="Étapes"
+              title={t("newProject.statusSteps")}
               rows={stepStatuses}
               accentColor={theme.accent}
               onChange={setStepStatuses}
@@ -367,7 +369,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
               className="rounded-2xl px-5 py-3 text-sm font-bold"
               style={{ background: pending ? surface.s3 : theme.accent, color: pending ? text.muted : "#FFFFFF", cursor: pending ? "wait" : "pointer" }}
             >
-              {pending ? "Création..." : "Créer le projet"}
+              {pending ? t("newProject.creating") : t("newProject.create")}
             </button>
           </aside>
         </form>
@@ -434,6 +436,7 @@ function CreationStatusEditor<TStatus extends string>({
   defaultColors: Record<TStatus, string>;
   scope: "task" | "step";
 }) {
+  const t = useT();
   function updateRow(id: string, patch: Partial<EditableStatus<TStatus>>) {
     onChange(rows.map((row) => (row.id === id ? { ...row, ...patch } : row)));
   }
@@ -486,7 +489,7 @@ function CreationStatusEditor<TStatus extends string>({
           className="shrink-0 rounded-xl px-3 py-1.5 text-[11px] font-semibold"
           style={{ background: accentColor, color: "#FFFFFF", border: "none", cursor: "pointer" }}
         >
-          + Ajouter
+          {t("newProject.add")}
         </button>
       </div>
 
@@ -504,7 +507,7 @@ function CreationStatusEditor<TStatus extends string>({
               <label
                 className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
                 style={{ background: row.color, cursor: "pointer", overflow: "hidden" }}
-                aria-label={`Couleur ${row.label}`}
+                aria-label={t("newProject.colorAria", { name: row.label })}
               >
                 <input
                   type="color"
@@ -516,10 +519,10 @@ function CreationStatusEditor<TStatus extends string>({
               <input
                 value={row.label}
                 onChange={(event) => updateRow(row.id, { label: event.target.value })}
-                placeholder="Nom du statut"
+                placeholder={t("newProject.statusName")}
                 className="h-9 min-w-0 rounded-lg px-3 text-[13px] font-medium outline-none"
                 style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.borderSubtle}` }}
-                aria-label={`Nom du statut ${row.label}`}
+                aria-label={t("newProject.statusNameAria", { n: row.label })}
               />
               {!row.base && (
                 <select
@@ -527,7 +530,7 @@ function CreationStatusEditor<TStatus extends string>({
                   onChange={(event) => updateRow(row.id, { systemStatus: event.target.value as TStatus })}
                   className="h-9 min-w-0 rounded-lg px-2 text-[11px] font-semibold outline-none"
                   style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.borderSubtle}` }}
-                  aria-label="Catégorie système"
+                  aria-label={t("newProject.systemCategory")}
                 >
                   {statusOrder.map((status) => (
                     <option key={status} value={status}>
@@ -547,8 +550,8 @@ function CreationStatusEditor<TStatus extends string>({
                   border: `1px solid ${rows.length <= 1 ? surface.borderSubtle : "var(--mb-delete-border)"}`,
                   cursor: rows.length <= 1 ? "not-allowed" : "pointer",
                 }}
-                title="Supprimer le statut"
-                aria-label="Supprimer le statut"
+                title={t("newProject.deleteStatus")}
+                aria-label={t("newProject.deleteStatus")}
               >
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
@@ -557,7 +560,7 @@ function CreationStatusEditor<TStatus extends string>({
             </div>
             {row.base && (
               <p className="mt-1 pl-[44px] text-[10px] leading-snug" style={{ color: text.muted }}>
-                Catégorie système : {defaultLabels[row.systemStatus]}
+                {t("newProject.systemCategoryNote", { name: defaultLabels[row.systemStatus] })}
               </p>
             )}
           </div>
@@ -567,7 +570,7 @@ function CreationStatusEditor<TStatus extends string>({
       {hiddenBaseStatuses.length > 0 && (
         <div className="mt-3 rounded-xl p-2.5" style={{ background: surface.s1, border: `1px dashed ${surface.borderSubtle}` }}>
           <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: text.muted }}>
-            Statuts masqués
+            {t("newProject.hiddenStatuses")}
           </p>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             {hiddenBaseStatuses.map((status) => (
@@ -578,7 +581,7 @@ function CreationStatusEditor<TStatus extends string>({
                 className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
                 style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.borderSubtle}`, cursor: "pointer" }}
               >
-                Restaurer {defaultLabels[status]}
+                {t("newProject.restore", { name: defaultLabels[status] })}
               </button>
             ))}
           </div>

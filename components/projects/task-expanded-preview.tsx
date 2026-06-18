@@ -1494,6 +1494,7 @@ export function QuickInfos({
   onUpdate,
   statusSettings,
   headless = false,
+  assignEmptyHint,
 }: {
   task: Task;
   linkedTeams: ProjectTeam[];
@@ -1505,6 +1506,9 @@ export function QuickInfos({
   /** Rendu « nu » (sans la carte FieldShell ni le titre « Informations ») pour
    *  intégration directe sous le titre dans la barre d'en-tête. */
   headless?: boolean;
+  /** Message affiché quand aucun collaborateur n'est disponible. Permet
+   *  d'adapter le texte hors projet (tâches libres → réglages). */
+  assignEmptyHint?: string;
 }) {
   const accountName = useAccountName();
   const fileCount = task.files?.length ?? 0;
@@ -1612,6 +1616,7 @@ export function QuickInfos({
           projectPeople={projectPeople}
           projectTeams={projectTeams}
           accentColor={accentColor}
+          emptyHint={assignEmptyHint}
           onSave={(next) => {
             onUpdate?.({ owner: next.owner, assignees: next.assignees, teamIds: next.teamIds });
             setEditing(null);
@@ -2210,6 +2215,7 @@ function PersonEditor({
   projectPeople,
   projectTeams,
   accentColor,
+  emptyHint,
   onSave,
   onCancel,
 }: {
@@ -2217,6 +2223,8 @@ function PersonEditor({
   projectPeople: Array<{ id: string; name: string }>;
   projectTeams: ProjectTeam[];
   accentColor: string;
+  /** Texte affiché quand aucun collaborateur n'est disponible (adaptable hors projet). */
+  emptyHint?: string;
   onSave: (input: { owner: string; assignees: string[]; teamIds: string[] }) => void;
   onCancel: () => void;
 }) {
@@ -2343,7 +2351,7 @@ function PersonEditor({
           « Collaborer », seul endroit où l'équipe se constitue. */}
       {otherPeople.length === 0 && (
         <p style={{ fontSize: 11, color: text.muted, margin: 0, lineHeight: 1.45 }}>
-          Aucun collaborateur dans le projet. Ajoute des personnes via «&nbsp;Collaborer&nbsp;» à la base du projet pour pouvoir les assigner ici.
+          {emptyHint ?? "Aucun collaborateur dans le projet. Ajoute des personnes via « Collaborer » à la base du projet pour pouvoir les assigner ici."}
         </p>
       )}
 
