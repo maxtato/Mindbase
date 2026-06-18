@@ -84,7 +84,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
 
   return (
     <section
-      className="rounded-[20px] sm:rounded-[28px] p-3.5 sm:p-5"
+      className="rounded-[22px] sm:rounded-[22px] p-3.5 sm:p-5"
       style={{
         background: surface.s1,
         border: `1.5px solid ${theme.accent}`,

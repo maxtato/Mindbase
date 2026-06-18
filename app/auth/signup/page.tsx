@@ -27,7 +27,7 @@ export default function SignupPage() {
           </p>
 
           <div
-            className="mt-10 rounded-[28px] p-6"
+            className="mt-10 rounded-[22px] p-6"
             style={getSurfaceToneStyle("secondary")}
           >
             <p

@@ -138,7 +138,7 @@ export default async function KanbanPage({
 
 function EmptyState({ title, hint }: { title: string; hint: string }) {
   return (
-    <section className="mb-soft-shadow rounded-[26px] p-10 text-center" style={{ background: surface.s1 }}>
+    <section className="mb-soft-shadow rounded-[22px] p-10 text-center" style={{ background: surface.s1 }}>
       <p className="text-sm font-semibold" style={{ color: text.primary }}>
         {title}
       </p>

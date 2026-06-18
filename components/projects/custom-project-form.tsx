@@ -192,7 +192,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
           {!isCustomSubcategory && <input type="hidden" name="customSubcategoryLabel" value="" />}
           {!isCustomSubcategory && <input type="hidden" name="customSubcategoryColor" value="" />}
 
-          <section className="mb-card-premium rounded-[30px] p-6" style={{ background: surface.s1 }}>
+          <section className="mb-card-premium rounded-[22px] p-6" style={{ background: surface.s1 }}>
             <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: theme.accent }}>
               {t("newProject.subtitle")}
             </p>
@@ -232,7 +232,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
             </div>
           </section>
 
-          <section className="mb-card-premium rounded-[30px] p-6" style={{ background: surface.s1 }}>
+          <section className="mb-card-premium rounded-[22px] p-6" style={{ background: surface.s1 }}>
             <h2 className="text-sm font-bold" style={{ color: text.primary }}>
               {t("newProject.theme")}
             </h2>
@@ -326,7 +326,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
             </div>
           </section>
 
-          <aside className="mb-card-premium grid content-start gap-4 rounded-[30px] p-6" style={{ background: surface.s1 }}>
+          <aside className="mb-card-premium grid content-start gap-4 rounded-[22px] p-6" style={{ background: surface.s1 }}>
             <div>
               <h2 className="text-sm font-bold" style={{ color: text.primary }}>
                 {t("newProject.statusCustomTitle")}

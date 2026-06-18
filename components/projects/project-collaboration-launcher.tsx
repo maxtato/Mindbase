@@ -157,7 +157,7 @@ export function ProjectCollaborationLauncher({
       {isOpen && (
         <div className="mb-modal-backdrop fixed inset-0 z-50 flex items-center justify-center px-4 py-5">
           <section
-            className="mb-modal-surface w-full max-w-[920px] rounded-[28px]"
+            className="mb-modal-surface w-full max-w-[920px] rounded-[22px]"
             style={{
               color: text.primary,
               display: "flex",

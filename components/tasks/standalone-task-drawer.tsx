@@ -107,7 +107,7 @@ export function StandaloneTaskDrawer({
         role="dialog"
         aria-modal="true"
         aria-label={draftTask.title}
-        className="mb-modal-surface mb-task-drawer rounded-[20px] overflow-hidden"
+        className="mb-modal-surface mb-task-drawer rounded-[22px] overflow-hidden"
         style={{ display: "flex", flexDirection: "column", zIndex: 80 }}
       >
         <header

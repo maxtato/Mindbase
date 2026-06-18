@@ -432,7 +432,7 @@ function KanbanTaskCard({
               dragStartedRef.current = false;
             }, 0);
           }}
-          className="relative min-w-0 rounded-[18px]"
+          className="relative min-w-0 rounded-[16px]"
           style={{
             background: overdue ? errorTokens.bg : surface.s1,
             border: `1px solid ${overdue ? errorTokens.border : surface.borderSubtle}`,
