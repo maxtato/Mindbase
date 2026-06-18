@@ -75,7 +75,7 @@ export function WorkspaceSwitcher({
       options={options}
       onChange={change}
       accentColor={accent}
-      active={current !== ALL_WORKSPACE}
+      compact
       minWidth={minWidth}
     />
   );
