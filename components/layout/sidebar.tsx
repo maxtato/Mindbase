@@ -258,7 +258,7 @@ export function Sidebar({ stats, initialWorkspace, accountName }: SidebarProps) 
       {/* Sélecteur d'environnement : contrôle visible et persistant (déplié). */}
       {!collapsed && (
         <div className="px-2 pb-2">
-          <WorkspaceSwitcher initialWorkspace={initialWorkspace ?? workspace} minWidth={188} />
+          <WorkspaceSwitcher initialWorkspace={initialWorkspace ?? workspace} />
         </div>
       )}
 
