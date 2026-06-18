@@ -8,6 +8,7 @@ import type { Project } from "@/lib/mock-data";
 import type { Workspace } from "@/lib/workspace";
 import { workspaceTheme, listEnvironmentOptions } from "@/lib/workspace";
 import { useEnvironments } from "@/components/environments/environments-provider";
+import { useT } from "@/components/i18n/locale-provider";
 import { surface, text, error, statusColor } from "@/lib/design-tokens";
 import {
   ProjectPriorityBadge,
@@ -36,13 +37,14 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
   const [envFilter, setEnvFilter] = useState<string>("all");
   const theme = workspaceTheme[workspace];
+  const t = useT();
 
   // Filtre « Environnement » : depuis la suppression du sélecteur d'espaces, la
   // vue affiche toujours tous les environnements. Ce filtre permet de se
   // restreindre à un environnement sans perdre la vue agrégée par défaut.
   const environments = useEnvironments();
   const envOptions: FilterPillOption<string>[] = [
-    { value: "all", label: "Tous" },
+    { value: "all", label: t("common.all") },
     ...listEnvironmentOptions(environments).map((option) => ({
       value: option.value,
       label: option.label,
@@ -95,33 +97,33 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
   const archivedCount = projects.filter((p) => p.status === "archived").length;
 
   const statusOptions: FilterPillOption<FilterKey>[] = [
-    { value: "all", label: "Tous" },
-    { value: "preparing", label: "À préparer", dot: "var(--mb-status-gray-text)" },
-    { value: "active", label: "En cours", dot: "var(--mb-status-green-text)" },
-    { value: "paused", label: "En pause", dot: "var(--mb-status-yellow-text)" },
-    { value: "completed", label: "Terminé", dot: "var(--mb-status-blue-text)" },
-    { value: "archived", label: archivedCount > 0 ? `Archivé (${archivedCount})` : "Archivé", dot: "var(--mb-text-ghost)" },
+    { value: "all", label: t("filter.status.all") },
+    { value: "preparing", label: t("filter.status.preparing"), dot: "var(--mb-status-gray-text)" },
+    { value: "active", label: t("filter.status.active"), dot: "var(--mb-status-green-text)" },
+    { value: "paused", label: t("filter.status.paused"), dot: "var(--mb-status-yellow-text)" },
+    { value: "completed", label: t("filter.status.completed"), dot: "var(--mb-status-blue-text)" },
+    { value: "archived", label: archivedCount > 0 ? `${t("filter.status.archived")} (${archivedCount})` : t("filter.status.archived"), dot: "var(--mb-text-ghost)" },
   ];
 
   const priorityOptions: FilterPillOption<PriorityFilter>[] = [
-    { value: "all", label: "Toutes" },
-    { value: "high", label: "Haute", dot: "var(--mb-status-red-text)" },
-    { value: "medium", label: "Moyenne", dot: "var(--mb-status-blue-text)" },
-    { value: "low", label: "Basse", dot: "var(--mb-status-gray-text)" },
+    { value: "all", label: t("filter.priority.all") },
+    { value: "high", label: t("filter.priority.high"), dot: "var(--mb-status-red-text)" },
+    { value: "medium", label: t("filter.priority.medium"), dot: "var(--mb-status-blue-text)" },
+    { value: "low", label: t("filter.priority.low"), dot: "var(--mb-status-gray-text)" },
   ];
 
   return (
     <>
       <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
         <p className="text-sm shrink-0" style={{ color: text.secondary }}>
-          {filtered.length} projet{filtered.length !== 1 ? "s" : ""}
-          {activeFilter === "all" && ` · ${nonArchived.filter((p) => p.status === "active").length} en cours`}
-          {activeFilter === "archived" && <span className="ml-1.5 text-xs" style={{ color: text.muted }}>archivés</span>}
+          {filtered.length === 1 ? t("projects.countOne", { count: filtered.length }) : t("projects.countOther", { count: filtered.length })}
+          {activeFilter === "all" && ` · ${t("projects.activeSuffix", { count: nonArchived.filter((p) => p.status === "active").length })}`}
+          {activeFilter === "archived" && <span className="ml-1.5 text-xs" style={{ color: text.muted }}>{t("projects.archivedSuffix")}</span>}
         </p>
 
         <FilterPillGroup>
           <FilterPill
-            label="Environnement"
+            label={t("filter.environment")}
             value={envFilter}
             options={envOptions}
             onChange={setEnvFilter}
@@ -130,7 +132,7 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
             minWidth={190}
           />
           <FilterPill
-            label="Statut"
+            label={t("filter.status")}
             value={activeFilter}
             options={statusOptions}
             onChange={setActiveFilter}
@@ -138,7 +140,7 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
             accentColor={theme.accent}
           />
           <FilterPill
-            label="Priorité"
+            label={t("filter.priority")}
             value={priorityFilter}
             options={priorityOptions}
             onChange={setPriorityFilter}
@@ -161,10 +163,10 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
             </svg>
           </div>
           <p className="text-sm font-medium" style={{ color: text.secondary }}>
-            Aucun projet dans cette catégorie
+            {t("projects.empty.title")}
           </p>
           <p className="text-xs mt-1" style={{ color: text.muted }}>
-            Créez un projet dans cet espace ou changez le filtre.
+            {t("projects.empty.hint")}
           </p>
         </div>
       ) : (
@@ -269,37 +271,37 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
                         {blocked && (
                           <span className="flex items-center gap-1.5" style={{ color: error.text }}>
                             <span className="w-1.5 h-1.5 rounded-full" style={{ background: error.dot }} />
-                            Blocage
+                            {t("card.blocked")}
                           </span>
                         )}
                         {overdue && (
                           <span style={{ color: statusColor.yellow.text }}>
-                            Échéance en retard
+                            {t("card.overdue")}
                           </span>
                         )}
                         {pendingDecisions.length > 0 && (
                           <span style={{ color: statusColor.yellow.text }}>
-                            {pendingDecisions.length} décision{pendingDecisions.length > 1 ? "s" : ""} en attente
+                            {pendingDecisions.length === 1 ? t("card.decisionsOne", { count: pendingDecisions.length }) : t("card.decisionsOther", { count: pendingDecisions.length })}
                           </span>
                         )}
                         {inactive && (
                           <span style={{ color: text.muted }}>
-                            Inactif
+                            {t("card.inactive")}
                           </span>
                         )}
                         {indicators.isAtRisk && (
                           <span style={{ color: error.text }}>
-                            À risque
+                            {t("card.atRisk")}
                           </span>
                         )}
                         {indicators.dueSoonCount > 0 && (
                           <span style={{ color: statusColor.yellow.text }}>
-                            {indicators.dueSoonCount} proche{indicators.dueSoonCount > 1 ? "s" : ""}
+                            {indicators.dueSoonCount === 1 ? t("card.dueSoonOne", { count: indicators.dueSoonCount }) : t("card.dueSoonOther", { count: indicators.dueSoonCount })}
                           </span>
                         )}
                       </div>
                       <div className="flex items-center gap-2 text-xs" style={{ color: text.muted }}>
-                        <span>{pendingActions} tâches</span>
+                        <span>{t("projects.tasksCount", { count: pendingActions })}</span>
                       </div>
                     </div>
                   </div>
