@@ -2,6 +2,7 @@ import Link from "next/link";
 import { surface, text, error as errorTokens, statusColor } from "@/lib/design-tokens";
 import { getHealthVisual } from "@/lib/project-health";
 import type { DailyFocus, FocusAction, FocusAttentionProject, FocusTone } from "@/lib/project-focus";
+import { OpenStandaloneButton } from "@/components/dashboard/open-standalone-button";
 
 type Translate = (key: string, vars?: Record<string, string | number>) => string;
 
@@ -98,12 +99,8 @@ function FocusColumn({ title, count, children }: { title: string; count: number;
 
 function ActionRow({ action }: { action: FocusAction }) {
   const tone = TONE[action.tone];
-  return (
-    <Link
-      href={action.href}
-      className="flex min-w-0 items-center gap-2.5 rounded-xl px-3 py-2.5"
-      style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}
-    >
+  const inner = (
+    <>
       <span
         className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold"
         style={{ background: tone.bg, color: tone.fg }}
@@ -122,6 +119,24 @@ function ActionRow({ action }: { action: FocusAction }) {
         </span>
       </span>
       <Chevron />
+    </>
+  );
+  const className = "flex min-w-0 items-center gap-2.5 rounded-xl px-3 py-2.5";
+  const style = { background: surface.s2, border: `1px solid ${surface.borderSubtle}` };
+
+  // Tâche libre : ouverture en place (drawer) plutôt que navigation vers
+  // l'onglet Tâches.
+  if (action.standaloneId) {
+    return (
+      <OpenStandaloneButton taskId={action.standaloneId} className={`${className} w-full text-left`} style={{ ...style, cursor: "pointer" }}>
+        {inner}
+      </OpenStandaloneButton>
+    );
+  }
+
+  return (
+    <Link href={action.href} className={className} style={style}>
+      {inner}
     </Link>
   );
 }

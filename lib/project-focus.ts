@@ -27,6 +27,8 @@ export interface FocusAction {
   tone: FocusTone;
   /** Score interne de tri (plus haut = plus urgent). */
   weight: number;
+  /** Renseigné pour une tâche libre : permet d'ouvrir la tâche en place. */
+  standaloneId?: string;
 }
 
 export interface FocusAttentionProject {
@@ -120,6 +122,7 @@ function buildActions(
       tag: result.descriptor.tag,
       tone: result.descriptor.tone,
       weight: result.weight,
+      standaloneId: task.id,
     });
   }
 
