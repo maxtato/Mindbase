@@ -4,6 +4,7 @@
 // cohérentes avec le projet et qui ne doublonnent pas avec d'autres tâches.
 
 import { getOpenAIClient, AI_MODEL } from "./client";
+import { aiLocaleDirective } from "./locale";
 import type { Project, Step, Task } from "@/lib/mock-data";
 import { buildProjectContextSnapshot } from "./project-context";
 
@@ -108,7 +109,7 @@ export async function generateTaskChecklist(input: GenerateChecklistInput): Prom
       },
     },
     messages: [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: SYSTEM_PROMPT + (await aiLocaleDirective()) },
       { role: "user", content: userMessage },
     ],
   });

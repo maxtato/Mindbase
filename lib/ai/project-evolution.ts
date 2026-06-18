@@ -7,6 +7,7 @@
 // valide ensuite côté UI avant application (cf. applyProjectEvolutionAction).
 
 import { getOpenAIClient, AI_MODEL } from "./client";
+import { aiLocaleDirective } from "./locale";
 import type { Project, Task } from "@/lib/mock-data";
 
 export type EvolutionOpType = "add_step" | "add_task" | "update_task" | "remove_task";
@@ -249,7 +250,7 @@ export async function analyzeProjectEvolution(
       },
     },
     messages: [
-      { role: "system", content: buildSystemPrompt(today) },
+      { role: "system", content: buildSystemPrompt(today) + (await aiLocaleDirective()) },
       {
         role: "user",
         content: `État actuel du projet :\n\n${buildSnapshotWithIds(project)}\n\n---\n\nCi-dessous, la note initiale de l'utilisateur puis votre dialogue. Si tu as assez d'éléments, produis le plan (mode="plan") ; sinon pose UNE question (mode="question").`,
