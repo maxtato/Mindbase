@@ -90,7 +90,7 @@ export function ExpectedAssistant({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Assistant IA — Attendu"
+        aria-label="Assistant IA, Attendu"
         className="mb-modal-surface"
         onClick={(event) => event.stopPropagation()}
         style={{
@@ -105,7 +105,7 @@ export function ExpectedAssistant({
         <div className="flex items-start justify-between gap-3 px-5 py-4" style={{ borderBottom: `1px solid ${surface.borderSubtle}` }}>
           <div className="min-w-0">
             <p className="text-sm font-semibold" style={{ color: text.primary }}>
-              Assistant IA — Attendu
+              Assistant IA, Attendu
             </p>
             <p className="mt-0.5 text-[11px]" style={{ color: text.muted }}>
               Dialogue pour préciser ce qui est attendu ; l&apos;IA propose une formulation à appliquer.

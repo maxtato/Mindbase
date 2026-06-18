@@ -549,7 +549,7 @@ function buildCurrentStateSummary(project: Project, signals: ProjectRailSignals,
     signals.overdueTaskCount > 0 ? `${signals.overdueTaskCount} retard${signals.overdueTaskCount > 1 ? "s" : ""}` : "",
   ].filter(Boolean);
 
-  const main = `Avancement : ${project.progress}% — ${taskProgress}.`;
+  const main = `Avancement : ${project.progress}%, ${taskProgress}.`;
   const tail = flags.length > 0 ? ` À surveiller : ${flags.join(", ")}.` : "";
   return `${main}${tail} Clique sur "Mettre à jour" pour une lecture détaillée.`;
 }

@@ -1,5 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;700;800&family=Pacifico&display=swap');
 @import "tailwindcss";
+/* Les polices League Spartan / Pacifico sont chargées via next/font (layout.tsx)
+   et exposées en variables CSS (--font-league-spartan / --font-pacifico). On
+   évite ainsi un @import distant qui bloquait/flashait au rechargement. */
 
 @theme inline {
   --color-background: var(--bg);
@@ -10,13 +12,38 @@
 
 /* Wordmark Flatmind : « Flat » en League Spartan, « mind » en script Pacifico. */
 .mb-wordmark-mind {
-  font-family: "League Spartan", var(--font-sans);
+  font-family: var(--font-league-spartan), var(--font-sans);
 }
 
 .mb-script {
-  font-family: "Pacifico", "Segoe Script", "Brush Script MT", cursive;
+  font-family: var(--font-pacifico), "Segoe Script", "Brush Script MT", cursive;
   font-weight: 400;
   font-style: normal;
+}
+
+/* Panneau de la cloche de notifications. Desktop : menu déroulant ancré à
+   droite sous la cloche. iPhone : fenêtre centrée et contenue dans l'écran
+   (sinon elle débordait, rognée par le bord). */
+.mb-notif-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 200;
+  width: min(340px, calc(100vw - 24px));
+  max-height: min(60vh, 460px);
+  overflow-y: auto;
+}
+@media (max-width: 640px) {
+  .mb-notif-panel {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 64px);
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: calc(100vw - 24px);
+    max-width: 420px;
+    max-height: 70vh;
+  }
 }
 
 :root {

@@ -359,7 +359,7 @@ export const projects: Project[] = [
     priority: "high",
     isCustomSubcategory: false,
     currentPriority: "Débloquer les visuels design pour relancer la production de contenu",
-    nextStep: "Relancer l'équipe design sur les visuels LinkedIn — sans ça, la campagne ne peut pas démarrer",
+    nextStep: "Relancer l'équipe design sur les visuels LinkedIn, sans ça, la campagne ne peut pas démarrer",
     context:
       "En attente des visuels finaux de l'équipe design. Stratégie contenu validée. Budget alloué : 15k€. Canaux : LinkedIn, Google Ads, newsletter.",
     decisions: [

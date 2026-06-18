@@ -1115,7 +1115,7 @@ function StepCard({
               fontStyle: "italic",
             }}
           >
-            Aucune tâche dans cette étape — utilise le bouton ci-dessous pour en ajouter.
+            Aucune tâche dans cette étape, utilise le bouton ci-dessous pour en ajouter.
           </p>
         ) : (
           <div className="mb-task-grid">
@@ -2031,8 +2031,8 @@ function TaskPriorityDot({
         }}
         title={
           isAutoEscalated
-            ? `Priorité : ${visual.label.toLowerCase()} automatiquement, échéance aujourd'hui ou dépassée — clic pour changer la valeur manuelle`
-            : `Priorité : ${visual.label.toLowerCase()} — clic pour changer`
+            ? `Priorité : ${visual.label.toLowerCase()} automatiquement, échéance aujourd'hui ou dépassée, clic pour changer la valeur manuelle`
+            : `Priorité : ${visual.label.toLowerCase()}, clic pour changer`
         }
         aria-label="Changer la priorité"
         className="inline-flex shrink-0 items-center justify-center"

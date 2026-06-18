@@ -2585,7 +2585,7 @@ export async function updateTaskBoardStatus(
     const newActivityItem: ProjectActivityItem = {
       id: `act_${crypto.randomUUID().slice(0, 8)}`,
       date: now,
-      title: `Tâche déplacée — ${newLabel}`,
+      title: `Tâche déplacée, ${newLabel}`,
       detail: checklistBlocksCompletion
         ? `${updatedTask.title}${updatedTask.statusNote ? ` · ${updatedTask.statusNote}` : ""} · Checklist encore incomplète`
         : `${updatedTask.title}${updatedTask.statusNote ? ` · ${updatedTask.statusNote}` : ""}`,

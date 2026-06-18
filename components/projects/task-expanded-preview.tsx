@@ -1601,7 +1601,7 @@ export function QuickInfos({
             color: text.muted,
           }}
         >
-          La gestion des fichiers passe par un upload dédié — cette interface arrive bientôt.
+          La gestion des fichiers passe par un upload dédié, cette interface arrive bientôt.
           <button
             type="button"
             onClick={() => setEditing(null)}

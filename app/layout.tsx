@@ -1,13 +1,30 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
+import { League_Spartan, Pacifico } from "next/font/google";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { MobileTapGuard } from "@/components/layout/mobile-tap-guard";
 import { getCustomEnvironments } from "@/lib/environment-store";
 import { registerCustomEnvironments } from "@/lib/workspace";
 import "./globals.css";
 
+// Polices auto-hébergées par next/font (plus de @import distant Google Fonts
+// qui flashait / ne se chargeait pas toujours au rechargement). Exposées en
+// variables CSS, consommées par le wordmark dans globals.css.
+const leagueSpartan = League_Spartan({
+  subsets: ["latin"],
+  weight: ["500", "700", "800"],
+  variable: "--font-league-spartan",
+  display: "swap",
+});
+const pacifico = Pacifico({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-pacifico",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Flatmind — Think. Structure. Create.",
+  title: "Flatmind, Think. Structure. Create.",
   description: "Reliez vos projets, tâches, fichiers et décisions en un seul endroit.",
   applicationName: "Flatmind",
   // Active le mode PWA / standalone sur iOS quand l'app est ajoutée à l'écran
@@ -73,7 +90,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       : "light";
 
   return (
-    <html lang="fr" className="h-full" data-theme={initialTheme} data-theme-mode={initialMode} suppressHydrationWarning>
+    <html lang="fr" className={`h-full ${leagueSpartan.variable} ${pacifico.variable}`} data-theme={initialTheme} data-theme-mode={initialMode} suppressHydrationWarning>
       <body className="h-full" style={{ background: "var(--mb-bg)", color: "var(--mb-text-primary)" }}>
         <ThemeProvider initialMode={initialMode} initialTheme={initialTheme}>
           <MobileTapGuard />
