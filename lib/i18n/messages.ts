@@ -101,6 +101,31 @@ const fr: Dict = {
   "filter.owner.mine": "Mes tâches",
   "calendar.prevMonth": "Mois précédent",
   "calendar.nextMonth": "Mois suivant",
+
+  // Détail projet (rail de synthèse)
+  "project.synthesis": "Synthèse",
+  "project.objective": "Objectif",
+  "project.summary": "Résumé du projet",
+  "project.currentState": "État actuel",
+  "project.risks": "Risques identifiés",
+  "project.nextActions": "Prochaines actions",
+  "project.progress": "Avancement",
+  "project.seeMoreOne": "Voir {count} autre",
+  "project.seeMoreOther": "Voir {count} autres",
+
+  // Étapes & tâches
+  "steps.firstTask": "Ajoutez une première tâche pour commencer le pilotage.",
+  "steps.tasksDone": "{done} / {total} tâches terminées",
+  "steps.overdue": "{count} en retard",
+  "steps.dueSoonOne": "{count} échéance proche",
+  "steps.dueSoonOther": "{count} échéances proches",
+  "steps.empty.title": "Aucune étape définie",
+  "steps.empty.hint": "Ajoute une étape manuellement pour structurer le projet.",
+  "steps.taskCountOne": "{count} tâche",
+  "steps.taskCountOther": "{count} tâches",
+  "steps.noTask": "Aucune tâche dans cette étape, utilise le bouton ci-dessous pour en ajouter.",
+  "steps.addTask": "Ajouter une tâche",
+  "steps.addStep": "Ajouter une étape",
 };
 
 const en: Dict = {
@@ -198,6 +223,31 @@ const en: Dict = {
   "filter.owner.mine": "My tasks",
   "calendar.prevMonth": "Previous month",
   "calendar.nextMonth": "Next month",
+
+  // Project detail (synthesis rail)
+  "project.synthesis": "Synthesis",
+  "project.objective": "Objective",
+  "project.summary": "Project summary",
+  "project.currentState": "Current state",
+  "project.risks": "Identified risks",
+  "project.nextActions": "Next actions",
+  "project.progress": "Progress",
+  "project.seeMoreOne": "See {count} more",
+  "project.seeMoreOther": "See {count} more",
+
+  // Steps & tasks
+  "steps.firstTask": "Add a first task to start managing.",
+  "steps.tasksDone": "{done} / {total} tasks done",
+  "steps.overdue": "{count} overdue",
+  "steps.dueSoonOne": "{count} due soon",
+  "steps.dueSoonOther": "{count} due soon",
+  "steps.empty.title": "No step defined",
+  "steps.empty.hint": "Add a step manually to structure the project.",
+  "steps.taskCountOne": "{count} task",
+  "steps.taskCountOther": "{count} tasks",
+  "steps.noTask": "No task in this step, use the button below to add one.",
+  "steps.addTask": "Add a task",
+  "steps.addStep": "Add a step",
 };
 
 export const MESSAGES: Record<Locale, Dict> = { fr, en };
