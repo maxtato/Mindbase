@@ -20,6 +20,8 @@ import { getDisplayStepTitle } from "@/lib/project-display";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
 import { isStandaloneProjectId } from "@/lib/standalone-board";
 import { updateStandaloneTaskAction } from "@/app/dashboard/tasks/actions";
+import { StandaloneTaskDrawer } from "@/components/tasks/standalone-task-drawer";
+import type { Task } from "@/lib/mock-data";
 import { useT } from "@/components/i18n/locale-provider";
 
 type TaskItem = { project: Project; entry: FlattenedProjectTask };
@@ -35,7 +37,15 @@ const defaultStatusColor: Record<TaskStatus, { bg: string; text: string; border:
   done: { bg: statusColor.green.bg, text: statusColor.green.text, border: statusColor.green.text },
 };
 
-export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; workspace: Workspace }) {
+export function TasksKanbanBoard({
+  tasks,
+  workspace,
+  standalonePeople = [],
+}: {
+  tasks: TaskItem[];
+  workspace: Workspace;
+  standalonePeople?: Array<{ id: string; name: string }>;
+}) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -44,6 +54,8 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
   const [pendingCompletion, setPendingCompletion] = useState<TaskItem | null>(null);
   const [pendingStatusChange, setPendingStatusChange] = useState<{ item: TaskItem; status: TaskStatus } | null>(null);
   const [blockedDoneAlert, setBlockedDoneAlert] = useState<string | null>(null);
+  // Tâche libre ouverte sur place (au lieu de renvoyer vers l'onglet Tâches).
+  const [openStandaloneTask, setOpenStandaloneTask] = useState<Task | null>(null);
   // Drag tactile (iPhone) : HTML5 DnD ne marche pas au doigt → drag custom.
   const gridRef = useRef<HTMLElement>(null);
 
@@ -263,6 +275,7 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
                         setDragOverStatus(null);
                       }}
                       onLongPressEngage={(x, y, element) => begin(getTaskKey(item), item.entry.task.title, x, y, element)}
+                      onOpenStandalone={() => setOpenStandaloneTask(item.entry.task)}
                     />
                   ))
                 ) : (
@@ -284,6 +297,16 @@ export function TasksKanbanBoard({ tasks, workspace }: { tasks: TaskItem[]; work
       </section>
 
       <DragGhost ghost={ghost} />
+
+      {openStandaloneTask && (
+        <StandaloneTaskDrawer
+          task={openStandaloneTask}
+          workspace={workspace}
+          people={standalonePeople}
+          onClose={() => setOpenStandaloneTask(null)}
+          onDeleted={() => setOpenStandaloneTask(null)}
+        />
+      )}
     </>
   );
 }
@@ -296,6 +319,7 @@ function KanbanTaskCard({
   onDragStart,
   onDragEnd,
   onLongPressEngage,
+  onOpenStandalone,
 }: {
   item: TaskItem;
   workspace: Workspace;
@@ -304,6 +328,7 @@ function KanbanTaskCard({
   onDragStart: () => void;
   onDragEnd: () => void;
   onLongPressEngage: (x: number, y: number, element: HTMLElement) => void;
+  onOpenStandalone: () => void;
 }) {
   const { project, entry } = item;
   const task = entry.task;
@@ -348,7 +373,6 @@ function KanbanTaskCard({
     .slice(0, 2)
     .toLocaleUpperCase("fr-FR");
 
-  const router = useRouter();
   const t = useT();
   const standalone = isStandaloneProjectId(project.id);
 
@@ -489,7 +513,7 @@ function KanbanTaskCard({
   );
 
   if (standalone) {
-    return renderArticle(() => router.push(`/dashboard/tasks?workspace=${workspace}`));
+    return renderArticle(onOpenStandalone);
   }
   return (
     <TaskDetailLauncher

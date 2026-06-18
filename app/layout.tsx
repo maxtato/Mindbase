@@ -27,7 +27,7 @@ const pacifico = Pacifico({
 });
 
 export const metadata: Metadata = {
-  title: "Flatmind, Think. Structure. Create.",
+  title: "Flatmind - Think. Structure. Create.",
   description: "Reliez vos projets, tâches, fichiers et décisions en un seul endroit.",
   applicationName: "Flatmind",
   // Active le mode PWA / standalone sur iOS quand l'app est ajoutée à l'écran

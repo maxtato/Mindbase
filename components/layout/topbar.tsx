@@ -3,7 +3,7 @@ import type { Workspace } from "@/lib/workspace";
 import { surface, text } from "@/lib/design-tokens";
 import { CommandTrigger } from "@/components/search/command-trigger";
 import { NotificationBell } from "@/components/layout/notification-bell";
-import { FlatmindWordmark } from "@/components/branding/mindlay-wordmark";
+import { FlatmindWordmark } from "@/components/branding/flatmind-wordmark";
 import { FlatmindLogoMark } from "@/components/branding/flatmind-logo-mark";
 
 interface TopbarProps {

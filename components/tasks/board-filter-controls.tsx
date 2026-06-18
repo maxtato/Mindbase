@@ -110,6 +110,7 @@ export function BoardFilterControls({
 
   const projectOptions: FilterPillOption<string>[] = [
     { value: "all", label: t("filter.project.all") },
+    { value: "standalone", label: t("filter.project.standalone") },
     ...projects.map((project) => ({ value: project.id, label: project.name })),
   ];
 

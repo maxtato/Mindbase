@@ -30,6 +30,7 @@ import { guessProjectFileExt } from "@/lib/project-files";
 import { getProjectTemplateByKey } from "@/lib/project-templates";
 import { getActiveAccountName } from "@/lib/current-account";
 import { getProfile } from "@/lib/account-store";
+import { getStandaloneTasks, type StandaloneTask } from "@/lib/standalone-tasks-store";
 
 const PROJECTS_FILE_PATH = path.join(process.cwd(), "data", "projects.json");
 const STORE_VERSION = 1;
@@ -804,26 +805,30 @@ export async function getProjectById(id: string) {
 }
 
 export async function getSidebarStatsByWorkspace(extraWorkspaces: string[] = []) {
-  const projects = await getAllProjects();
+  const [projects, standaloneTasks] = await Promise.all([getAllProjects(), getStandaloneTasks()]);
 
   const stats: Record<string, ReturnType<typeof buildWorkspaceSidebarStats>> = {
     // Vue agrégée « Tous » : tous les environnements confondus (par défaut).
-    all: buildWorkspaceSidebarStats(projects, "all"),
-    personal: buildWorkspaceSidebarStats(projects, "personal"),
-    professional: buildWorkspaceSidebarStats(projects, "professional"),
+    all: buildWorkspaceSidebarStats(projects, standaloneTasks, "all"),
+    personal: buildWorkspaceSidebarStats(projects, standaloneTasks, "personal"),
+    professional: buildWorkspaceSidebarStats(projects, standaloneTasks, "professional"),
   };
   for (const workspace of extraWorkspaces) {
-    stats[workspace] = buildWorkspaceSidebarStats(projects, workspace);
+    stats[workspace] = buildWorkspaceSidebarStats(projects, standaloneTasks, workspace);
   }
   return stats;
 }
 
-function buildWorkspaceSidebarStats(projects: Project[], workspace: Workspace) {
+function buildWorkspaceSidebarStats(projects: Project[], standaloneTasks: StandaloneTask[], workspace: Workspace) {
   const scopedProjects = projects.filter(
     (project) =>
       project.status !== "archived" && (workspace === "all" || project.workspace === workspace),
   );
+  const openStandaloneCount = standaloneTasks.filter(
+    (task) => !task.done && (workspace === "all" || task.workspace === workspace),
+  ).length;
   return {
+    standaloneOpenCount: openStandaloneCount,
     projectCount: scopedProjects.length,
     pendingActionsCount: scopedProjects.reduce((total, project) => {
       const stepsTasksPending = (project.steps ?? []).flatMap((step) => step.tasks).filter((task) => !task.done).length;

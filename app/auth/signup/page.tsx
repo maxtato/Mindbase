@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FlatmindLogo } from "@/components/branding/mindlay-logo";
+import { FlatmindLogo } from "@/components/branding/flatmind-logo";
 import {
   FieldLabel,
   SurfaceCard,

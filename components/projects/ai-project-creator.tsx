@@ -167,7 +167,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
             </p>
             <ol className="mt-2 grid gap-3">
               {suggestion.steps.map((step, index) => (
-                <li key={index} className="rounded-xl p-2.5 sm:p-3" style={{ background: surface.s1, border: `1px solid ${surface.borderSubtle}` }}>
+                <li key={index} className="min-w-0 rounded-xl p-2.5 sm:p-3" style={{ background: surface.s1, border: `1px solid ${surface.borderSubtle}` }}>
                   <p className="text-sm font-bold" style={{ color: text.primary }}>
                     {index + 1}. {step.title}
                   </p>
@@ -176,9 +176,12 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
                   )}
                   <ul className="mt-2 grid gap-1.5">
                     {step.tasks.map((task, ti) => (
-                      <li key={ti} className="rounded-lg px-2.5 sm:px-3 py-2" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
-                        <p className="mb-task-title text-[12px] font-semibold" style={{ color: text.primary }}>· {task.title}</p>
-                        <p className="mt-0.5 text-[11px]" style={{ color: text.muted }}>
+                      <li key={ti} className="min-w-0 rounded-lg px-2.5 sm:px-3 py-2" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
+                        {/* Aperçu : le titre s'affiche EN ENTIER (multi-lignes), jamais
+                            tronqué — sinon les longs titres semblent « coupés » à droite
+                            sur petit écran (iPhone). */}
+                        <p className="text-[12px] font-semibold" style={{ color: text.primary, overflowWrap: "anywhere", lineHeight: 1.4 }}>· {task.title}</p>
+                        <p className="mt-0.5 text-[11px]" style={{ color: text.muted, overflowWrap: "anywhere", lineHeight: 1.4 }}>
                           <span style={{ color: theme.accent, fontWeight: 600 }}>Attendu :</span> {task.expected}
                         </p>
                       </li>

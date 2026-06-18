@@ -7,9 +7,10 @@ import { useRouter } from "next/navigation";
 import { updateTaskAction } from "@/app/dashboard/projects/[id]/actions";
 import { TaskDetailLauncher } from "@/components/projects/task-detail-launcher";
 import { TaskChangeDetailDialog } from "@/components/tasks/task-change-detail-dialog";
+import { StandaloneTaskDrawer } from "@/components/tasks/standalone-task-drawer";
 import { formatShortDate } from "@/lib/date-format";
 import { statusColor, surface, text, error as errorTokens } from "@/lib/design-tokens";
-import type { Project, TaskStatus } from "@/lib/mock-data";
+import type { Project, Task, TaskStatus } from "@/lib/mock-data";
 import type { FlattenedProjectTask } from "@/lib/project-insights";
 import { deriveTaskDisplayPriority, deriveTaskStatus } from "@/lib/project-plan";
 import { priorityVisuals, type ProjectPriority } from "@/lib/project-taxonomy";
@@ -47,6 +48,7 @@ export function TasksCalendarBoard({
   person,
   env,
   basePath = "/dashboard/calendar",
+  standalonePeople = [],
 }: {
   tasks: TaskItem[];
   workspace: Workspace;
@@ -63,6 +65,8 @@ export function TasksCalendarBoard({
   env?: string;
   /** Base URL for prev/next month navigation links. Defaults to /dashboard/calendar. */
   basePath?: string;
+  /** Vivier d'assignation des tâches libres (membres de l'équipe). */
+  standalonePeople?: Array<{ id: string; name: string }>;
 }) {
   const router = useRouter();
   const t = useT();
@@ -82,6 +86,8 @@ export function TasksCalendarBoard({
   // depuis la modal "liste du jour" survive à la fermeture de cette modal —
   // sinon le portail React du drawer serait démonté avec sa source.
   const [openTaskItem, setOpenTaskItem] = useState<TaskItem | null>(null);
+  // Tâche libre ouverte sur place (drawer dédié, hors projet).
+  const [openStandaloneTask, setOpenStandaloneTask] = useState<Task | null>(null);
   const [dateOverrides, setDateOverrides] = useState<Record<string, string>>({});
   const [pendingDateChange, setPendingDateChange] = useState<{ item: TaskItem; date: string } | null>(null);
   const monthStart = parseMonth(month);
@@ -270,6 +276,7 @@ export function TasksCalendarBoard({
                               setDraggingKey(null);
                               setDragOverDate(null);
                             }}
+                            onOpenStandalone={(task) => setOpenStandaloneTask(task)}
                           />
                         ))}
                       </div>
@@ -460,6 +467,10 @@ export function TasksCalendarBoard({
                                             setExpandedDate(null);
                                             setOpenTaskItem(item);
                                           }}
+                                          onOpenStandalone={(task) => {
+                                            setExpandedDate(null);
+                                            setOpenStandaloneTask(task);
+                                          }}
                                         />
                                       ))}
                                     </div>
@@ -510,6 +521,7 @@ export function TasksCalendarBoard({
                       setDraggingKey(null);
                       setDragOverDate(null);
                     }}
+                    onOpenStandalone={(task) => setOpenStandaloneTask(task)}
                   />
                 ))}
               </div>
@@ -550,6 +562,17 @@ export function TasksCalendarBoard({
         />
       )}
 
+      {openStandaloneTask && (
+        <StandaloneTaskDrawer
+          key={openStandaloneTask.id}
+          task={openStandaloneTask}
+          workspace={workspace}
+          people={standalonePeople}
+          onClose={() => setOpenStandaloneTask(null)}
+          onDeleted={() => setOpenStandaloneTask(null)}
+        />
+      )}
+
       <DragGhost ghost={ghost} />
     </>
   );
@@ -562,6 +585,7 @@ function CalendarTaskCard({
   onDragStart,
   onDragEnd,
   onClickOverride,
+  onOpenStandalone,
   onLongPressEngage,
   lockTouchScroll = false,
 }: {
@@ -570,6 +594,9 @@ function CalendarTaskCard({
   isDragging: boolean;
   onDragStart: () => void;
   onDragEnd: () => void;
+  /** Ouvre une tâche libre (hors projet) dans son drawer dédié, au lieu de
+   *  renvoyer vers l'onglet Tâches. */
+  onOpenStandalone?: (task: Task) => void;
   onLongPressEngage?: (x: number, y: number, element: HTMLElement) => void;
   /** Si fourni, remplace l'ouverture de la modal par ce handler. Utilisé
    *  pour la vue "preview" d'une journée à plusieurs tâches : un tap sur la
@@ -612,11 +639,10 @@ function CalendarTaskCard({
     { moveTolerance: 16 },
   );
 
-  const router = useRouter();
   const t = useT();
   const standalone = isStandaloneProjectId(project.id);
   const activateFor = (open: () => void) =>
-    standalone ? () => router.push(`/dashboard/tasks?workspace=${workspace}`) : (onClickOverride ?? open);
+    standalone ? () => onOpenStandalone?.(entry.task) : (onClickOverride ?? open);
 
   const renderCard = (open: () => void) => {
     const activate = activateFor(open);

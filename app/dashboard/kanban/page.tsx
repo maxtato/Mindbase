@@ -13,6 +13,7 @@ import { getCustomEnvironments } from "@/lib/environment-store";
 import { getProfile } from "@/lib/account-store";
 import { getStandaloneTasksForWorkspace } from "@/lib/standalone-tasks-store";
 import { standaloneToBoardItem } from "@/lib/standalone-board";
+import { getTeamMembers } from "@/lib/team-store";
 import { getServerT } from "@/lib/i18n/server";
 import {
   collectAssignablePeople,
@@ -48,9 +49,11 @@ export default async function KanbanPage({
     envFilter === "all" ? allProjects : allProjects.filter((project) => project.workspace === envFilter);
 
   const selectedProjectId =
-    typeof sp.project === "string" && projects.some((project) => project.id === sp.project)
-      ? sp.project
-      : "all";
+    sp.project === "standalone"
+      ? "standalone"
+      : typeof sp.project === "string" && projects.some((project) => project.id === sp.project)
+        ? sp.project
+        : "all";
   const selectedProject = projects.find((project) => project.id === selectedProjectId);
   const projectSteps = selectedProject?.steps ?? [];
   const selectedStepId =
@@ -81,13 +84,18 @@ export default async function KanbanPage({
   // projets » (et tant qu'aucune étape précise n'est filtrée), avec le même
   // filtre d'environnement et de statut.
   const standaloneItems =
-    selectedProjectId === "all" && selectedStepId === "all" && personFilter !== PERSON_FILTER_ME
+    (selectedProjectId === "all" || selectedProjectId === "standalone") && selectedStepId === "all" && personFilter !== PERSON_FILTER_ME
       ? (await getStandaloneTasksForWorkspace(workspace))
           .filter((task) => envFilter === "all" || task.workspace === envFilter)
           .map(standaloneToBoardItem)
           .filter(({ entry }) => matchStatusFilter(deriveTaskStatus(entry.task), statusFilter))
       : [];
   const boardTasks = [...scopedTasks, ...standaloneItems];
+
+  // Vivier d'assignation des tâches libres : membres actifs de l'équipe.
+  const standalonePeople = (await getTeamMembers())
+    .filter((member) => member.status === "active")
+    .map((member) => ({ id: member.id, name: member.name }));
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -120,7 +128,7 @@ export default async function KanbanPage({
           {boardTasks.length === 0 ? (
             <EmptyState title={t("board.empty.title")} hint={t("board.empty.kanban")} />
           ) : (
-            <TasksKanbanBoard tasks={boardTasks} workspace={workspace} />
+            <TasksKanbanBoard tasks={boardTasks} workspace={workspace} standalonePeople={standalonePeople} />
           )}
         </div>
       </main>

@@ -44,6 +44,10 @@ interface TaskExpandedPreviewProps {
     status?: TaskStatus;
   }) => void;
   onChecklistMutated?: (next: ChecklistItem[]) => void;
+  /** Envoi d'un message de discussion hors projet (tâches libres). Quand il est
+   *  fourni, la discussion fonctionne sans projectId/stepId : c'est ce callback
+   *  qui persiste le message (cf. tâches autonomes). */
+  onSendDiscussionMessage?: (content: string) => Promise<void> | void;
   className?: string;
 }
 
@@ -58,6 +62,7 @@ export function TaskExpandedPreview({
   statusSettings,
   onUpdate,
   onChecklistMutated,
+  onSendDiscussionMessage,
   className = "",
 }: TaskExpandedPreviewProps) {
   // Couleur des boutons / accents IA = couleur de l'ENVIRONNEMENT (Pro/Perso),
@@ -105,6 +110,7 @@ export function TaskExpandedPreview({
             stepId={stepId}
             accentColor={accentColor}
             projectPeople={projectPeople}
+            onSendMessage={onSendDiscussionMessage}
           />
         </TaskPreviewPane>
       </div>
@@ -1143,13 +1149,18 @@ function DiscussionField({
   stepId,
   accentColor,
   projectPeople = [],
+  onSendMessage,
 }: {
   task: Task;
   projectId?: string;
   stepId?: string;
   accentColor: string;
   projectPeople?: Array<{ id: string; name: string }>;
+  /** Hors projet (tâches libres) : persiste le message via ce callback au lieu
+   *  de l'action liée au projet/étape. */
+  onSendMessage?: (content: string) => Promise<void> | void;
 }) {
+  const accountName = useAccountName();
   // Messages en attente d'être pris en compte par le serveur, affichés
   // localement pour que l'envoi soit immédiat sans router.refresh
   // (qui fermerait le drawer). Quand le task.discussion serveur les
@@ -1189,7 +1200,9 @@ function DiscussionField({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [mentionsOpen, mention]);
 
-  const canSend = Boolean(projectId && stepId && draft.trim().length > 0);
+  const canSend = onSendMessage
+    ? draft.trim().length > 0
+    : Boolean(projectId && stepId && draft.trim().length > 0);
 
   // Liste affichée : filtrée sur le « @partiel » en cours de frappe, sinon
   // (ouverture via bouton) la liste complète des collaborateurs.
@@ -1228,13 +1241,17 @@ function DiscussionField({
   }
 
   const send = () => {
-    if (!canSend || !projectId || !stepId) return;
+    // En projet : projectId/stepId requis. Hors projet (tâche libre) : un
+    // onSendMessage suffit.
+    if (!canSend) return;
+    if (!onSendMessage && (!projectId || !stepId)) return;
     const content = draft.trim();
+    const authorName = accountName.trim() || "Moi";
     // Optimistic local message : l'utilisateur voit son envoi tout de
     // suite, le drawer reste ouvert (pas de router.refresh).
     const optimistic: TaskDiscussionMessage = {
       id: `local_${Date.now()}`,
-      authorName: "Maxime",
+      authorName,
       content,
       createdAt: new Date().toISOString(),
     };
@@ -1242,10 +1259,14 @@ function DiscussionField({
     setDraft("");
     startTransition(async () => {
       try {
-        await addTaskDiscussionMessageAction(projectId, stepId, task.id, {
-          authorName: "Maxime",
-          content,
-        });
+        if (onSendMessage) {
+          await onSendMessage(content);
+        } else if (projectId && stepId) {
+          await addTaskDiscussionMessageAction(projectId, stepId, task.id, {
+            authorName: "Maxime",
+            content,
+          });
+        }
         // Le serveur a persisté ; au prochain re-render (avec task à jour)
         // le message sera dans task.discussion et le useMemo retire
         // l'optimistic via le dedupe par author|content.
@@ -1289,7 +1310,7 @@ function DiscussionField({
           </p>
         )}
       </div>
-      {projectId && stepId ? (
+      {(projectId && stepId) || onSendMessage ? (
         <div ref={mentionsRef} style={{ position: "relative" }}>
           <div className="flex items-center gap-1.5">
             <button
