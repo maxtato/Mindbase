@@ -4,7 +4,8 @@
 // project-insights), donc instantané, gratuit et fiable.
 
 import type { Project, Task } from "@/lib/mock-data";
-import type { Workspace } from "@/lib/workspace";
+import type { StandaloneTask } from "@/lib/standalone-tasks-store";
+import { workspaceTheme, type Workspace } from "@/lib/workspace";
 import { flattenProjectTasks, isTaskOverdue } from "@/lib/project-insights";
 import { deriveTaskDisplayPriority, deriveTaskStatus } from "@/lib/project-plan";
 import { computeProjectHealth, type HealthLevel } from "@/lib/project-health";
@@ -56,46 +57,70 @@ function dueTag(daysUntil: number, t: Translate): { tag: string; tone: FocusTone
   return null;
 }
 
-function buildActions(projects: Project[], workspace: Workspace, t: Translate, now: Date): FocusAction[] {
+function buildActions(
+  projects: Project[],
+  workspace: Workspace,
+  t: Translate,
+  now: Date,
+  standaloneTasks: StandaloneTask[] = [],
+): FocusAction[] {
   const actions: FocusAction[] = [];
+
+  // Calcule le « descriptor » (tag/ton/poids) d'une tâche selon son échéance et
+  // sa priorité. Commun aux tâches de projet et aux tâches libres.
+  function describe(task: Task): { descriptor: { tag: string; tone: FocusTone; weight: number }; weight: number } | null {
+    const daysUntil = task.dueDate ? daysFromToday(task.dueDate, now) : null;
+    const overdue = isTaskOverdue(task, now);
+    const highPriority = deriveTaskDisplayPriority(task, now) === "high";
+
+    let descriptor: { tag: string; tone: FocusTone; weight: number } | null = null;
+    if (overdue && task.dueDate) {
+      descriptor = { tag: t("focus.tag.overdue"), tone: "danger", weight: 1000 + (daysUntil !== null ? -daysUntil : 0) };
+    } else if (daysUntil !== null) {
+      descriptor = dueTag(daysUntil, t);
+    }
+    if (!descriptor && highPriority) {
+      descriptor = { tag: t("focus.tag.priority"), tone: "info", weight: 300 };
+    }
+    if (!descriptor) return null;
+    return { descriptor, weight: descriptor.weight + (highPriority ? 50 : 0) };
+  }
 
   for (const project of projects) {
     const color = resolveProjectSubcategoryDisplay(project).color;
     for (const entry of flattenProjectTasks(project)) {
       const task = entry.task;
-      const status = deriveTaskStatus(task);
-      if (status === "done") continue;
-
-      const daysUntil = task.dueDate ? daysFromToday(task.dueDate, now) : null;
-      const overdue = isTaskOverdue(task, now);
-      const highPriority = deriveTaskDisplayPriority(task, now) === "high";
-
-      let descriptor: { tag: string; tone: FocusTone; weight: number } | null = null;
-      if (overdue && task.dueDate) {
-        descriptor = { tag: t("focus.tag.overdue"), tone: "danger", weight: 1000 + (daysUntil !== null ? -daysUntil : 0) };
-      } else if (daysUntil !== null) {
-        descriptor = dueTag(daysUntil, t);
-      }
-      // Tâche prioritaire sans échéance imminente → on la remonte quand même.
-      if (!descriptor && highPriority) {
-        descriptor = { tag: t("focus.tag.priority"), tone: "info", weight: 300 };
-      }
-      if (!descriptor) continue;
-
-      // Bonus de priorité haute pour départager.
-      const weight = descriptor.weight + (highPriority ? 50 : 0);
-
+      if (deriveTaskStatus(task) === "done") continue;
+      const result = describe(task);
+      if (!result) continue;
       actions.push({
         key: `${project.id}-${task.id}`,
         title: task.title,
         projectName: project.name,
         projectColor: color,
         href: `/dashboard/projects/${project.id}?workspace=${workspace}&taskId=${task.id}`,
-        tag: descriptor.tag,
-        tone: descriptor.tone,
-        weight,
+        tag: result.descriptor.tag,
+        tone: result.descriptor.tone,
+        weight: result.weight,
       });
     }
+  }
+
+  // Tâches libres (hors projet) : mêmes règles de priorisation.
+  for (const task of standaloneTasks) {
+    if (deriveTaskStatus(task) === "done") continue;
+    const result = describe(task);
+    if (!result) continue;
+    actions.push({
+      key: `standalone-${task.id}`,
+      title: task.title,
+      projectName: t("tasks.freeBadge"),
+      projectColor: workspaceTheme[task.workspace]?.accent ?? workspaceTheme[workspace].accent,
+      href: `/dashboard/tasks?workspace=${task.workspace}`,
+      tag: result.descriptor.tag,
+      tone: result.descriptor.tone,
+      weight: result.weight,
+    });
   }
 
   actions.sort((a, b) => b.weight - a.weight);
@@ -121,21 +146,22 @@ function buildAttention(projects: Project[], t: Translate, now: Date): { list: F
   return { list, total: scored.length };
 }
 
-function countToday(projects: Project[], now: Date) {
+function countToday(projects: Project[], standaloneTasks: StandaloneTask[], now: Date) {
   const today = todayKey(now);
   let dueToday = 0;
   let overdue = 0;
-  for (const project of projects) {
-    for (const entry of flattenProjectTasks(project)) {
-      const task: Task = entry.task;
-      if (deriveTaskStatus(task) === "done") continue;
-      if (isTaskOverdue(task, now)) {
-        overdue += 1;
-        continue;
-      }
-      if (task.dueDate === today) dueToday += 1;
+  const tally = (task: Task) => {
+    if (deriveTaskStatus(task) === "done") return;
+    if (isTaskOverdue(task, now)) {
+      overdue += 1;
+      return;
     }
+    if (task.dueDate === today) dueToday += 1;
+  };
+  for (const project of projects) {
+    for (const entry of flattenProjectTasks(project)) tally(entry.task);
   }
+  for (const task of standaloneTasks) tally(task);
   return { dueToday, overdue };
 }
 
@@ -150,11 +176,18 @@ function buildBrief(counts: { dueToday: number; overdue: number; attention: numb
   return `${parts.slice(0, -1).join(", ")} ${t("focus.join.and")} ${parts[parts.length - 1]}.`;
 }
 
-export function buildDailyFocus(projects: Project[], workspace: Workspace, t: Translate, now = new Date()): DailyFocus {
+export function buildDailyFocus(
+  projects: Project[],
+  workspace: Workspace,
+  t: Translate,
+  standaloneTasks: StandaloneTask[] = [],
+  now = new Date(),
+): DailyFocus {
   const open = projects.filter((project) => project.status !== "completed");
-  const actions = buildActions(open, workspace, t, now);
+  const openStandalone = standaloneTasks.filter((task) => deriveTaskStatus(task) !== "done");
+  const actions = buildActions(open, workspace, t, now, openStandalone);
   const { list: attention, total: attentionTotal } = buildAttention(open, t, now);
-  const { dueToday, overdue } = countToday(open, now);
+  const { dueToday, overdue } = countToday(open, openStandalone, now);
   const counts = { dueToday, overdue, attention: attentionTotal };
 
   return {

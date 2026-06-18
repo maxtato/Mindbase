@@ -13,6 +13,8 @@ import { Topbar } from "@/components/layout/topbar";
 import { getProjectsForWorkspace } from "@/lib/project-store";
 import { getWorkspace, workspaceTheme, listEnvironmentOptions, ALL_WORKSPACE } from "@/lib/workspace";
 import { syncEnvironmentThemes, getCustomEnvironments } from "@/lib/environment-store";
+import { getStandaloneTasks, getStandaloneTasksForWorkspace } from "@/lib/standalone-tasks-store";
+import { standaloneToBoardItem, isStandaloneProjectId } from "@/lib/standalone-board";
 import { flattenProjectTasks, isTaskOverdue, type FlattenedProjectTask } from "@/lib/project-insights";
 import { deriveTaskStatus } from "@/lib/project-plan";
 import { surface, text, error as errorTokens, statusColor } from "@/lib/design-tokens";
@@ -42,6 +44,7 @@ export default async function DashboardPage({
   const workspace = getWorkspace(sp.workspace);
   const theme = workspaceTheme[workspace];
   const qs = `workspace=${workspace}`;
+  const { t, locale } = await getServerT();
 
   const projects = (await getProjectsForWorkspace(workspace)).filter(
     (project) => project.status !== "archived" && !project.deleted,
@@ -50,10 +53,17 @@ export default async function DashboardPage({
   // Projets actifs (non terminés)
   const openProjects = projects.filter((project) => project.status !== "completed");
 
-  // Liste plate de toutes les tâches
-  const allTasks: DashboardTask[] = projects.flatMap((project) =>
-    flattenProjectTasks(project).map((entry) => ({ project, entry })),
-  );
+  // Tâches libres (hors projet) de l'environnement courant : elles doivent
+  // aussi compter dans le dashboard (KPI, répartition, focus). On les adapte au
+  // même format {project, entry} via un pseudo-projet (cf. Kanban/Calendrier).
+  const standaloneTasks = await getStandaloneTasksForWorkspace(workspace);
+  const standaloneItems: DashboardTask[] = standaloneTasks.map(standaloneToBoardItem);
+
+  // Liste plate de toutes les tâches (projets + tâches libres)
+  const allTasks: DashboardTask[] = [
+    ...projects.flatMap((project) => flattenProjectTasks(project).map((entry) => ({ project, entry }))),
+    ...standaloneItems,
+  ];
 
   // Répartition par statut (pour le donut)
   const breakdown = computeStatusBreakdown(allTasks.map(({ entry }) => entry.task));
@@ -76,19 +86,23 @@ export default async function DashboardPage({
   const kpiOverdue = overdueTasks.length;
 
   const taskHref = (item: DashboardTask) =>
-    `/dashboard/projects/${item.project.id}?workspace=${workspace}&taskId=${item.entry.task.id}`;
-  const toKpiTask = (item: DashboardTask, meta?: KpiTask["meta"], metaTone?: KpiTask["metaTone"]): KpiTask => ({
-    key: `${item.project.id}-${item.entry.task.id}`,
-    title: item.entry.task.title,
-    projectName: item.project.name,
-    projectColor: resolveProjectSubcategoryDisplay(item.project).color,
-    href: taskHref(item),
-    meta,
-    metaTone,
-  });
+    isStandaloneProjectId(item.project.id)
+      ? `/dashboard/tasks?workspace=${workspace}`
+      : `/dashboard/projects/${item.project.id}?workspace=${workspace}&taskId=${item.entry.task.id}`;
+  const toKpiTask = (item: DashboardTask, meta?: KpiTask["meta"], metaTone?: KpiTask["metaTone"]): KpiTask => {
+    const standalone = isStandaloneProjectId(item.project.id);
+    return {
+      key: `${item.project.id}-${item.entry.task.id}`,
+      title: item.entry.task.title,
+      projectName: standalone ? t("tasks.freeBadge") : item.project.name,
+      projectColor: standalone ? item.project.subcategoryColor : resolveProjectSubcategoryDisplay(item.project).color,
+      href: taskHref(item),
+      meta,
+      metaTone,
+    };
+  };
 
   const openTasksKpi = openTasks.map((item) => toKpiTask(item));
-  const { t, locale } = await getServerT();
   const overdueTasksKpi = overdueTasks.map((item) => toKpiTask(item, t("dashboard.overdueTag"), "danger"));
 
   // Liste des projets ouverts pour le popover du KPI « Projets » : on peut
@@ -106,7 +120,8 @@ export default async function DashboardPage({
   });
 
   // Bloc « Focus / Aujourd'hui » : actions prioritaires + projets qui dérivent.
-  const focus = buildDailyFocus(projects, workspace, t);
+  // Les tâches libres entrent aussi dans les actions prioritaires.
+  const focus = buildDailyFocus(projects, workspace, t, standaloneTasks);
   const focusDate = formatFocusDate(locale);
 
   // Répartition par environnement (tableau de bord commun) : on agrège TOUS
@@ -115,13 +130,18 @@ export default async function DashboardPage({
   const allEnvProjects = (await getProjectsForWorkspace(ALL_WORKSPACE)).filter(
     (project) => project.status !== "archived" && !project.deleted,
   );
+  const allStandaloneTasks = await getStandaloneTasks();
   const envBreakdown = listEnvironmentOptions(await getCustomEnvironments())
     .map((option) => {
       const envProjects = allEnvProjects.filter((project) => project.workspace === option.value);
       const openProjectCount = envProjects.filter((project) => project.status !== "completed").length;
-      const openTaskCount = envProjects
-        .flatMap((project) => flattenProjectTasks(project))
-        .filter((entry) => deriveTaskStatus(entry.task) !== "done").length;
+      const openTaskCount =
+        envProjects
+          .flatMap((project) => flattenProjectTasks(project))
+          .filter((entry) => deriveTaskStatus(entry.task) !== "done").length +
+        allStandaloneTasks.filter(
+          (task) => task.workspace === option.value && deriveTaskStatus(task) !== "done",
+        ).length;
       return {
         value: option.value,
         label: option.label,
