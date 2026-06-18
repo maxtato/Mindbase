@@ -43,7 +43,7 @@ export function FocusPanel({ focus, dateLabel, accent, t }: FocusPanelProps) {
       <div className="min-w-0">
         {/* Tableau de bord commun à tous les environnements → pas de libellé
             d'environnement ici, juste la date. */}
-        <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: accent }}>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: accent }}>
           Focus · {dateLabel}
         </p>
         <h1
@@ -83,7 +83,7 @@ function FocusColumn({ title, count, children }: { title: string; count: number;
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <div className="flex items-center gap-2 px-0.5">
-        <h2 className="text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: text.muted }}>
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
           {title}
         </h2>
         {count > 0 && (

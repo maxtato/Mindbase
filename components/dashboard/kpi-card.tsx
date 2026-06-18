@@ -118,7 +118,7 @@ export function KpiCard({ label, value, hint, tone = "neutral", href, tasks, emp
   const inner = (
     <>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.1em]" style={{ color: text.muted }}>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
           {label}
         </p>
         <span

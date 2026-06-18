@@ -34,7 +34,7 @@ export function EnvironmentsManager() {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: text.muted }}>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
           Environnements personnalisés
         </p>
         <button

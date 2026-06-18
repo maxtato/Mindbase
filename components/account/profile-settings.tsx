@@ -43,7 +43,7 @@ export function ProfileSettings({ workspace, initialName, initialEmail }: Profil
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.1em]" style={{ color: text.muted }}>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
             Nom
           </span>
           <input
@@ -58,7 +58,7 @@ export function ProfileSettings({ workspace, initialName, initialEmail }: Profil
           />
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.1em]" style={{ color: text.muted }}>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
             Email (optionnel)
           </span>
           <input

@@ -57,7 +57,7 @@ export function TaskCompletionDialog({
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <p
-                className="text-xs font-semibold uppercase tracking-[0.16em]"
+                className="text-xs font-semibold uppercase tracking-[0.14em]"
                 style={{ color: text.muted }}
               >
                 Tâche terminée

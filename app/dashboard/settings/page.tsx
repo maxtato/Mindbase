@@ -40,7 +40,7 @@ export default async function SettingsPage({
           }}
         >
           <p
-            className="text-xs font-semibold uppercase tracking-[0.22em]"
+            className="text-xs font-semibold uppercase tracking-[0.14em]"
             style={{ color: theme.accentText }}
           >
             Flatmind

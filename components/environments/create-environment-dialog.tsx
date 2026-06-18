@@ -57,7 +57,7 @@ export function CreateEnvironmentDialog({ onClose }: { onClose: () => void }) {
         onClick={(event) => event.stopPropagation()}
       >
         <div className="px-5 py-4" style={{ background: surface.s2, borderBottom: `1px solid ${surface.borderSubtle}` }}>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: text.muted }}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
             Nouvel environnement
           </p>
           <h3 className="mt-1 text-base font-semibold leading-tight" style={{ color: text.primary }}>

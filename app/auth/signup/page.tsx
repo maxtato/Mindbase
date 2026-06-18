@@ -31,7 +31,7 @@ export default function SignupPage() {
             style={getSurfaceToneStyle("secondary")}
           >
             <p
-              className="text-xs uppercase tracking-[0.18em]"
+              className="text-xs uppercase tracking-[0.14em]"
               style={textStyles.soft}
             >
               Flow

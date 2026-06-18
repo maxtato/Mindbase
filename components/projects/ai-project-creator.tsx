@@ -93,7 +93,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: theme.accent }}>
+          <p className="text-xs font-bold uppercase tracking-[0.14em]" style={{ color: theme.accent }}>
             {t("aiCreate.eyebrow")}
           </p>
           <h2 className="mt-1 text-base font-bold" style={{ color: text.primary }}>

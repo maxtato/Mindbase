@@ -306,7 +306,7 @@ function TaskDetailModal({
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
               <p
-                className="text-[10.5px] font-semibold uppercase tracking-[0.12em]"
+                className="text-[10.5px] font-semibold uppercase tracking-[0.14em]"
                 style={{ color: text.muted }}
               >
                 Tâche · {stepTitle}

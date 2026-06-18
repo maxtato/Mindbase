@@ -189,7 +189,7 @@ export function ProjectTeamChatLauncher({
           <div className="mb-modal-surface w-full max-w-2xl rounded-[22px] p-5" style={{ color: text.primary }}>
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: text.dim }}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.dim }}>
                   Collaboration
                 </p>
                 <h2 className="mt-1 text-lg font-bold">Chat collaborateurs</h2>

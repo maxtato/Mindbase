@@ -308,7 +308,7 @@ function Card({ title, meta, accent, action, href, children }: CardProps) {
             className="inline-block h-2 w-2 rounded-full"
             style={{ background: accent }}
           />
-          <h2 className="truncate text-[12.5px] font-bold uppercase tracking-[0.1em]" style={{ color: text.primary }}>
+          <h2 className="truncate text-[12.5px] font-bold uppercase tracking-[0.14em]" style={{ color: text.primary }}>
             {title}
           </h2>
           {meta && (

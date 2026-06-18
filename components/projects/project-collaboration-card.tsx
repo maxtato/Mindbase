@@ -175,7 +175,7 @@ export function ProjectCollaborationCard({
           </div>
           {people.length > 0 && (
             <div className="rounded-xl p-2.5" style={{ background: surface.s2 }}>
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: text.muted }}>
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
                 Membres
               </p>
               <div className="flex flex-wrap gap-1.5">

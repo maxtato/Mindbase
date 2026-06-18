@@ -193,7 +193,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
           {!isCustomSubcategory && <input type="hidden" name="customSubcategoryColor" value="" />}
 
           <section className="mb-card-premium rounded-[22px] p-6" style={{ background: surface.s1 }}>
-            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: theme.accent }}>
+            <p className="text-xs font-bold uppercase tracking-[0.14em]" style={{ color: theme.accent }}>
               {t("newProject.subtitle")}
             </p>
             <h1 className="mt-2 text-2xl font-bold" style={{ color: text.primary }}>
@@ -569,7 +569,7 @@ function CreationStatusEditor<TStatus extends string>({
 
       {hiddenBaseStatuses.length > 0 && (
         <div className="mt-3 rounded-xl p-2.5" style={{ background: surface.s1, border: `1px dashed ${surface.borderSubtle}` }}>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: text.muted }}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
             {t("newProject.hiddenStatuses")}
           </p>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -604,7 +604,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-xs font-bold uppercase tracking-[0.11em]" style={{ color: text.muted }}>
+      <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
         {label}
         {required ? <span style={{ color: error.text }}> *</span> : null}
       </span>
