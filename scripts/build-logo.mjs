@@ -21,7 +21,7 @@ const SOURCE = path.join(root, "scripts", "assets", "flatmind-logo-source.jpg");
 const OUTPUT = path.join(root, "public", "flatmind-logo.png");
 
 // Facteur d'upscale pour la haute définition (l'artwork source est ~900px).
-const SCALE = 2.6;
+const SCALE = 5;
 
 // Violet uni et solide, aligné sur l'accent des boutons de l'app (#7C3AED).
 // Pas de dégradé ni de texture.

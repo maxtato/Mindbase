@@ -4,8 +4,8 @@ import type { CSSProperties } from "react";
 // finitions premium (dégradé + reflet) déjà intégrées dans l'image. Généré par
 // `scripts/build-logo.mjs` à partir de l'artwork fourni. On l'affiche tel quel
 // (plus de masque CSS monochrome : le dégradé violet doit rester visible).
-const ASPECT = 2233 / 1758; // ratio natif de l'asset HD
-const LOGO_URL = "/flatmind-logo.png?v=12";
+const ASPECT = 4295 / 3380; // ratio natif de l'asset HD
+const LOGO_URL = "/flatmind-logo.png?v=13";
 
 export function FlatmindLogoMark({
   height = 32,
