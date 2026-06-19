@@ -88,11 +88,11 @@ export function Topbar({ title, workspace, action, breadcrumb, subtitle }: Topba
           au même endroit quel que soit le titre.
           Desktop → en flux, alignés à droite (ml-auto). */}
       <div className="absolute left-1/2 top-1/2 z-[1] flex shrink-0 -translate-x-1/2 -translate-y-1/2 items-center gap-2 sm:static sm:translate-x-0 sm:translate-y-0 sm:ml-auto">
-        <NotificationBell />
-        {/* Action de la page (ex. « + Nouveau projet ») à GAUCHE de la loupe :
-            ainsi le bouton n'est plus collé au logo à droite de la barre. */}
+        {/* Ordre : action (« + ») à gauche de la loupe, puis la cloche de
+            notification à DROITE de la loupe. */}
         {action}
         <CommandTrigger />
+        <NotificationBell />
       </div>
 
       {/* iPhone : logo (cerveau Flatmind) + wordmark « Flatmind » à droite.
