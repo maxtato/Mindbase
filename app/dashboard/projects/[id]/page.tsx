@@ -294,6 +294,7 @@ function ProjectPilotHeader({
           />
           <ProjectSettingsMenu
             projectId={project.id}
+            projectName={project.name}
             workspace={workspace}
             currentStatus={project.status}
             statusSettings={project.statusSettings}

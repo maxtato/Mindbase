@@ -202,12 +202,18 @@ export async function createProjectAction(
 export async function updateProjectIdentityAction(input: {
   projectId: string;
   workspace: string;
-  subcategory: string;
+  subcategory?: string;
+  name?: string;
 }) {
   const workspace = getWorkspace(input.workspace);
+  const name = input.name?.trim();
   await updateProject(input.projectId, {
     workspace,
-    subcategory: input.subcategory,
+    // `subcategory` et `name` restent inchangés si non fournis : l'éditeur de
+    // picto ne touche qu'à la sous-catégorie, l'éditeur de paramètres qu'au
+    // nom + environnement.
+    ...(input.subcategory ? { subcategory: input.subcategory } : {}),
+    ...(name ? { name } : {}),
   });
 
   revalidatePath("/", "layout");

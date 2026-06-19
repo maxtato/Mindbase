@@ -11,10 +11,13 @@ import {
   duplicateProjectAction,
   updateProjectStatusSettingsAction,
 } from "@/app/dashboard/projects/[id]/actions";
+import { updateProjectIdentityAction } from "@/app/dashboard/projects/actions";
 import { surface, text } from "@/lib/design-tokens";
 import { deriveStepStatus, deriveTaskStatus, stepStatusLabels, taskStatusLabels } from "@/lib/project-plan";
 import { priorityVisuals } from "@/lib/project-taxonomy";
 import { deleteTone, TrashIcon } from "@/components/ui/trash-icon";
+import { useEnvironments } from "@/components/environments/environments-provider";
+import { listEnvironmentOptions, type Workspace } from "@/lib/workspace";
 import type { ProjectStatus, ProjectStatusSettings, Step, StepStatus, TaskStatus } from "@/lib/mock-data";
 import type { ProjectPriority } from "@/lib/project-taxonomy";
 
@@ -353,6 +356,7 @@ export function ProjectDestructiveControls({
 
 export function ProjectSettingsMenu({
   projectId,
+  projectName,
   workspace,
   currentStatus,
   statusSettings,
@@ -360,6 +364,7 @@ export function ProjectSettingsMenu({
   steps = [],
 }: {
   projectId: string;
+  projectName: string;
   workspace: string;
   currentStatus: ProjectStatus;
   statusSettings?: ProjectStatusSettings;
@@ -463,10 +468,10 @@ export function ProjectSettingsMenu({
           >
             <span>
               <span className="block text-xs font-semibold" style={{ color: text.primary }}>
-                Personnalisation des statuts
+                Paramètres du projet
               </span>
               <span className="mt-0.5 block text-[11px] leading-snug" style={{ color: text.muted }}>
-                Renommer les statuts visibles des tâches et étapes.
+                Renommer le projet, changer d'environnement et personnaliser les statuts.
               </span>
             </span>
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -481,6 +486,8 @@ export function ProjectSettingsMenu({
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         projectId={projectId}
+        projectName={projectName}
+        workspace={workspace}
         statusSettings={statusSettings}
         accentColor={accentColor}
         steps={steps}
@@ -493,6 +500,8 @@ function ProjectStatusSettingsModal({
   open,
   onClose,
   projectId,
+  projectName,
+  workspace,
   statusSettings,
   accentColor,
   steps,
@@ -500,6 +509,8 @@ function ProjectStatusSettingsModal({
   open: boolean;
   onClose: () => void;
   projectId: string;
+  projectName: string;
+  workspace: string;
   statusSettings?: ProjectStatusSettings;
   accentColor?: string;
   steps: Step[];
@@ -527,22 +538,24 @@ function ProjectStatusSettingsModal({
       <section
         role="dialog"
         aria-modal="true"
-        aria-label="Personnalisation des statuts"
-        className="mb-modal-surface mb-task-drawer rounded-3xl overflow-hidden"
+        aria-label="Paramètres du projet"
+        className="mb-modal-surface mb-task-drawer rounded-3xl overflow-hidden flex flex-col"
         style={{
           // Position + width + height héritées de .mb-task-drawer (cf.
           // app/globals.css) qui gère déjà safe-areas iPhone et bottom-nav.
-          overflowY: "auto",
+          // L'élément (position:fixed) ne scrolle PAS lui-même : le défilement
+          // d'un fixed est peu fiable sur iOS/PWA. On le confie au conteneur
+          // interne ci-dessous.
           zIndex: 80,
         }}
       >
-        <header className="flex items-start justify-between gap-4 px-6 py-5" style={{ borderBottom: `1px solid ${surface.borderSubtle}` }}>
+        <header className="flex shrink-0 items-start justify-between gap-4 px-6 py-5" style={{ borderBottom: `1px solid ${surface.borderSubtle}` }}>
           <div>
             <h2 className="text-lg font-bold" style={{ color: text.primary, letterSpacing: "-0.01em" }}>
-              Personnalisation des statuts
+              Paramètres du projet
             </h2>
             <p className="mt-1 max-w-xl text-xs leading-relaxed" style={{ color: text.muted }}>
-              Renomme et recolorise les statuts pour qu'ils correspondent à ton vocabulaire.
+              Renomme le projet, change son environnement et personnalise les statuts.
             </p>
           </div>
           <button
@@ -558,27 +571,171 @@ function ProjectStatusSettingsModal({
           </button>
         </header>
 
-        <div className="grid gap-5 p-6 lg:grid-cols-2">
-          <StatusSettingsEditor
-            scope="task"
-            title="Statuts des tâches"
+        {/* Corps scrollable : flex-1 + minHeight 0 → prend la hauteur restante
+            sous le header et défile correctement (y compris jusqu'au dernier
+            statut), sur desktop comme en PWA iOS. */}
+        <div className="flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
+          <ProjectIdentitySettings
             projectId={projectId}
-            statusSettings={statusSettings}
+            projectName={projectName}
+            workspace={workspace}
             accentColor={accentColor}
-            usageCounts={buildTaskStatusUsageCounts(steps)}
           />
-          <StatusSettingsEditor
-            scope="step"
-            title="Statuts des étapes"
-            projectId={projectId}
-            statusSettings={statusSettings}
-            accentColor={accentColor}
-            usageCounts={buildStepStatusUsageCounts(steps)}
-          />
+
+          <div className="grid gap-5 px-6 pb-6 lg:grid-cols-2">
+            <StatusSettingsEditor
+              scope="task"
+              title="Statuts des tâches"
+              projectId={projectId}
+              statusSettings={statusSettings}
+              accentColor={accentColor}
+              usageCounts={buildTaskStatusUsageCounts(steps)}
+            />
+            <StatusSettingsEditor
+              scope="step"
+              title="Statuts des étapes"
+              projectId={projectId}
+              statusSettings={statusSettings}
+              accentColor={accentColor}
+              usageCounts={buildStepStatusUsageCounts(steps)}
+            />
+          </div>
         </div>
       </section>
     </>,
     document.body,
+  );
+}
+
+// Bloc « Projet » des paramètres : renommer le projet + le rattacher à un autre
+// environnement (Perso / Pro / personnalisé). Réutilise updateProjectIdentityAction
+// (qui accepte désormais un `name` optionnel).
+function ProjectIdentitySettings({
+  projectId,
+  projectName,
+  workspace,
+  accentColor,
+}: {
+  projectId: string;
+  projectName: string;
+  workspace: string;
+  accentColor?: string;
+}) {
+  const router = useRouter();
+  const [name, setName] = useState(projectName);
+  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace>(workspace);
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  const environments = useEnvironments();
+  const environmentOptions = listEnvironmentOptions(environments);
+
+  const trimmed = name.trim();
+  const dirty = trimmed !== projectName || selectedWorkspace !== workspace;
+  const accent = accentColor ?? "var(--mb-personal-accent)";
+
+  // Resynchronise si le projet change sous nos pieds (router.refresh).
+  useEffect(() => {
+    setName(projectName);
+    setSelectedWorkspace(workspace);
+  }, [projectName, workspace]);
+
+  function save() {
+    if (!trimmed) {
+      setError("Le nom du projet ne peut pas être vide.");
+      return;
+    }
+    setError(null);
+    startTransition(async () => {
+      await updateProjectIdentityAction({ projectId, workspace: selectedWorkspace, name: trimmed });
+      setSaved(true);
+      router.refresh();
+    });
+  }
+
+  return (
+    <div className="px-6 pt-6">
+      <section className="rounded-[22px] p-4" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
+        <h3 className="text-sm font-bold" style={{ color: text.primary, letterSpacing: "-0.005em" }}>
+          Projet
+        </h3>
+        <p className="mt-1 text-[11px] leading-snug" style={{ color: text.muted }}>
+          Renomme le projet et choisis l'environnement auquel il est rattaché.
+        </p>
+
+        <label className="mt-4 block text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
+          Nom du projet
+        </label>
+        <input
+          value={name}
+          onChange={(event) => {
+            setName(event.target.value);
+            setError(null);
+            setSaved(false);
+          }}
+          placeholder="Nom du projet"
+          className="mt-2 w-full rounded-xl px-3 py-2.5 text-sm"
+          style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.borderSubtle}` }}
+        />
+
+        <label className="mt-4 block text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
+          Environnement
+        </label>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {environmentOptions.map((option) => {
+            const selected = selectedWorkspace === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  setSelectedWorkspace(option.value);
+                  setSaved(false);
+                }}
+                className="rounded-full px-3 py-1.5 text-xs font-semibold"
+                style={{
+                  background: selected ? accent : surface.s1,
+                  color: selected ? "#FFFFFF" : text.secondary,
+                  border: `1px solid ${selected ? accent : surface.borderSubtle}`,
+                  cursor: "pointer",
+                }}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {error && (
+          <p className="mt-3 rounded-2xl px-3 py-2 text-[11px] font-semibold" style={{ background: "var(--mb-error-bg)", color: "var(--mb-error-text)", border: "1px solid var(--mb-error-border)" }}>
+            {error}
+          </p>
+        )}
+
+        <div className="mt-4 flex items-center justify-end gap-3">
+          {saved && !dirty && (
+            <span className="text-[11px] font-semibold" style={{ color: text.muted }}>
+              Enregistré
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={save}
+            disabled={isPending || !dirty}
+            className="rounded-xl px-4 py-2.5 text-xs font-bold"
+            style={{
+              background: isPending || !dirty ? surface.s3 : accent,
+              color: isPending || !dirty ? text.muted : "#FFFFFF",
+              border: "none",
+              cursor: isPending ? "wait" : !dirty ? "default" : "pointer",
+            }}
+          >
+            {isPending ? "Enregistrement..." : "Enregistrer"}
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }
 
