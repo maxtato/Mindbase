@@ -362,6 +362,7 @@ export function ProjectSettingsMenu({
   projectId,
   projectName,
   workspace,
+  projectWorkspace,
   currentStatus,
   statusSettings,
   accentColor,
@@ -369,7 +370,12 @@ export function ProjectSettingsMenu({
 }: {
   projectId: string;
   projectName: string;
+  /** Environnement de NAVIGATION (param d'URL) — utilisé pour les redirections
+   *  d'archivage/suppression. */
   workspace: string;
+  /** Environnement RÉEL du projet — c'est lui qui doit être surligné dans la
+   *  carte d'identité (le param d'URL peut être « Tous » ou un autre). */
+  projectWorkspace: string;
   currentStatus: ProjectStatus;
   statusSettings?: ProjectStatusSettings;
   accentColor?: string;
@@ -491,7 +497,7 @@ export function ProjectSettingsMenu({
         onClose={() => setSettingsOpen(false)}
         projectId={projectId}
         projectName={projectName}
-        workspace={workspace}
+        workspace={projectWorkspace}
         statusSettings={statusSettings}
         accentColor={accentColor}
         steps={steps}

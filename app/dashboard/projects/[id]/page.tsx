@@ -296,6 +296,7 @@ function ProjectPilotHeader({
             projectId={project.id}
             projectName={project.name}
             workspace={workspace}
+            projectWorkspace={project.workspace}
             currentStatus={project.status}
             statusSettings={project.statusSettings}
             accentColor={envAccent}
