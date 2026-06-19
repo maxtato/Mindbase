@@ -1,10 +1,11 @@
 import type { CSSProperties } from "react";
 
-// Logo Flatmind rendu via un masque CSS unique : toute la forme est peinte avec
-// `currentColor` (suit le thème : noir en clair, blanc en sombre). Fond
-// transparent. L'icône PWA, elle, a son propre fond violet (cf. /public/icons).
-const ASPECT = 602 / 476; // ratio natif de l'asset
-const LOGO_URL = "/flatmind-logo.png?v=11";
+// Mark Flatmind — PNG haute définition, violet, détouré (fond transparent) avec
+// finitions premium (dégradé + reflet) déjà intégrées dans l'image. Généré par
+// `scripts/build-logo.mjs` à partir de l'artwork fourni. On l'affiche tel quel
+// (plus de masque CSS monochrome : le dégradé violet doit rester visible).
+const ASPECT = 4295 / 3380; // ratio natif de l'asset HD
+const LOGO_URL = "/flatmind-logo.png?v=13";
 
 export function FlatmindLogoMark({
   height = 32,
@@ -16,24 +17,15 @@ export function FlatmindLogoMark({
   style?: CSSProperties;
 }) {
   return (
-    <span
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={LOGO_URL}
+      alt=""
       aria-hidden="true"
       className={className}
-      style={{
-        display: "inline-block",
-        height,
-        width: height * ASPECT,
-        backgroundColor: "currentColor",
-        WebkitMaskImage: `url(${LOGO_URL})`,
-        maskImage: `url(${LOGO_URL})`,
-        WebkitMaskRepeat: "no-repeat",
-        maskRepeat: "no-repeat",
-        WebkitMaskPosition: "center",
-        maskPosition: "center",
-        WebkitMaskSize: "contain",
-        maskSize: "contain",
-        ...style,
-      }}
+      height={height}
+      width={Math.round(height * ASPECT)}
+      style={{ height, width: height * ASPECT, objectFit: "contain", ...style }}
     />
   );
 }
