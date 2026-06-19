@@ -10,6 +10,10 @@ import {
   suggestTaskChecklistAction,
   applyAIChecklistAction,
 } from "@/app/dashboard/projects/ai-actions";
+import {
+  suggestStandaloneTaskChecklistAction,
+  applyStandaloneTaskChecklistAction,
+} from "@/app/dashboard/tasks/actions";
 import { ExpectedAssistant } from "@/components/projects/expected-assistant";
 import { RealizationAssistant } from "@/components/projects/realization-assistant";
 import { Button } from "@/components/ui/button";
@@ -27,6 +31,9 @@ interface TaskExpandedPreviewProps {
   workspace?: Workspace;
   projectId?: string;
   stepId?: string;
+  /** Id de la tâche LIBRE (hors projet). Active l'assistant IA (attendu +
+   *  checklist) sans contexte projet. */
+  standaloneTaskId?: string;
   projectTeams?: ProjectTeam[];
   projectPeople?: Array<{ id: string; name: string }>;
   statusSettings?: ProjectStatusSettings;
@@ -57,6 +64,7 @@ export function TaskExpandedPreview({
   workspace,
   projectId,
   stepId,
+  standaloneTaskId,
   projectTeams = [],
   projectPeople = [],
   statusSettings,
@@ -82,6 +90,7 @@ export function TaskExpandedPreview({
             aiAccent={aiAccent}
             projectId={projectId}
             stepId={stepId}
+            standaloneTaskId={standaloneTaskId}
           />
           <FilesField task={task} accentColor={aiAccent} />
         </TaskPreviewPane>
@@ -98,6 +107,7 @@ export function TaskExpandedPreview({
             aiAccent={aiAccent}
             projectId={projectId}
             stepId={stepId}
+            standaloneTaskId={standaloneTaskId}
           />
           <RealizationField task={task} onUpdate={onUpdate} accentColor={accentColor} bulletAccent={aiAccent} aiAccent={aiAccent} />
         </TaskPreviewPane>
@@ -290,6 +300,7 @@ function ExpectedField({
   aiAccent,
   projectId,
   stepId,
+  standaloneTaskId,
 }: {
   task: Task;
   onUpdate?: TaskExpandedPreviewProps["onUpdate"];
@@ -297,6 +308,7 @@ function ExpectedField({
   aiAccent: string;
   projectId?: string;
   stepId?: string;
+  standaloneTaskId?: string;
 }) {
   const initial = task.expected ?? task.description ?? "";
   const t = useT();
@@ -307,7 +319,9 @@ function ExpectedField({
   const isPaid = useIsPaidPlan();
   const dirty = value.trim() !== initial.trim();
   const editable = Boolean(onUpdate);
-  const aiAvailable = Boolean(projectId && stepId) && isPaid;
+  // Assistant dispo pour une tâche de projet (projectId+stepId) OU une tâche
+  // libre (standaloneTaskId), tant que l'utilisateur est sur un plan payant.
+  const aiAvailable = (Boolean(projectId && stepId) || Boolean(standaloneTaskId)) && isPaid;
 
   return (
     <FieldShell
@@ -340,11 +354,12 @@ function ExpectedField({
         onCancel={() => setValue(initial)}
         accentColor={accentColor}
       />
-      {assistantOpen && projectId && stepId && (
+      {assistantOpen && (standaloneTaskId || (projectId && stepId)) && (
         <ExpectedAssistant
           projectId={projectId}
           stepId={stepId}
           taskId={task.id}
+          standaloneTaskId={standaloneTaskId}
           currentExpected={value.trim()}
           accentColor={aiAccent}
           onApply={(textValue) => {
@@ -798,6 +813,7 @@ function ChecklistField({
   aiAccent,
   projectId,
   stepId,
+  standaloneTaskId,
 }: {
   task: Task;
   onChecklistMutated?: TaskExpandedPreviewProps["onChecklistMutated"];
@@ -805,6 +821,7 @@ function ChecklistField({
   aiAccent: string;
   projectId?: string;
   stepId?: string;
+  standaloneTaskId?: string;
 }) {
   const router = useRouter();
   const checklist = task.checklist ?? [];
@@ -817,19 +834,18 @@ function ChecklistField({
   const [aiSuggestions, setAiSuggestions] = useState<string[] | null>(null);
   const isPaid = useIsPaidPlan();
   const editable = Boolean(onChecklistMutated);
-  const aiAvailable = Boolean(projectId && stepId) && isPaid;
+  // Suggestion IA dispo pour une tâche de projet OU une tâche libre.
+  const aiAvailable = (Boolean(projectId && stepId) || Boolean(standaloneTaskId)) && isPaid;
 
   async function handleAISuggest() {
-    if (!projectId || !stepId) return;
+    if (!projectId && !standaloneTaskId) return;
     setAiError(null);
     setAiSuggestions(null);
     setAiPending(true);
     try {
-      const { items } = await suggestTaskChecklistAction({
-        projectId,
-        stepId,
-        taskId: task.id,
-      });
+      const { items } = standaloneTaskId
+        ? await suggestStandaloneTaskChecklistAction({ taskId: standaloneTaskId })
+        : await suggestTaskChecklistAction({ projectId: projectId!, stepId: stepId!, taskId: task.id });
       setAiSuggestions(items);
     } catch (err) {
       setAiError(err instanceof Error ? err.message : "Erreur IA.");
@@ -839,16 +855,12 @@ function ChecklistField({
   }
 
   async function applyAISuggestions(mode: "replace" | "append") {
-    if (!projectId || !stepId || !aiSuggestions || aiSuggestions.length === 0) return;
+    if ((!projectId && !standaloneTaskId) || !aiSuggestions || aiSuggestions.length === 0) return;
     setAiPending(true);
     try {
-      const { checklist: nextChecklist } = await applyAIChecklistAction({
-        projectId,
-        stepId,
-        taskId: task.id,
-        items: aiSuggestions,
-        mode,
-      });
+      const { checklist: nextChecklist } = standaloneTaskId
+        ? await applyStandaloneTaskChecklistAction({ taskId: standaloneTaskId, items: aiSuggestions, mode })
+        : await applyAIChecklistAction({ projectId: projectId!, stepId: stepId!, taskId: task.id, items: aiSuggestions, mode });
       setAiSuggestions(null);
       // Met à jour la checklist localement via le callback du TaskDetailLauncher
       // pour que le drawer reflète immédiatement les nouveaux items sans

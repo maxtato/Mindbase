@@ -8,14 +8,18 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useT } from "@/components/i18n/locale-provider";
 import { createPortal } from "react-dom";
 import { refineTaskExpectedAction } from "@/app/dashboard/projects/ai-actions";
+import { refineStandaloneTaskExpectedAction } from "@/app/dashboard/tasks/actions";
 import { surface, text } from "@/lib/design-tokens";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 interface ExpectedAssistantProps {
-  projectId: string;
-  stepId: string;
-  taskId: string;
+  /** Contexte projet (tâche de projet). Optionnel si `standaloneTaskId` fourni. */
+  projectId?: string;
+  stepId?: string;
+  taskId?: string;
+  /** Contexte « tâche libre » (hors projet) : l'IA s'appuie sur la tâche seule. */
+  standaloneTaskId?: string;
   currentExpected: string;
   accentColor: string;
   onApply: (expected: string) => void;
@@ -26,6 +30,7 @@ export function ExpectedAssistant({
   projectId,
   stepId,
   taskId,
+  standaloneTaskId,
   currentExpected,
   accentColor,
   onApply,
@@ -55,7 +60,9 @@ export function ExpectedAssistant({
     setError(null);
     startTransition(async () => {
       try {
-        const result = await refineTaskExpectedAction({ projectId, stepId, taskId, messages: next });
+        const result = standaloneTaskId
+          ? await refineStandaloneTaskExpectedAction({ taskId: standaloneTaskId, messages: next })
+          : await refineTaskExpectedAction({ projectId: projectId!, stepId: stepId!, taskId: taskId!, messages: next });
         setTranscript((current) => [...current, { role: "assistant", content: result.reply }]);
         setProposed(result.mode === "proposal" ? result.expected : null);
       } catch (err) {

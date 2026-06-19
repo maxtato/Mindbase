@@ -99,7 +99,6 @@ export async function refineTaskExpected(input: {
   task: Task;
   messages: ExpectedMessage[];
 }): Promise<ExpectedRefineResult> {
-  const client = getOpenAIClient();
   const snapshot = buildProjectContextSnapshot(input.project, { highlightTaskId: input.task.id });
   const currentExpected = input.task.expected?.trim() || input.task.description?.trim() || "";
 
@@ -113,7 +112,29 @@ export async function refineTaskExpected(input: {
     currentExpected ? `Attendu actuel : ${currentExpected}` : "Pas encore d'attendu pour cette tâche.",
   ].join("\n");
 
-  const dialogue = (input.messages ?? []).filter((message) => message.content.trim());
+  return runExpectedRefine(context, input.messages);
+}
+
+// Variante « tâche libre » (hors projet) : le contexte se limite à la tâche
+// elle-même (pas de snapshot projet). Même assistant conversationnel.
+export async function refineStandaloneTaskExpected(input: {
+  task: Task;
+  messages: ExpectedMessage[];
+}): Promise<ExpectedRefineResult> {
+  const currentExpected = input.task.expected?.trim() || input.task.description?.trim() || "";
+  const context = [
+    "Tâche libre (hors projet).",
+    `Titre de la tâche : ${input.task.title}`,
+    currentExpected ? `Attendu actuel : ${currentExpected}` : "Pas encore d'attendu pour cette tâche.",
+  ].join("\n");
+
+  return runExpectedRefine(context, input.messages);
+}
+
+// Cœur partagé de l'assistant « Attendu » : dialogue + JSON strict.
+async function runExpectedRefine(context: string, messages: ExpectedMessage[]): Promise<ExpectedRefineResult> {
+  const client = getOpenAIClient();
+  const dialogue = (messages ?? []).filter((message) => message.content.trim());
 
   const response = await client.chat.completions.create({
     model: AI_MODEL,
