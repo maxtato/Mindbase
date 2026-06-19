@@ -1,7 +1,8 @@
 // Génère toutes les icônes Flatmind (favicon, apple-touch, PWA) à partir du
-// mark vectoriel violet `public/flatmind-logo.svg`. Source SVG → rendu haute
-// résolution + fond transparent. L'icône « maskable » reçoit un fond violet
-// plein cadre (les launchers Android peuvent rogner la zone transparente).
+// logo violet HD `public/flatmind-logo.png` (produit par scripts/build-logo.mjs).
+// Le favicon reste transparent ; les icônes installées (apple-touch + PWA)
+// reçoivent une tuile violette premium (une tuile transparente passerait en
+// noir sur iOS).
 //
 // Lancer : node scripts/generate-icons.mjs
 
@@ -12,16 +13,16 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SOURCE = path.join(root, "public", "flatmind-logo.svg");
+const SOURCE = path.join(root, "public", "flatmind-logo.png");
 
 const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 };
 
-// Rend le mark SVG à `markSize` (densité élevée pour des bords nets), centré
-// dans une canvas carrée `size`. `background` : couleur unie ({r,g,b,alpha})
-// OU un Buffer image plein cadre (ex. dégradé violet pour le maskable).
+// Rend le mark à `markSize`, centré dans une canvas carrée `size`.
+// `background` : couleur unie ({r,g,b,alpha}) OU un Buffer image plein cadre
+// (ex. dégradé violet pour les tuiles installées).
 async function buildIcon({ size, output, markRatio = 0.82, background = TRANSPARENT }) {
   const markSize = Math.round(size * markRatio);
-  const mark = await sharp(SOURCE, { density: 384 })
+  const mark = await sharp(SOURCE)
     .resize(markSize, markSize, { fit: "contain", background: TRANSPARENT })
     .toBuffer();
 
