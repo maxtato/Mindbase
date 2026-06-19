@@ -1398,15 +1398,19 @@ summary {
        iOS Safari sometimes stretches width:auto positioned elements past
        the right edge when content has min-content larger than the
        computed width. An explicit width is bulletproof. */
-    top: calc(env(safe-area-inset-top, 0px) + 12px);
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
     left: 50%;
     right: auto;
     bottom: auto;
     transform: translateX(-50%);
-    width: calc(100vw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
-    max-width: calc(100vw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
-    height: calc(100dvh - 24px - 72px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
-    max-height: calc(100dvh - 24px - 72px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    width: calc(100vw - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    max-width: calc(100vw - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    /* Fill nearly the whole viewport, just a tiny margin around. The drawer
+       is a full overlay (its backdrop covers the bottom nav), so there is no
+       need to reserve room for the nav — that was leaving ~1/4 of the screen
+       empty on iPhone and forcing extra scrolling. */
+    height: calc(100dvh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     border-radius: 18px;
   }
 
