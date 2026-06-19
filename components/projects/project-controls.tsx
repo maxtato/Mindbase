@@ -287,7 +287,11 @@ export function ProjectDestructiveControls({
   }
 
   return (
-    <div className="flex items-center justify-end gap-2" aria-busy={isPending}>
+    // flex-wrap : sur iPhone, Dupliquer + Archiver + la confirmation de
+    // suppression ne tiennent pas sur une seule ligne dans le menu et
+    // débordaient hors écran (« Oui » coupé, « Non » inatteignable). On
+    // autorise le retour à la ligne pour que tout reste visible et cliquable.
+    <div className="flex flex-wrap items-center justify-end gap-2" aria-busy={isPending}>
       <button
         onClick={handleDuplicate}
         className="flex h-9 items-center gap-1.5 px-3 rounded-xl text-xs font-semibold"

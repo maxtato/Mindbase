@@ -1091,10 +1091,10 @@ function StepCard({
             une tâche bascule "due soon → overdue" entre les deux moments.
             Sans cette directive, React 19 abandonne l'hydratation de tout
             ce sous-arbre et casse les onClick en cascade. */}
-        <div className="flex items-center gap-2 shrink-0" suppressHydrationWarning>
-          {/* Tags + jauge se replient (flex-wrap) ; le menu « … » reste calé
-              tout à droite, hors du groupe qui se replie — comme les tâches. */}
-          <div className="flex items-center gap-2 flex-wrap justify-end">
+        {/* Tags + jauge : se replient sous le titre sur mobile (cf. globals.css
+            .mb-step-meta). Le menu « … » (.mb-step-actions) reste, lui, calé en
+            haut à droite — comme la pastille des cartes de tâches. */}
+        <div className="mb-step-meta flex items-center gap-2 flex-wrap justify-end shrink-0" suppressHydrationWarning>
           <StepMetaTag
             label={statusSettings?.step?.[computedStatus]?.label ?? statusLabel(computedStatus, stepStatusLabels[computedStatus])}
             status={computedStatus}
@@ -1132,8 +1132,9 @@ function StepCard({
               </span>
             </div>
           )}
-          </div>
+        </div>
 
+        <div className="mb-step-actions flex shrink-0 items-center">
           {confirmDelete ? (
             <InlineDeleteConfirm onConfirm={onDeleteStep} onCancel={() => setConfirmDelete(false)} />
           ) : (
