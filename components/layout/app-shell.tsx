@@ -31,19 +31,18 @@ export async function AppShell({ children, accountName }: AppShellProps) {
   return (
     <EnvironmentsProvider initial={environments}>
       <div
-        className="mb-app-shell flex overflow-hidden"
-        style={{ background: surface.bg }}
+        className="flex overflow-hidden"
+        style={{ background: surface.bg, height: "100dvh" }}
       >
         {/* Sidebar — masquée < sm via Tailwind. */}
         <Sidebar stats={sidebarStats} initialWorkspace={initialWorkspace} accountName={accountName} />
 
         {/* Zone principale — on réserve la safe-area haute (Dynamic Island).
-            Le shell (.mb-app-shell) est en position:fixed + height:100lvh : le
-            LARGE viewport iOS (stable, et qui atteint le bas PHYSIQUE de l'écran).
-            height:100dvh laissait la barre flotter à quelques px du bas (le dvh,
-            recalculé, valait par moments le petit viewport) ; inset:0 la figeait
-            justement à cette mauvaise hauteur. Avec 100lvh, la bottom nav (enfant
-            en flux, en bas de la colonne) reste collée au bas réel de l'écran. */}
+            La bottom nav est un enfant EN FLUX en bas de cette colonne (hauteur
+            100dvh) : en flux normal (et NON position:fixed), elle atteint le bas
+            PHYSIQUE de l'écran iOS — un élément fixed s'arrêtait au-dessus, d'où
+            une bande grise sous la barre. Le rebond/flottement est coupé par
+            overscroll-behavior:none (cf. globals.css), sans position:fixed. */}
         <div
           className="flex flex-col flex-1 min-w-0 overflow-hidden"
           style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
