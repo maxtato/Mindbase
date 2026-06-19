@@ -227,7 +227,7 @@ export function TasksCalendarBoard({
                   <div
                     key={key}
                     data-calendar-date={key}
-                    className="mb-soft-shadow min-h-[92px] min-w-0 rounded-[16px] px-0.5 pt-0 pb-1 xl:min-h-0 xl:overflow-hidden"
+                    className="mb-soft-shadow min-h-[78px] min-w-0 rounded-[16px] px-0.5 pt-0 pb-1 xl:min-h-0 xl:overflow-hidden"
                     style={{
                       background: isOver
                         ? surface.s4
@@ -712,10 +712,10 @@ function CalendarTaskCard({
             WebkitUserSelect: "none",
             WebkitTouchCallout: "none",
             touchAction: lockTouchScroll ? "none" : undefined,
-            padding: "0.65rem 0.7rem 0.6rem 0.65rem",
+            padding: "0.5rem 0.6rem 0.5rem 0.6rem",
             overflow: "hidden",
             width: "100%",
-            minHeight: 60,
+            minHeight: 50,
           }}
           title="Cliquer pour ouvrir, glisser pour planifier"
         >
@@ -732,41 +732,42 @@ function CalendarTaskCard({
               pointerEvents: "none",
             }}
           />
-          <div className="flex items-start gap-1.5" style={{ paddingRight: 14 }}>
+          {/* Titre pleine largeur (le point de priorité passe en dessous, sur
+              la ligne méta) → plus de lettres visibles par ligne sur iPhone. */}
+          <p
+            className="mb-board-task-title line-clamp-2 text-[10px] font-semibold leading-snug min-w-0"
+            style={{ color: text.primary, paddingRight: 14 }}
+          >
+            {entry.task.title}
+          </p>
+          <div className="mt-1 flex items-center gap-1" style={{ paddingRight: 14 }}>
             {!isDone && (
               <span
                 aria-hidden
                 title={`Priorité : ${displayedPriorityVisual.label.toLowerCase()}`}
                 style={{
-                  width: 7,
-                  height: 7,
+                  width: 6,
+                  height: 6,
                   borderRadius: 999,
                   background: displayedPriorityVisual.text,
                   flexShrink: 0,
-                  marginTop: 3,
                 }}
               />
             )}
-            <p
-              className="mb-board-task-title line-clamp-2 text-[11px] font-semibold leading-snug min-w-0 flex-1"
-              style={{ color: text.primary }}
-            >
-              {entry.task.title}
+            <p className="truncate text-[9.5px] min-w-0" style={{ color: text.muted, margin: 0 }}>
+              {standalone ? (
+                <span style={{ color: workspaceTheme[project.workspace].accent, fontWeight: 600 }}>{t("tasks.freeBadge")}</span>
+              ) : (
+                <>
+                  <span style={{ color: workspaceTheme[project.workspace].accent, fontWeight: 600 }}>
+                    {workspaceTheme[project.workspace].label}
+                  </span>
+                  {" · "}
+                  {project.name}
+                </>
+              )}
             </p>
           </div>
-          <p className="mt-1 truncate text-[10px]" style={{ color: text.muted }}>
-            {standalone ? (
-              <span style={{ color: workspaceTheme[project.workspace].accent, fontWeight: 600 }}>{t("tasks.freeBadge")}</span>
-            ) : (
-              <>
-                <span style={{ color: workspaceTheme[project.workspace].accent, fontWeight: 600 }}>
-                  {workspaceTheme[project.workspace].label}
-                </span>
-                {" · "}
-                {project.name}
-              </>
-            )}
-          </p>
           <span
             aria-hidden
             title={`Statut : ${getTaskStatusLabel(project, status)}`}

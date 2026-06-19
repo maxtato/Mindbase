@@ -333,37 +333,41 @@ function TaskDetailModal({
                   {stepDescription}
                 </p>
               )}
-              {/* Retour au projet : utile quand la tâche est ouverte depuis le
-                  Kanban ou le Calendrier (pas de contexte projet autour). */}
+            </div>
+            {/* Actions en-tête : « Voir le projet » (icône seule) à gauche de la
+                croix de fermeture. Le lien projet est surtout utile quand la
+                tâche est ouverte depuis le Kanban ou le Calendrier. */}
+            <div className="flex shrink-0 items-center gap-2">
               <Link
                 href={`/dashboard/projects/${projectId}?workspace=${workspace}`}
                 onClick={onClose}
-                className="mt-2 inline-flex w-fit items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold"
-                style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.borderSubtle}`, textDecoration: "none" }}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.borderSubtle}`, textDecoration: "none", cursor: "pointer" }}
+                title={t("task.openProject")}
+                aria-label={t("task.openProject")}
               >
-                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <path d="M2.5 5.2A1.7 1.7 0 0 1 4.2 3.5h2.3l1.3 1.4h4A1.7 1.7 0 0 1 13.5 6.6v5a1.7 1.7 0 0 1-1.7 1.7H4.2a1.7 1.7 0 0 1-1.7-1.7V5.2Z" stroke="currentColor" strokeWidth="1.35" strokeLinejoin="round" />
                 </svg>
-                {t("task.openProject")}
               </Link>
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                style={{
+                  background: surface.s2,
+                  color: text.secondary,
+                  border: `1px solid ${surface.borderSubtle}`,
+                  cursor: "pointer",
+                }}
+                title="Fermer"
+                aria-label="Fermer"
+              >
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-              style={{
-                background: surface.s2,
-                color: text.secondary,
-                border: `1px solid ${surface.borderSubtle}`,
-                cursor: "pointer",
-              }}
-              title="Fermer"
-              aria-label="Fermer"
-            >
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
-            </button>
           </div>
 
           {/* Champs (date, personne, fichiers, statut, priorité) directement
