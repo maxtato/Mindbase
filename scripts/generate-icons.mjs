@@ -1,8 +1,8 @@
 // Génère toutes les icônes Flatmind (favicon, apple-touch, PWA) à partir du
 // logo violet HD `public/flatmind-logo.png` (produit par scripts/build-logo.mjs).
 // Le favicon reste transparent ; les icônes installées (apple-touch + PWA)
-// reçoivent une tuile violette premium (une tuile transparente passerait en
-// noir sur iOS).
+// reçoivent une tuile BLANCHE (une tuile transparente passerait en noir sur
+// iOS) → logo violet sur fond blanc sur l'écran d'accueil.
 //
 // Lancer : node scripts/generate-icons.mjs
 
@@ -36,15 +36,13 @@ async function buildIcon({ size, output, markRatio = 0.82, background = TRANSPAR
     .toFile(output);
 }
 
-// Tuile violette premium plein cadre (dégradé) pour les icônes installées.
-async function violetTile(size) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
-    <defs><linearGradient id="b" x1="0" y1="0" x2="${size}" y2="${size}" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#7C3AED"/><stop offset="1" stop-color="#5B21B6"/>
-    </linearGradient></defs>
-    <rect width="${size}" height="${size}" fill="url(#b)"/>
-  </svg>`;
-  return sharp(Buffer.from(svg)).png().toBuffer();
+// Tuile blanche plein cadre pour les icônes installées (logo violet dessus).
+async function whiteTile(size) {
+  return sharp({
+    create: { width: size, height: size, channels: 4, background: { r: 255, g: 255, b: 255, alpha: 1 } },
+  })
+    .png()
+    .toBuffer();
 }
 
 async function main() {
@@ -54,9 +52,9 @@ async function main() {
   await buildIcon({ size: 512, output: path.join(root, "app", "icon.png"), markRatio: 0.82 });
   console.log("✓ app/icon.png (512px, transparent)");
 
-  // Icônes installées (apple-touch + PWA) : mark sur tuile violette premium.
-  // Une tuile transparente apparaîtrait sur fond noir sur iOS → on pose le
-  // dégradé violet plein cadre (iOS/Android arrondissent les coins).
+  // Icônes installées (apple-touch + PWA) : mark violet sur tuile blanche.
+  // Une tuile transparente apparaîtrait sur fond noir sur iOS → on pose un
+  // fond blanc plein cadre (iOS/Android arrondissent les coins).
   const tileTasks = [
     { size: 180, output: path.join(root, "app", "apple-icon.png"), markRatio: 0.7 },
     { size: 192, output: path.join(root, "public", "icons", "icon-192.png"), markRatio: 0.7 },
@@ -65,8 +63,8 @@ async function main() {
     { size: 512, output: path.join(root, "public", "icons", "icon-maskable-512.png"), markRatio: 0.58 },
   ];
   for (const task of tileTasks) {
-    await buildIcon({ ...task, background: await violetTile(task.size) });
-    console.log(`✓ ${path.relative(root, task.output)} (${task.size}px, tuile violette)`);
+    await buildIcon({ ...task, background: await whiteTile(task.size) });
+    console.log(`✓ ${path.relative(root, task.output)} (${task.size}px, tuile blanche)`);
   }
 }
 
