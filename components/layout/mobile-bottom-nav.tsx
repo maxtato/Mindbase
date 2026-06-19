@@ -148,7 +148,9 @@ export function MobileBottomNav({ initialWorkspace }: MobileBottomNavProps = {})
       style={{
         background: surface.s1,
         borderTop: `1px solid ${surface.borderSubtle}`,
-        boxShadow: "0 -8px 24px rgba(0, 0, 0, 0.06)",
+        // Pas d'ombre portée vers le haut : sur le fond gris de l'app elle
+        // ressortait comme une « barre grise » au-dessus de la nav. Le fin
+        // liseré (borderTop) suffit à séparer la barre du contenu.
         // Respect the iPhone home-indicator safe area.
         paddingBottom: "env(safe-area-inset-bottom, 0)",
       }}
