@@ -6,7 +6,8 @@ import { ENV_COOKIE, getCustomEnvironments, normalizeEnvColor } from "@/lib/envi
 const WORKSPACE_COOKIE = "mindbase-workspace";
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
-// Crée un nouvel environnement personnalisé (nom + couleur) et le rend courant.
+// Crée un nouvel environnement personnalisé (nom + couleur). On NE bascule PAS
+// dessus : il est vide, l'utilisateur garde sa vue (et ses projets) actuelle.
 export async function createEnvironmentAction(input: { name: string; color: string }): Promise<{ id: string }> {
   const name = (input.name ?? "").trim().slice(0, 40);
   const color = normalizeEnvColor(input.color);
@@ -18,8 +19,9 @@ export async function createEnvironmentAction(input: { name: string; color: stri
 
   const store = await cookies();
   store.set(ENV_COOKIE, JSON.stringify(next), { path: "/", maxAge: ONE_YEAR, sameSite: "lax" });
-  // On bascule directement sur le nouvel environnement.
-  store.set(WORKSPACE_COOKIE, id, { path: "/", maxAge: ONE_YEAR, sameSite: "lax" });
+  // Volontairement, on ne touche PAS au cookie WORKSPACE_COOKIE : l'environnement
+  // actif reste celui sur lequel l'utilisateur était (ses projets restent
+  // visibles). Le nouvel environnement est juste disponible dans le sélecteur.
 
   return { id };
 }

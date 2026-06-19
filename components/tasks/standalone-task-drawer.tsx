@@ -166,6 +166,7 @@ export function StandaloneTaskDrawer({
             task={draftTask}
             accentColor={accent}
             workspace={taskWorkspace}
+            standaloneTaskId={task.id}
             projectPeople={people}
             onUpdate={handleUpdate}
             onChecklistMutated={handleChecklistMutated}

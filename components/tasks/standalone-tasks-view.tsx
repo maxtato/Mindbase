@@ -508,6 +508,7 @@ function StandaloneTaskCard({
             task={task}
             accentColor={accent}
             workspace={workspace}
+            standaloneTaskId={task.id}
             projectPeople={people}
             onUpdate={(input) => update(input)}
             onChecklistMutated={(checklist) => update({ checklist })}

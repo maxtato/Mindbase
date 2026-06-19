@@ -58,14 +58,18 @@ const SCHEMA = {
   additionalProperties: false,
 } as const;
 
-export async function generateTaskChecklist(input: GenerateChecklistInput): Promise<string[]> {
-  const client = getOpenAIClient();
-  const snapshot = buildProjectContextSnapshot(input.project, { highlightTaskId: input.task.id });
-  const taskExpected = input.task.expected?.trim() || input.task.description?.trim() || "";
-  const taskRealization = input.task.realization?.trim() || input.task.completionDetails?.trim() || "";
-  const existingChecklist = (input.task.checklist ?? [])
+function formatTaskChecklistInputs(task: Task) {
+  const taskExpected = task.expected?.trim() || task.description?.trim() || "";
+  const taskRealization = task.realization?.trim() || task.completionDetails?.trim() || "";
+  const existingChecklist = (task.checklist ?? [])
     .map((item) => `  ${item.done ? "[✓]" : "[ ]"} ${item.label}`)
     .join("\n");
+  return { taskExpected, taskRealization, existingChecklist };
+}
+
+export async function generateTaskChecklist(input: GenerateChecklistInput): Promise<string[]> {
+  const snapshot = buildProjectContextSnapshot(input.project, { highlightTaskId: input.task.id });
+  const { taskExpected, taskRealization, existingChecklist } = formatTaskChecklistInputs(input.task);
   const stepDescription = input.step.description?.trim() ?? "";
   const stepTaskTitles = (input.step.tasks ?? [])
     .filter((task) => task.id !== input.task.id)
@@ -98,6 +102,35 @@ export async function generateTaskChecklist(input: GenerateChecklistInput): Prom
     "Propose UNIQUEMENT les sous-actions concrètes restantes pour cette tâche, en gardant comme cap de FAIRE AVANCER LE PROJET vers son objectif : choisis les plus pertinentes et à plus fort impact, en cohérence avec le projet et l'étape, sans empiéter sur d'autres tâches du plan. Privilégie la pertinence et l'impact à la quantité.",
   ].join("\n");
 
+  return runChecklistGeneration(userMessage);
+}
+
+// Variante « tâche libre » (hors projet) : pas de plan projet, on s'appuie
+// uniquement sur la tâche (titre, attendu, réalisation, checklist actuelle).
+export async function generateStandaloneTaskChecklist(task: Task): Promise<string[]> {
+  const { taskExpected, taskRealization, existingChecklist } = formatTaskChecklistInputs(task);
+
+  const userMessage = [
+    "=== TÂCHE LIBRE (hors projet) — DÉTAILS ===",
+    `Titre : ${task.title}`,
+    taskExpected ? `Attendu (résultat visé) :\n${taskExpected}` : "Attendu : non encore renseigné.",
+    taskRealization
+      ? `Réalisation déjà rédigée (état actuel des avancées) :\n${taskRealization}`
+      : "Réalisation : aucune avancée saisie pour le moment.",
+    existingChecklist
+      ? `Checklist actuelle (à compléter ou remplacer) :\n${existingChecklist}`
+      : "Checklist actuelle : vide.",
+    "",
+    "=== TA MISSION ===",
+    "Propose UNIQUEMENT les sous-actions concrètes restantes pour accomplir cette tâche. Privilégie la pertinence et l'impact à la quantité (0 à 4 items).",
+  ].join("\n");
+
+  return runChecklistGeneration(userMessage);
+}
+
+// Cœur partagé : appel OpenAI + parsing JSON strict de la checklist.
+async function runChecklistGeneration(userMessage: string): Promise<string[]> {
+  const client = getOpenAIClient();
   const response = await client.chat.completions.create({
     model: AI_MODEL,
     response_format: {
