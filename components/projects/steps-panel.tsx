@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition, type CSSProperties, type DragEvent, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, type DragEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import {
@@ -41,7 +41,6 @@ import { formatTaskScheduleDate } from "@/lib/date-format";
 import { workspaceTheme, type Workspace } from "@/lib/workspace";
 import { getVisibleTaskOwner } from "@/lib/task-people";
 import { getDisplayStepTitle } from "@/lib/project-display";
-import { deleteTone, TrashIcon } from "@/components/ui/trash-icon";
 import { useT } from "@/components/i18n/locale-provider";
 import { useStatusLabel, usePriorityLabel } from "@/components/i18n/labels";
 
@@ -1130,6 +1129,31 @@ function StepCard({
               </span>
             </div>
           )}
+
+          {/* Bouton crayon visible : modifier le nom / la description de
+              l'étape (équivalent du « clic pour éditer » des tâches). */}
+          <button
+            type="button"
+            data-no-drag="true"
+            onClick={(event) => {
+              event.stopPropagation();
+              setIsEditing((value) => !value);
+              setConfirmDelete(false);
+            }}
+            title="Modifier l'étape"
+            aria-label="Modifier l'étape"
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+            style={{
+              background: isEditing ? accentColor : surface.s2,
+              color: isEditing ? "#FFFFFF" : text.secondary,
+              border: `1px solid ${surface.border}`,
+              cursor: "pointer",
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M10.8 2.6l2.6 2.6M11.6 1.8a1.3 1.3 0 0 1 1.8 1.8l-8 8-2.7.9.9-2.7 8-8Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+            </svg>
+          </button>
 
           {confirmDelete ? (
             <InlineDeleteConfirm onConfirm={onDeleteStep} onCancel={() => setConfirmDelete(false)} />
@@ -2941,31 +2965,27 @@ function AddStepForm({ projectId, workspace }: { projectId: string; workspace: W
     >
       <input type="hidden" name="projectId" value={projectId} />
       <input type="hidden" name="workspace" value={workspace} />
-      <div className="flex items-center justify-between gap-3 mb-2">
-        <p className="text-xs font-semibold" style={{ color: text.primary }}>
-          {t("stepForm.new")}
-        </p>
-        <button
-          type="button"
-          onClick={() => setIsOpen(false)}
-          className="text-[11px] font-medium"
-          style={{ color: text.dim }}
-        >
+      {/* Création simplifiée : on ne saisit QUE le nom. La description et la
+          priorité s'ajustent ensuite en modifiant l'étape (bouton crayon). */}
+      <div className="flex items-center gap-2">
+        <input
+          name="title"
+          required
+          autoFocus
+          placeholder={t("stepForm.name")}
+          className="min-w-0 flex-1 rounded-lg px-3 py-2 text-xs outline-none"
+          style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}` }}
+        />
+        <button type="submit" className="shrink-0 rounded-lg px-3 py-2 text-xs font-semibold" style={{ background: theme.accent, color: "#FFFFFF", border: "none" }}>
+          {t("stepForm.create")}
+        </button>
+        <button type="button" onClick={() => setIsOpen(false)} className="shrink-0 text-[11px] font-medium" style={{ color: text.dim }}>
           {t("common.cancel")}
         </button>
       </div>
-      <div className="grid gap-2" style={{ gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 0.8fr)" }}>
-        <input name="title" required placeholder={t("stepForm.name")} className="rounded-lg px-3 py-2 text-xs outline-none" style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}` }} />
-        <select name="priority" defaultValue="medium" className="rounded-lg px-3 py-2 text-xs outline-none" style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}` }}>
-          <option value="low">{t("stepForm.priorityLow")}</option>
-          <option value="medium">{t("stepForm.priorityMedium")}</option>
-          <option value="high">{t("stepForm.priorityHigh")}</option>
-        </select>
-      </div>
-      <textarea name="description" placeholder={t("stepForm.detail")} rows={2} className="mt-2 w-full rounded-lg px-3 py-2 text-xs outline-none resize-none" style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}` }} />
-      <button type="submit" className="mt-2 rounded-lg px-3 py-2 text-xs font-semibold" style={{ background: theme.accent, color: "#FFFFFF", border: "none" }}>
-        {t("stepForm.create")}
-      </button>
+      <p className="mt-2 text-[10.5px] leading-snug" style={{ color: text.muted }}>
+        Entre juste le nom. Tu pourras ajuster la description et la priorité en modifiant l'étape ensuite.
+      </p>
     </form>
   );
 }
@@ -2975,13 +2995,14 @@ function AddTaskForm({ projectId, workspace, stepId }: { projectId: string; work
   const [isOpen, setIsOpen] = useState(false);
   const theme = workspaceTheme[workspace];
 
-  return (
-    <>
+  if (!isOpen) {
+    return (
       <button
         type="button"
         onClick={() => setIsOpen(true)}
         title={t("steps.addTask")}
         aria-label={t("steps.addTask")}
+        data-no-drag="true"
         className="self-start inline-flex h-7 w-7 items-center justify-center rounded-lg"
         style={{
           background: surface.s2,
@@ -2994,525 +3015,42 @@ function AddTaskForm({ projectId, workspace, stepId }: { projectId: string; work
           <path d="M8 3.5v9M3.5 8h9" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
         </svg>
       </button>
-      {isOpen && (
-        <CreateTaskDrawer
-          open={isOpen}
-          onClose={() => setIsOpen(false)}
-          projectId={projectId}
-          workspace={workspace}
-          stepId={stepId}
+    );
+  }
+
+  // Création simplifiée : on ne saisit QUE le nom. Une fois créée, la tâche
+  // apparaît dans l'étape ; on clique dessus pour ajuster l'attendu, la date,
+  // la checklist, etc. (panneau de détail de la tâche).
+  return (
+    <form
+      action={addTaskToStepAction}
+      data-no-drag="true"
+      className="rounded-xl p-2.5"
+      style={{ background: surface.s2, border: `1px solid ${surface.border}` }}
+    >
+      <input type="hidden" name="projectId" value={projectId} />
+      <input type="hidden" name="workspace" value={workspace} />
+      <input type="hidden" name="stepId" value={stepId} />
+      <div className="flex items-center gap-2">
+        <input
+          name="title"
+          required
+          autoFocus
+          placeholder="Nom de la tâche"
+          className="min-w-0 flex-1 rounded-lg px-3 py-2 text-xs outline-none"
+          style={{ background: surface.s1, color: text.primary, border: `1px solid ${surface.border}` }}
         />
-      )}
-    </>
-  );
-}
-
-function CreateTaskDrawer({
-  open,
-  onClose,
-  projectId,
-  workspace,
-  stepId,
-}: {
-  open: boolean;
-  onClose: () => void;
-  projectId: string;
-  workspace: Workspace;
-  stepId: string;
-}) {
-  const theme = workspaceTheme[workspace];
-  const [activePanel, setActivePanel] = useState<"checklist" | "date" | "person" | "files" | "note" | null>(null);
-  const [dueDate, setDueDate] = useState("");
-  const [dueTime, setDueTime] = useState("");
-  const [owner, setOwner] = useState("");
-  const [checklistText, setChecklistText] = useState("");
-  const [commentsText, setCommentsText] = useState("");
-  const [draftChecklistLabel, setDraftChecklistLabel] = useState("");
-
-  if (!open || typeof document === "undefined") return null;
-
-  const checklistItems = checklistText.split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
-  const notes = commentsText.split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
-  const checklistCount = checklistItems.length;
-  const noteCount = notes.length;
-
-  function updateChecklistItems(nextItems: string[]) {
-    setChecklistText(nextItems.map((item) => item.trim()).filter(Boolean).join("\n"));
-  }
-
-  function addCreateChecklistItem(event: FormEvent) {
-    event.preventDefault();
-    const cleaned = draftChecklistLabel.trim();
-    if (!cleaned) return;
-    updateChecklistItems([...checklistItems, cleaned]);
-    setDraftChecklistLabel("");
-    setActivePanel(null);
-  }
-
-  function updateCreateChecklistItem(index: number, value: string) {
-    const cleaned = value.trim();
-    if (!cleaned) {
-      deleteCreateChecklistItem(index);
-      return;
-    }
-    updateChecklistItems(checklistItems.map((item, itemIndex) => (itemIndex === index ? cleaned : item)));
-  }
-
-  function deleteCreateChecklistItem(index: number) {
-    updateChecklistItems(checklistItems.filter((_, itemIndex) => itemIndex !== index));
-  }
-
-  function clearCreateSchedule() {
-    setDueDate("");
-    setDueTime("");
-  }
-
-  function clearCreateOwner() {
-    setOwner("");
-  }
-
-  function clearCreateComments() {
-    setCommentsText("");
-  }
-
-  return createPortal(
-    <>
-      <div
-        onClick={onClose}
-        className="mb-modal-backdrop"
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 40,
-        }}
-      />
-      <aside
-        role="dialog"
-        aria-modal="true"
-        aria-label="Créer une tâche"
-        className="mb-modal-surface mb-edge-drawer"
-        style={{
-          position: "fixed",
-          top: 0,
-          right: 0,
-          height: "100dvh",
-          width: "min(560px, 100vw)",
-          zIndex: 50,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <form action={addTaskToStepAction} className="flex h-full flex-col">
-          <input type="hidden" name="projectId" value={projectId} />
-          <input type="hidden" name="workspace" value={workspace} />
-          <input type="hidden" name="stepId" value={stepId} />
-          <input type="hidden" name="dueDate" value={dueDate} />
-          <input type="hidden" name="dueTime" value={dueTime} />
-          <input type="hidden" name="owner" value={owner} />
-          <input type="hidden" name="checklistText" value={checklistText} />
-          <input type="hidden" name="commentsText" value={commentsText} />
-
-          <header
-            className="flex items-start justify-between gap-3 px-5 py-4"
-            style={{ background: surface.s1, borderBottom: `1px solid ${surface.borderSubtle}` }}
-          >
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
-                Nouvelle tâche
-              </p>
-              <textarea
-                name="title"
-                required
-                placeholder="Titre de la tâche"
-                rows={2}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") event.preventDefault();
-                }}
-                className="mt-1 w-full resize-none overflow-hidden bg-transparent text-base font-semibold leading-snug outline-none"
-                style={{
-                  color: text.primary,
-                  border: "none",
-                  minHeight: "3.25rem",
-                  whiteSpace: "pre-wrap",
-                }}
-              />
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                <select
-                  name="priority"
-                  defaultValue="medium"
-                  className="rounded-full px-2 py-0.5 text-[10px] font-semibold outline-none"
-                  style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.borderSubtle}` }}
-                >
-                  {PROJECT_PRIORITY_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      Priorité {option.label.toLowerCase()}
-                    </option>
-                  ))}
-                </select>
-                {dueDate && <TaskMetaTag label={`Date prévue · ${formatScheduleParts(dueDate, dueTime)}`} />}
-                {owner.trim() && <TaskMetaTag label={owner.trim()} />}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg p-2 shrink-0"
-              style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.border}`, cursor: "pointer" }}
-              title="Fermer"
-            >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </button>
-          </header>
-
-          <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3">
-            <CreateTaskSection title="Attendu" description="L'action concrète à mener pour faire avancer la tâche.">
-              <textarea
-                name="expected"
-                rows={3}
-                placeholder="Ex : faire réviser le véhicule, comparer les devis, réserver l'hébergement..."
-                style={{ ...drawerFieldStyle(), resize: "vertical" }}
-              />
-            </CreateTaskSection>
-
-            <CreateTaskSection title="Réalisation" description="Ce qui a réellement été fait ou validé.">
-              <textarea
-                name="realization"
-                rows={4}
-                placeholder="Ce qui a été fait concrètement."
-                style={{ ...drawerFieldStyle(), resize: "vertical" }}
-              />
-            </CreateTaskSection>
-
-            <div className="rounded-2xl p-3" style={{ background: surface.s1, border: `1px solid ${surface.borderSubtle}` }}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] mb-2" style={{ color: text.muted }}>
-                Actions secondaires
-              </p>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                <CreateTaskSecondaryAction
-                  label={checklistCount === 0 ? "Ajouter checklist" : `Checklist ${checklistCount}`}
-                  active={activePanel === "checklist"}
-                  onClick={() => setActivePanel(activePanel === "checklist" ? null : "checklist")}
-                  accentColor={theme.accent}
-                />
-                <CreateTaskSecondaryAction
-                  label={dueDate ? formatScheduleParts(dueDate, dueTime) : "Date prévue"}
-                  active={activePanel === "date"}
-                  onClick={() => setActivePanel(activePanel === "date" ? null : "date")}
-                  accentColor={theme.accent}
-                />
-                <CreateTaskSecondaryAction
-                  label={owner.trim() || "Associer à une personne"}
-                  active={activePanel === "person"}
-                  onClick={() => setActivePanel(activePanel === "person" ? null : "person")}
-                  accentColor={theme.accent}
-                />
-                <CreateTaskSecondaryAction
-                  label="Fichiers"
-                  active={activePanel === "files"}
-                  onClick={() => setActivePanel(activePanel === "files" ? null : "files")}
-                  accentColor={theme.accent}
-                />
-                <CreateTaskSecondaryAction
-                  label={noteCount > 0 ? `Note ${noteCount}` : "Note"}
-                  active={activePanel === "note"}
-                  onClick={() => setActivePanel(activePanel === "note" ? null : "note")}
-                  accentColor={theme.accent}
-                />
-              </div>
-
-              {(checklistCount > 0 || dueDate || owner.trim() || noteCount > 0) && (
-                <div className="mt-3 space-y-2">
-                  {checklistCount > 0 && (
-                    <CreateTaskSecondaryField title={`Checklist (${checklistCount})`}>
-                      <div className="space-y-1.5">
-                        {checklistItems.map((item, index) => (
-                          <div
-                            key={`${item}-${index}`}
-                            className="grid gap-2 rounded-xl px-2.5 py-2 sm:grid-cols-[1fr_auto]"
-                            style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}
-                          >
-                            <input
-                              defaultValue={item}
-                              onBlur={(event) => updateCreateChecklistItem(index, event.target.value)}
-                              className="min-w-0 bg-transparent text-[12px] outline-none"
-                              style={{ color: text.primary, border: "none" }}
-                            />
-                            <CreateTaskIconButton title="Supprimer l'élément" onClick={() => deleteCreateChecklistItem(index)} />
-                          </div>
-                        ))}
-                      </div>
-                    </CreateTaskSecondaryField>
-                  )}
-
-                  {dueDate && (
-                    <CreateTaskSecondaryField title="Date prévue">
-                      <div className="grid gap-2 sm:grid-cols-[1fr_0.7fr_auto]">
-                        <input
-                          type="date"
-                          value={dueDate}
-                          onChange={(event) => setDueDate(event.target.value)}
-                          style={{ ...drawerFieldStyle(), padding: "0.55rem 0.75rem", fontSize: "0.8rem" }}
-                        />
-                        <input
-                          type="time"
-                          value={dueTime}
-                          onChange={(event) => setDueTime(event.target.value)}
-                          style={{ ...drawerFieldStyle(), padding: "0.55rem 0.75rem", fontSize: "0.8rem" }}
-                        />
-                        <CreateTaskIconButton title="Supprimer la date" onClick={clearCreateSchedule} />
-                      </div>
-                    </CreateTaskSecondaryField>
-                  )}
-
-                  {owner.trim() && (
-                    <CreateTaskSecondaryField title="Personne associée">
-                      <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-                        <input
-                          value={owner}
-                          onChange={(event) => setOwner(event.target.value)}
-                          style={{ ...drawerFieldStyle(), padding: "0.55rem 0.75rem", fontSize: "0.8rem" }}
-                        />
-                        <CreateTaskIconButton title="Supprimer la personne associée" onClick={clearCreateOwner} />
-                      </div>
-                    </CreateTaskSecondaryField>
-                  )}
-
-                  {noteCount > 0 && (
-                    <CreateTaskSecondaryField title="Note">
-                      <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-                        <textarea
-                          value={commentsText}
-                          onChange={(event) => setCommentsText(event.target.value)}
-                          rows={Math.min(4, Math.max(2, noteCount))}
-                          style={{ ...drawerFieldStyle(), padding: "0.65rem 0.75rem", fontSize: "0.8rem", resize: "vertical" }}
-                        />
-                        <CreateTaskIconButton title="Supprimer la note" onClick={clearCreateComments} />
-                      </div>
-                    </CreateTaskSecondaryField>
-                  )}
-                </div>
-              )}
-
-              {activePanel === "checklist" && (
-                <CreateTaskPanel title="Checklist" description="Une ligne par élément à valider.">
-                  <form onSubmit={addCreateChecklistItem} className="mt-2 flex items-center gap-2">
-                    <input
-                      value={draftChecklistLabel}
-                      onChange={(event) => setDraftChecklistLabel(event.target.value)}
-                      placeholder="Nouvel élément de checklist"
-                      style={drawerFieldStyle()}
-                    />
-                    <button
-                      type="submit"
-                      className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold"
-                      style={{ background: theme.accent, color: "#FFFFFF", border: "none", cursor: "pointer" }}
-                    >
-                      Valider
-                    </button>
-                  </form>
-                </CreateTaskPanel>
-              )}
-
-              {activePanel === "date" && (
-                <CreateTaskPanel title="Date prévue" description="Planifie l'échéance directement dans la tâche.">
-                  <div className="grid gap-2 sm:grid-cols-[1fr_0.7fr]">
-                    <input type="date" value={dueDate} onChange={(event) => setDueDate(event.target.value)} style={drawerFieldStyle()} />
-                    <input type="time" value={dueTime} onChange={(event) => setDueTime(event.target.value)} style={drawerFieldStyle()} />
-                  </div>
-                  <div className="mt-2 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setActivePanel(null)}
-                      className="rounded-lg px-3 py-2 text-[11px] font-semibold"
-                      style={{ background: theme.accent, color: "#FFFFFF", border: "none", cursor: "pointer" }}
-                    >
-                      Valider
-                    </button>
-                  </div>
-                </CreateTaskPanel>
-              )}
-
-              {activePanel === "person" && (
-                <CreateTaskPanel title="Personne associée" description="Renseigne un responsable uniquement si c'est utile.">
-                  <input
-                    value={owner}
-                    onChange={(event) => setOwner(event.target.value)}
-                    placeholder="Associer à une personne"
-                    style={drawerFieldStyle()}
-                  />
-                  <div className="mt-2 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setActivePanel(null)}
-                      className="rounded-lg px-3 py-2 text-[11px] font-semibold"
-                      style={{ background: theme.accent, color: "#FFFFFF", border: "none", cursor: "pointer" }}
-                    >
-                      Valider
-                    </button>
-                  </div>
-                </CreateTaskPanel>
-              )}
-
-              {activePanel === "files" && (
-                <CreateTaskPanel title="Fichiers" description="Les pièces liées à la tâche seront affichées ici.">
-                  <p className="text-[12px]" style={{ color: text.muted }}>
-                    L&apos;ajout de fichiers directement sur une tâche sera relié au stockage projet.
-                  </p>
-                </CreateTaskPanel>
-              )}
-
-              {activePanel === "note" && (
-                <CreateTaskPanel title="Note" description="Une ligne par note à conserver avec la tâche.">
-                  <textarea
-                    value={commentsText}
-                    onChange={(event) => setCommentsText(event.target.value)}
-                    rows={3}
-                    placeholder="Note utile, précision, trace de décision..."
-                    style={{ ...drawerFieldStyle(), resize: "vertical" }}
-                  />
-                  <div className="mt-2 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setActivePanel(null)}
-                      className="rounded-lg px-3 py-2 text-[11px] font-semibold"
-                      style={{ background: theme.accent, color: "#FFFFFF", border: "none", cursor: "pointer" }}
-                    >
-                      Valider
-                    </button>
-                  </div>
-                </CreateTaskPanel>
-              )}
-            </div>
-          </div>
-
-          <footer className="px-5 py-4 flex items-center justify-end gap-2" style={{ background: surface.s1, borderTop: `1px solid ${surface.borderSubtle}` }}>
-            <button type="button" onClick={onClose} className="rounded-lg px-3 py-2 text-xs font-semibold" style={{ background: surface.s2, color: text.muted, border: `1px solid ${surface.border}`, cursor: "pointer" }}>
-              Annuler
-            </button>
-            <button type="submit" className="rounded-lg px-3 py-2 text-xs font-semibold" style={{ background: theme.accent, color: "#FFFFFF", border: "none", cursor: "pointer" }}>
-              Créer la tâche
-            </button>
-          </footer>
-        </form>
-      </aside>
-    </>,
-    document.body,
-  );
-}
-
-function CreateTaskSection({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="rounded-2xl p-4" style={{ background: surface.s1, border: `1px solid ${surface.borderSubtle}` }}>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
-        {title}
+        <button type="submit" className="shrink-0 rounded-lg px-3 py-2 text-xs font-semibold" style={{ background: theme.accent, color: "#FFFFFF", border: "none" }}>
+          Créer
+        </button>
+        <button type="button" onClick={() => setIsOpen(false)} className="shrink-0 text-[11px] font-medium" style={{ color: text.dim }}>
+          Annuler
+        </button>
+      </div>
+      <p className="mt-1.5 text-[10.5px] leading-snug" style={{ color: text.muted }}>
+        Entre juste le nom. Clique ensuite sur la tâche pour ajouter l'attendu, une date, une checklist, etc.
       </p>
-      <p className="text-[11px] mt-0.5 mb-2" style={{ color: text.dim }}>
-        {description}
-      </p>
-      {children}
-    </section>
+    </form>
   );
 }
 
-function CreateTaskSecondaryAction({
-  label,
-  active,
-  accentColor,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  accentColor: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="min-h-[50px] min-w-0 rounded-xl px-2.5 py-2 text-center text-[11px] font-semibold leading-tight inline-flex items-center justify-center"
-      style={{
-        background: active ? accentColor : surface.s2,
-        color: active ? "#FFFFFF" : text.secondary,
-        border: `1px solid ${surface.borderSubtle}`,
-        cursor: "pointer",
-      }}
-    >
-      <span className="min-w-0 whitespace-normal break-words leading-tight">{label}</span>
-    </button>
-  );
-}
-
-function CreateTaskSecondaryField({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="rounded-xl p-2.5" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
-      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
-        {title}
-      </p>
-      {children}
-    </div>
-  );
-}
-
-function CreateTaskIconButton({ title, onClick }: { title: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      title={title}
-      onClick={onClick}
-      className="flex h-8 w-8 items-center justify-center rounded-lg"
-      style={{
-        background: surface.s1,
-        color: deleteTone.text,
-        border: `1px solid ${deleteTone.border}`,
-        cursor: "pointer",
-      }}
-    >
-      <TrashIcon size={13} />
-    </button>
-  );
-}
-
-function CreateTaskPanel({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="mt-3 rounded-xl p-3" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
-      <p className="text-[12px] font-semibold" style={{ color: text.primary }}>
-        {title}
-      </p>
-      <p className="text-[11px] mt-0.5 mb-2" style={{ color: text.dim }}>
-        {description}
-      </p>
-      {children}
-    </div>
-  );
-}
-
-function drawerFieldStyle(): CSSProperties {
-  return {
-    width: "100%",
-    borderRadius: "0.8rem",
-    border: `1px solid ${surface.borderSubtle}`,
-    background: surface.s2,
-    color: text.primary,
-    fontSize: "0.82rem",
-    padding: "0.7rem 0.8rem",
-    outline: "none",
-  };
-}

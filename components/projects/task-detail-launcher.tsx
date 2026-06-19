@@ -116,7 +116,19 @@ export function TaskDetailLauncher({
     // monté. Pas de router.refresh qui remonterait le launcher et
     // fermerait le drawer en plein milieu de l'édition. Les compteurs
     // globaux (sidebar, dashboard) se re-sync à la prochaine navigation.
-    setDraftTask((current) => ({ ...current, ...input }));
+    setDraftTask((current) => {
+      const next = { ...current, ...input };
+      // Le statut affiché est dérivé via deriveTaskStatus() qui regarde aussi
+      // les drapeaux done/blocked. Sans les normaliser ici, changer p.ex.
+      // « bloquée » → « en cours » ne se voyait pas tant que le serveur n'avait
+      // pas rafraîchi (à la fermeture). On aligne donc done/blocked sur le
+      // nouveau statut, exactement comme le fait updateTaskAction côté serveur.
+      if (input.status) {
+        next.done = input.status === "done";
+        next.blocked = input.status === "blocked";
+      }
+      return next;
+    });
     dirtyRef.current = true;
     if (onTaskChange) {
       onTaskChange(input);
