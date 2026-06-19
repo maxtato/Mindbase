@@ -32,15 +32,18 @@ export async function AppShell({ children, accountName }: AppShellProps) {
     <EnvironmentsProvider initial={environments}>
       <div
         className="flex overflow-hidden"
-        style={{ background: surface.bg, height: "100dvh" }}
+        style={{ background: surface.bg, position: "fixed", inset: 0 }}
       >
         {/* Sidebar — masquée < sm via Tailwind. */}
         <Sidebar stats={sidebarStats} initialWorkspace={initialWorkspace} accountName={accountName} />
 
         {/* Zone principale — on réserve la safe-area haute (Dynamic Island).
-            La bottom nav est un enfant EN FLUX en bas de cette colonne (hauteur
-            100dvh) : elle suit le viewport dynamique iOS au lieu d'être en
-            position:fixed (qui se décollait du bas au lancement). */}
+            Le shell est en position:fixed inset:0 : il se cale sur le LAYOUT
+            viewport iOS (stable), au lieu de height:100dvh qui était recalculé
+            avec un léger décalage (au lancement / après navigation) → la bottom
+            nav remontait de quelques px puis se recalait au scroll. Avec un
+            shell fixe, la bottom nav (enfant en flux, en bas de la colonne)
+            reste collée au bas de l'écran en permanence. */}
         <div
           className="flex flex-col flex-1 min-w-0 overflow-hidden"
           style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
