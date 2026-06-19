@@ -328,6 +328,18 @@ body {
   font-feature-settings: "kern", "liga", "calt";
 }
 
+/* Shell applicatif : plein écran, ancré en haut, hauteur = GRAND viewport iOS
+   (lvh) pour que la bottom nav atteigne le bas PHYSIQUE de l'écran sans flotter.
+   Repli 100vh pour les navigateurs sans unité lvh. */
+.mb-app-shell {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  height: 100lvh;
+}
+
 /* Chiffres tabulaires partout où on aligne des nombres (KPI, compteurs, %). */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
