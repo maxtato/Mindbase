@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 760" fill="none" role="img" aria-label="Flatmind">
+  <defs>
+    <!-- Dégradé violet premium (diagonal haut-gauche → bas-droite) -->
+    <linearGradient id="fm-grad" gradientUnits="userSpaceOnUse" x1="60" y1="40" x2="840" y2="720">
+      <stop offset="0" stop-color="#C4B5FD"/>
+      <stop offset="0.48" stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#6D28D9"/>
+    </linearGradient>
+    <!-- Reflet glossy en haut pour l'effet premium -->
+    <linearGradient id="fm-sheen" gradientUnits="userSpaceOnUse" x1="0" y1="20" x2="0" y2="400">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.32"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Barres + bulle, peintes avec le dégradé continu (userSpaceOnUse) -->
+  <g fill="url(#fm-grad)">
+    <rect x="200" y="38" width="500" height="90" rx="45"/>
+    <rect x="85" y="150" width="723" height="98" rx="49"/>
+    <rect x="28" y="270" width="844" height="118" rx="59"/>
+    <rect x="92" y="408" width="708" height="110" rx="55"/>
+    <path d="M308 581a46 46 0 0 1 46-46h288a46 46 0 0 1 46 46v0a46 46 0 0 1-46 46h-30l-46 86q-10 18-23 0l-46-86h-103a46 46 0 0 1-46-46Z"/>
+  </g>
+
+  <!-- Couche reflet (mêmes formes) -->
+  <g fill="url(#fm-sheen)">
+    <rect x="200" y="38" width="500" height="90" rx="45"/>
+    <rect x="85" y="150" width="723" height="98" rx="49"/>
+    <rect x="28" y="270" width="844" height="118" rx="59"/>
+    <rect x="92" y="408" width="708" height="110" rx="55"/>
+    <path d="M308 581a46 46 0 0 1 46-46h288a46 46 0 0 1 46 46v0a46 46 0 0 1-46 46h-30l-46 86q-10 18-23 0l-46-86h-103a46 46 0 0 1-46-46Z"/>
+  </g>
+</svg>

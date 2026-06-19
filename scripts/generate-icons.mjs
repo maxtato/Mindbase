@@ -1,7 +1,7 @@
-// Génère toutes les icônes Mindbase (favicon, apple-touch, PWA) à partir du
-// mark `M` Mindbase utilisé dans l'app (`public/mindbase-iphone.png`). Ce
-// fichier est déjà au format icône iOS (M coloré centré, contour blanc), on
-// le pose simplement sur un fond blanc et on exporte aux tailles standard.
+// Génère toutes les icônes Flatmind (favicon, apple-touch, PWA) à partir du
+// mark vectoriel violet `public/flatmind-logo.svg`. Source SVG → rendu haute
+// résolution + fond transparent. L'icône « maskable » reçoit un fond violet
+// plein cadre (les launchers Android peuvent rogner la zone transparente).
 //
 // Lancer : node scripts/generate-icons.mjs
 
@@ -12,53 +12,60 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SOURCE = path.join(root, "public", "mindbase-iphone.png");
+const SOURCE = path.join(root, "public", "flatmind-logo.svg");
 
-// Fond blanc solide — l'icône installée sur l'écran d'accueil iPhone a un fond
-// blanc (pas noir). iOS arrondit automatiquement les coins, donc pas besoin de
-// masque arrondi côté asset.
-const BACKGROUND = { r: 255, g: 255, b: 255, alpha: 1 };
+const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 };
 
-// Compose le `M` au centre, à `markRatio` de la canvas. Pour les icônes
-// maskables PWA on réduit le ratio pour respecter la safe zone iOS/Android.
-async function buildIcon({ size, output, markRatio = 0.88 }) {
+// Rend le mark SVG à `markSize` (densité élevée pour des bords nets), centré
+// dans une canvas carrée `size`. `background` : couleur unie ({r,g,b,alpha})
+// OU un Buffer image plein cadre (ex. dégradé violet pour le maskable).
+async function buildIcon({ size, output, markRatio = 0.82, background = TRANSPARENT }) {
   const markSize = Math.round(size * markRatio);
-  const mark = await sharp(SOURCE)
-    .resize(markSize, markSize, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+  const mark = await sharp(SOURCE, { density: 384 })
+    .resize(markSize, markSize, { fit: "contain", background: TRANSPARENT })
     .toBuffer();
 
-  await sharp({
-    create: {
-      width: size,
-      height: size,
-      channels: 4,
-      background: BACKGROUND,
-    },
-  })
+  const base = Buffer.isBuffer(background)
+    ? sharp(background)
+    : sharp({ create: { width: size, height: size, channels: 4, background } });
+
+  await base
     .composite([{ input: mark, gravity: "center" }])
     .png({ compressionLevel: 9 })
     .toFile(output);
 }
 
+// Tuile violette premium plein cadre (dégradé) pour les icônes installées.
+async function violetTile(size) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
+    <defs><linearGradient id="b" x1="0" y1="0" x2="${size}" y2="${size}" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7C3AED"/><stop offset="1" stop-color="#5B21B6"/>
+    </linearGradient></defs>
+    <rect width="${size}" height="${size}" fill="url(#b)"/>
+  </svg>`;
+  return sharp(Buffer.from(svg)).png().toBuffer();
+}
+
 async function main() {
   await mkdir(path.join(root, "public", "icons"), { recursive: true });
 
-  const tasks = [
-    // App Router file-based metadata : Next sert ces fichiers directement.
-    { size: 180, output: path.join(root, "app", "apple-icon.png"), markRatio: 0.78 },
-    { size: 512, output: path.join(root, "app", "icon.png"), markRatio: 0.74 },
+  // Favicon PNG (fallback du favicon SVG) : mark violet sur fond transparent.
+  await buildIcon({ size: 512, output: path.join(root, "app", "icon.png"), markRatio: 0.82 });
+  console.log("✓ app/icon.png (512px, transparent)");
 
-    // PWA manifest icons (référencés par app/manifest.ts).
-    { size: 192, output: path.join(root, "public", "icons", "icon-192.png"), markRatio: 0.74 },
-    { size: 512, output: path.join(root, "public", "icons", "icon-512.png"), markRatio: 0.74 },
-
+  // Icônes installées (apple-touch + PWA) : mark sur tuile violette premium.
+  // Une tuile transparente apparaîtrait sur fond noir sur iOS → on pose le
+  // dégradé violet plein cadre (iOS/Android arrondissent les coins).
+  const tileTasks = [
+    { size: 180, output: path.join(root, "app", "apple-icon.png"), markRatio: 0.7 },
+    { size: 192, output: path.join(root, "public", "icons", "icon-192.png"), markRatio: 0.7 },
+    { size: 512, output: path.join(root, "public", "icons", "icon-512.png"), markRatio: 0.7 },
     // Maskable : safe zone resserrée (les launchers Android peuvent rogner).
-    { size: 512, output: path.join(root, "public", "icons", "icon-maskable-512.png"), markRatio: 0.6 },
+    { size: 512, output: path.join(root, "public", "icons", "icon-maskable-512.png"), markRatio: 0.58 },
   ];
-
-  for (const task of tasks) {
-    await buildIcon(task);
-    console.log(`✓ ${path.relative(root, task.output)} (${task.size}px)`);
+  for (const task of tileTasks) {
+    await buildIcon({ ...task, background: await violetTile(task.size) });
+    console.log(`✓ ${path.relative(root, task.output)} (${task.size}px, tuile violette)`);
   }
 }
 
