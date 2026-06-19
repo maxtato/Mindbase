@@ -2160,15 +2160,21 @@ textarea::placeholder {
     row-gap: 6px !important;
   }
 
-  /* Côté droit du header : on autorise le shrink (annule shrink-0) et on
-     masque le visuel de la barre de progrès (le % seul suffit). */
-  .mb-step-header > div:last-child {
+  /* Sur mobile : seuls les tags + jauge (.mb-step-meta) basculent sous le
+     titre (pleine largeur, order 3). Le menu « … » (.mb-step-actions, order 2)
+     reste sur la 1re ligne, calé tout à droite à côté du titre — exactement
+     comme la pastille des cartes de tâches. */
+  .mb-step-meta {
+    order: 3 !important;
     flex-shrink: 1 !important;
     flex-basis: 100% !important;
     justify-content: flex-start !important;
     flex-wrap: wrap !important;
   }
-  .mb-step-header > div:last-child > div[title*="tâches terminées"] > div:first-child {
+  .mb-step-actions {
+    order: 2 !important;
+  }
+  .mb-step-meta > div[title*="tâches terminées"] > div:first-child {
     display: none !important;
   }
 
