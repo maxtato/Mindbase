@@ -24,20 +24,25 @@ const OUTPUT = path.join(root, "public", "flatmind-logo.png");
 const SCALE = 2.6;
 
 function gradientSvg(width, height) {
+  // Pas de reflet lumineux : une fine trame satinée (micro-stries diagonales
+  // claires + sombres à très basse opacité) donne une brillance « matière »
+  // discrète sans halo de lumière. Période ~width/120 pour rester fine en HD.
+  const step = Math.max(6, Math.round(width / 120));
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
     <defs>
       <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="${width * 0.08}" y1="0" x2="${width * 0.92}" y2="${height}">
-        <stop offset="0" stop-color="#C4B5FD"/>
-        <stop offset="0.48" stop-color="#8B5CF6"/>
+        <stop offset="0" stop-color="#8B5CF6"/>
+        <stop offset="0.56" stop-color="#7C3AED"/>
         <stop offset="1" stop-color="#6D28D9"/>
       </linearGradient>
-      <linearGradient id="sheen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="${height * 0.55}">
-        <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"/>
-        <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
-      </linearGradient>
+      <pattern id="satin" width="${step}" height="${step}" patternTransform="rotate(35)" patternUnits="userSpaceOnUse">
+        <rect width="${step}" height="${step}" fill="none"/>
+        <rect width="${step / 2}" height="${step}" fill="#FFFFFF" fill-opacity="0.05"/>
+        <rect x="${step / 2}" width="${step / 2}" height="${step}" fill="#000000" fill-opacity="0.04"/>
+      </pattern>
     </defs>
     <rect width="${width}" height="${height}" fill="url(#g)"/>
-    <rect width="${width}" height="${height}" fill="url(#sheen)"/>
+    <rect width="${width}" height="${height}" fill="url(#satin)"/>
   </svg>`;
 }
 
