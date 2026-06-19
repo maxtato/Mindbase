@@ -27,16 +27,19 @@ export function ProjectDecisionsCard({ projectId, decisions }: { projectId: stri
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [draft, setDraft] = useState("");
+  const [rationale, setRationale] = useState("");
   const [busy, setBusy] = useState(false);
 
   function add() {
     const clean = draft.trim();
     if (!clean || busy) return;
+    const cleanRationale = rationale.trim();
     setBusy(true);
     setDraft("");
+    setRationale("");
     startTransition(async () => {
       try {
-        await addDecisionAction(projectId, clean);
+        await addDecisionAction(projectId, clean, cleanRationale || undefined);
       } finally {
         setBusy(false);
       }
@@ -100,30 +103,50 @@ export function ProjectDecisionsCard({ projectId, decisions }: { projectId: stri
         </ul>
       )}
 
-      <div className="flex items-center gap-1.5">
-        <input
-          type="text"
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              add();
-            }
-          }}
-          placeholder={t("decision.addPlaceholder")}
-          className="mb-input h-8 min-w-0 flex-1 rounded-lg px-2.5 text-[12px] outline-none"
-          style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.borderSubtle}` }}
-        />
-        <button
-          type="button"
-          onClick={add}
-          disabled={!draft.trim() || busy}
-          className="shrink-0 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold"
-          style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.border}`, cursor: draft.trim() && !busy ? "pointer" : "not-allowed", opacity: draft.trim() && !busy ? 1 : 0.6 }}
-        >
-          {t("decision.add")}
-        </button>
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-1.5">
+          <input
+            type="text"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                add();
+              }
+            }}
+            placeholder={t("decision.addPlaceholder")}
+            className="mb-input h-8 min-w-0 flex-1 rounded-lg px-2.5 text-[12px] outline-none"
+            style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.borderSubtle}` }}
+          />
+          <button
+            type="button"
+            onClick={add}
+            disabled={!draft.trim() || busy}
+            className="shrink-0 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold"
+            style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.border}`, cursor: draft.trim() && !busy ? "pointer" : "not-allowed", opacity: draft.trim() && !busy ? 1 : 0.6 }}
+          >
+            {t("decision.add")}
+          </button>
+        </div>
+        {/* Le « pourquoi » n'apparaît qu'une fois une décision en cours de saisie,
+            pour garder la carte compacte au repos. Optionnel. */}
+        {draft.trim() && (
+          <input
+            type="text"
+            value={rationale}
+            onChange={(event) => setRationale(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                add();
+              }
+            }}
+            placeholder={t("decision.rationalePlaceholder")}
+            className="mb-input h-8 min-w-0 rounded-lg px-2.5 text-[12px] outline-none"
+            style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.borderSubtle}` }}
+          />
+        )}
       </div>
     </section>
   );
