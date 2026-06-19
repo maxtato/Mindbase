@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
 import { surface, text } from "@/lib/design-tokens";
-import { broadcastWorkspace } from "@/lib/workspace-client";
 import { createEnvironmentAction } from "@/app/dashboard/environment-actions";
 
 // Tous les environnements partagent la même couleur (violet). On ne propose
@@ -12,7 +10,6 @@ const ENV_COLOR = "var(--mb-personal-accent)";
 const ENV_COLOR_HEX = "#7c3aed";
 
 export function CreateEnvironmentDialog({ onClose }: { onClose: () => void }) {
-  const pathname = usePathname();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,15 +29,13 @@ export function CreateEnvironmentDialog({ onClose }: { onClose: () => void }) {
     setBusy(true);
     setError(null);
     try {
-      const { id } = await createEnvironmentAction({ name: cleaned, color: ENV_COLOR_HEX });
-      broadcastWorkspace(id);
-      const params = new URLSearchParams({ workspace: id });
-      // Rechargement COMPLET (et non navigation douce) : le thème des
-      // environnements est enregistré dans un registre module-global lu par
-      // ~30 composants qui ne se re-rendent pas tous sur un simple refresh →
-      // certains gardaient l'ancienne couleur (violet). Un reload garantit que
-      // TOUTE l'app démarre avec la nouvelle couleur enregistrée.
-      window.location.assign(`${pathname}?${params.toString()}`);
+      await createEnvironmentAction({ name: cleaned, color: ENV_COLOR_HEX });
+      // On NE bascule PAS sur le nouvel environnement (il est vide) : l'utilisateur
+      // garde sa vue et ses projets actuels. On recharge simplement la page
+      // courante (même workspace) pour que le nouvel environnement apparaisse
+      // dans le sélecteur — le registre de thèmes étant ré-enregistré côté
+      // serveur au chargement.
+      window.location.reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Création impossible.");
       setBusy(false);
