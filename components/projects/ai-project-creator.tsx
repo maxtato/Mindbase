@@ -20,6 +20,7 @@ import { workspaceTheme, type Workspace } from "@/lib/workspace";
 import { useIsPaidPlan } from "@/components/account/account-context";
 import { ProLockButton } from "@/components/account/upgrade-prompt";
 import { useT } from "@/components/i18n/locale-provider";
+import { usePriorityLabel } from "@/components/i18n/labels";
 
 interface AIProjectCreatorProps {
   workspace: Workspace;
@@ -29,6 +30,12 @@ interface AIProjectCreatorProps {
 
 export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCreatorProps) {
   const t = useT();
+  const priorityLabel = usePriorityLabel();
+  // Repli : traduction si la clé existe, sinon la valeur source (française).
+  const loc = (key: string, fallback: string) => {
+    const value = t(key);
+    return value === key ? fallback : value;
+  };
   const isPaid = useIsPaidPlan();
   const theme = workspaceTheme[workspace];
   const subcategoryOptions = getSubcategoryOptions(workspace);
@@ -207,7 +214,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
                 style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.borderSubtle}` }}
               >
                 {subcategoryOptions.filter((option) => option.key !== "other").map((option) => (
-                  <option key={option.key} value={option.key}>{option.label}</option>
+                  <option key={option.key} value={option.key}>{loc(`subcat.${option.key}`, option.label)}</option>
                 ))}
               </select>
             </label>
@@ -222,7 +229,7 @@ export function AIProjectCreator({ workspace, open, onOpenChange }: AIProjectCre
                 style={{ background: surface.s2, color: text.primary, border: `1px solid ${surface.borderSubtle}` }}
               >
                 {PROJECT_PRIORITY_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
+                  <option key={option.value} value={option.value}>{priorityLabel(option.value, option.label)}</option>
                 ))}
               </select>
             </label>

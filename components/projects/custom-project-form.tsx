@@ -21,6 +21,7 @@ import { AIProjectCreator, AIProjectCreatorTrigger } from "@/components/projects
 import { useEnvironments } from "@/components/environments/environments-provider";
 import { FilterPill } from "@/components/ui/filter-pill";
 import { useT } from "@/components/i18n/locale-provider";
+import { useStatusLabel, usePriorityLabel } from "@/components/i18n/labels";
 import { getAllProjectTemplates, type ProjectTemplateDefinition } from "@/lib/project-templates";
 
 const TASK_STATUS_ORDER: TaskStatus[] = ["todo", "in_progress", "waiting", "blocked", "done"];
@@ -56,7 +57,25 @@ interface CustomProjectFormProps {
 export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
   const router = useRouter();
   const t = useT();
+  const statusLabel = useStatusLabel();
+  const priorityLabel = usePriorityLabel();
   const environments = useEnvironments();
+  // Repli : renvoie la traduction si la clé existe, sinon la valeur fournie
+  // (les libellés sources restent en français comme repli).
+  const loc = (key: string, fallback: string) => {
+    const value = t(key);
+    return value === key ? fallback : value;
+  };
+  // Libellés localisés des statuts (le formulaire pré-remplit l'éditeur avec).
+  const localizedTaskLabels = Object.fromEntries(
+    TASK_STATUS_ORDER.map((s) => [s, statusLabel(s, taskStatusLabels[s])]),
+  ) as Record<TaskStatus, string>;
+  const localizedStepLabels = Object.fromEntries(
+    STEP_STATUS_ORDER.map((s) => [s, statusLabel(s, stepStatusLabels[s])]),
+  ) as Record<StepStatus, string>;
+  // Libellé d'environnement : intégrés (Perso/Pro) traduits, custom = nom tel quel.
+  const wsLabel = (ws: string) =>
+    ws === "personal" || ws === "professional" ? loc(`ws.${ws}`, workspaceTheme[ws].label) : workspaceTheme[ws].label;
   const isAll = workspace === ALL_WORKSPACE;
   // En vue « Tous », on demande dans quel environnement créer le projet.
   const [targetWorkspace, setTargetWorkspace] = useState<Workspace>(isAll ? "personal" : workspace);
@@ -85,7 +104,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
     TASK_STATUS_ORDER.map((status) => ({
       id: `task-${status}`,
       systemStatus: status,
-      label: taskStatusLabels[status],
+      label: localizedTaskLabels[status],
       color: TASK_STATUS_DEFAULT_COLORS[status],
       base: true,
     })),
@@ -94,7 +113,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
     STEP_STATUS_ORDER.map((status) => ({
       id: `step-${status}`,
       systemStatus: status,
-      label: stepStatusLabels[status],
+      label: localizedStepLabels[status],
       color: STEP_STATUS_DEFAULT_COLORS[status],
       base: true,
     })),
@@ -169,7 +188,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
           />
         </div>
         <span className="rounded-full px-3 py-1 text-xs font-semibold" style={{ background: theme.accentBg, color: theme.accentText }}>
-          {theme.label}
+          {wsLabel(effectiveWorkspace)}
         </span>
       </header>
 
@@ -234,17 +253,17 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <span className="text-[13px] font-bold" style={{ color: text.primary }}>
-                            {tpl.label}
+                            {loc(`template.${tpl.key}.label`, tpl.label)}
                           </span>
                           <span
                             className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em]"
                             style={{ background: `color-mix(in srgb, ${tplAccent} 14%, transparent)`, color: tplAccent }}
                           >
-                            {workspaceTheme[tpl.workspace].label}
+                            {wsLabel(tpl.workspace)}
                           </span>
                         </div>
                         <p className="mt-1 text-[11.5px] leading-snug" style={{ color: text.muted }}>
-                          {tpl.description}
+                          {loc(`template.${tpl.key}.desc`, tpl.description)}
                         </p>
                         {selected && (
                           <span className="mt-1.5 inline-block text-[10px] font-semibold" style={{ color: tplAccent }}>
@@ -269,7 +288,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
                 label={t("newProject.environment")}
                 value={targetWorkspace}
                 options={[
-                  ...BUILTIN_WORKSPACES.map((ws) => ({ value: ws, label: workspaceTheme[ws].label, dot: workspaceTheme[ws].accent })),
+                  ...BUILTIN_WORKSPACES.map((ws) => ({ value: ws, label: wsLabel(ws), dot: workspaceTheme[ws].accent })),
                   ...environments.map((env) => ({ value: env.id, label: env.name, dot: theme.accent })),
                 ]}
                 onChange={(value) => {
@@ -297,14 +316,14 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
             scope="task"
             baseOrder={TASK_STATUS_ORDER}
             rows={taskStatuses}
-            labels={taskStatusLabels}
+            labels={localizedTaskLabels}
             colors={TASK_STATUS_DEFAULT_COLORS}
           />
           <StatusHiddenInputs
             scope="step"
             baseOrder={STEP_STATUS_ORDER}
             rows={stepStatuses}
-            labels={stepStatusLabels}
+            labels={localizedStepLabels}
             colors={STEP_STATUS_DEFAULT_COLORS}
           />
           {!isCustomSubcategory && <input type="hidden" name="customSubcategoryLabel" value="" />}
@@ -386,7 +405,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
                         >
                           <ProjectCategoryIcon icon={option.icon} color="#FFFFFF" size={21} />
                         </span>
-                        <span className="block text-xs font-bold">{option.label}</span>
+                        <span className="block text-xs font-bold">{loc(`subcat.${option.key}`, option.label)}</span>
                         {selected && (
                           <span className="mt-1 block text-[10px] font-semibold" style={{ color: option.color }}>
                             {t("newProject.selected")}
@@ -440,7 +459,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
                 >
                   {PROJECT_PRIORITY_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
-                      {option.label}
+                      {priorityLabel(option.value, option.label)}
                     </option>
                   ))}
                 </select>
@@ -464,7 +483,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
               accentColor={theme.accent}
               onChange={setTaskStatuses}
               statusOrder={TASK_STATUS_ORDER}
-              defaultLabels={taskStatusLabels}
+              defaultLabels={localizedTaskLabels}
               defaultColors={TASK_STATUS_DEFAULT_COLORS}
               scope="task"
             />
@@ -474,7 +493,7 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
               accentColor={theme.accent}
               onChange={setStepStatuses}
               statusOrder={STEP_STATUS_ORDER}
-              defaultLabels={stepStatusLabels}
+              defaultLabels={localizedStepLabels}
               defaultColors={STEP_STATUS_DEFAULT_COLORS}
               scope="step"
             />
@@ -575,7 +594,7 @@ function CreationStatusEditor<TStatus extends string>({
       {
         id: `${scope}-custom-${Date.now()}-${Math.random().toString(16).slice(2)}`,
         systemStatus: fallback,
-        label: "Nouveau statut",
+        label: t("newProject.newStatusDefault"),
         color: defaultColors[fallback],
         base: false,
       },

@@ -36,7 +36,6 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
   const [envFilter, setEnvFilter] = useState<string>("all");
-  const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<"recent" | "name" | "progress" | "priority">("recent");
   const theme = workspaceTheme[workspace];
   const t = useT();
@@ -96,17 +95,9 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
     .filter((project) => envFilter === "all" || project.workspace === envFilter)
     .filter((project) => priorityFilter === "all" || project.priority === priorityFilter);
 
-  // Recherche par nom / objectif + tri.
-  const query = search.trim().toLowerCase();
-  const searched = query
-    ? filtered.filter(
-        (project) =>
-          project.name.toLowerCase().includes(query) ||
-          (project.objective ?? "").toLowerCase().includes(query),
-      )
-    : filtered;
+  // Tri (la recherche par nom se fait via la loupe globale en haut, pas ici).
   const PRIORITY_RANK: Record<string, number> = { high: 0, medium: 1, low: 2 };
-  const visibleProjects = [...searched].sort((a, b) => {
+  const visibleProjects = [...filtered].sort((a, b) => {
     if (sortKey === "name") return a.name.localeCompare(b.name, "fr");
     if (sortKey === "progress") return (b.progress ?? 0) - (a.progress ?? 0);
     if (sortKey === "priority") return (PRIORITY_RANK[a.priority] ?? 1) - (PRIORITY_RANK[b.priority] ?? 1);
@@ -148,15 +139,6 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
         </p>
 
         <FilterPillGroup>
-          <input
-            type="text"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder={t("projects.search")}
-            aria-label={t("projects.search")}
-            className="mb-input h-[30px] rounded-full px-3 text-[12px] outline-none"
-            style={{ background: surface.s3, color: text.primary, border: `1px solid ${surface.borderSubtle}`, minWidth: 180 }}
-          />
           <FilterPill
             label={t("filter.environment")}
             value={envFilter}
@@ -209,7 +191,7 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
             {t("projects.empty.title")}
           </p>
           <p className="text-xs mt-1" style={{ color: text.muted }}>
-            {query ? t("projects.noMatch") : t("projects.empty.hint")}
+            {t("projects.empty.hint")}
           </p>
         </div>
       ) : (
