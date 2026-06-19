@@ -312,27 +312,10 @@
 html,
 body {
   height: 100%;
-  /* iOS / PWA : on verrouille le document pour couper le « rubber-band »
-     (rebond au scroll). Sans ça, le document derrière le shell (position:fixed)
-     rebondissait au scroll et laissait apparaître une bande grise en bas qui se
-     superposait à la barre de navigation. Tout le défilement se fait dans des
-     conteneurs internes (overflow-y:auto), pas au niveau du document. */
-  overflow: hidden;
-  overscroll-behavior: none;
 }
 
 body {
-  /* position:fixed = document figé : aucun scroll/rebond global possible. */
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  /* Fond = couleur de la bottom nav (--mb-s1), PAS le gris de l'app. Le body
-     n'est visible que dans la bande du home indicator iOS, sous la barre de
-     navigation (le shell .mb-app-shell en 100lvh ne descend pas jusqu'au bord
-     physique de l'écran). Le peindre comme la nav supprime la « surépaisseur »
-     grise et donne une barre uniforme jusqu'en bas. Le reste de l'app est
-     couvert par le shell, qui garde, lui, son fond gris (surface.bg). */
-  background: var(--mb-s1);
+  background: var(--mb-bg);
   color: var(--fg);
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -343,18 +326,6 @@ body {
   -webkit-text-size-adjust: 100%;
   letter-spacing: -0.011em;
   font-feature-settings: "kern", "liga", "calt";
-}
-
-/* Shell applicatif : plein écran, ancré en haut, hauteur = GRAND viewport iOS
-   (lvh) pour que la bottom nav atteigne le bas PHYSIQUE de l'écran sans flotter.
-   Repli 100vh pour les navigateurs sans unité lvh. */
-.mb-app-shell {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 100vh;
-  height: 100lvh;
 }
 
 /* Chiffres tabulaires partout où on aligne des nombres (KPI, compteurs, %). */
