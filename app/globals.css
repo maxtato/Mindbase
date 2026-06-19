@@ -312,9 +312,20 @@
 html,
 body {
   height: 100%;
+  /* iOS / PWA : on verrouille le document pour couper le « rubber-band »
+     (rebond au scroll). Sans ça, le document derrière le shell (position:fixed)
+     rebondissait au scroll et laissait apparaître une bande grise en bas qui se
+     superposait à la barre de navigation. Tout le défilement se fait dans des
+     conteneurs internes (overflow-y:auto), pas au niveau du document. */
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {
+  /* position:fixed = document figé : aucun scroll/rebond global possible. */
+  position: fixed;
+  inset: 0;
+  width: 100%;
   background: var(--mb-bg);
   color: var(--fg);
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
