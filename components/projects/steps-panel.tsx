@@ -1091,7 +1091,10 @@ function StepCard({
             une tâche bascule "due soon → overdue" entre les deux moments.
             Sans cette directive, React 19 abandonne l'hydratation de tout
             ce sous-arbre et casse les onClick en cascade. */}
-        <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end" suppressHydrationWarning>
+        <div className="flex items-center gap-2 shrink-0" suppressHydrationWarning>
+          {/* Tags + jauge se replient (flex-wrap) ; le menu « … » reste calé
+              tout à droite, hors du groupe qui se replie — comme les tâches. */}
+          <div className="flex items-center gap-2 flex-wrap justify-end">
           <StepMetaTag
             label={statusSettings?.step?.[computedStatus]?.label ?? statusLabel(computedStatus, stepStatusLabels[computedStatus])}
             status={computedStatus}
@@ -1129,31 +1132,7 @@ function StepCard({
               </span>
             </div>
           )}
-
-          {/* Bouton crayon visible : modifier le nom / la description de
-              l'étape (équivalent du « clic pour éditer » des tâches). */}
-          <button
-            type="button"
-            data-no-drag="true"
-            onClick={(event) => {
-              event.stopPropagation();
-              setIsEditing((value) => !value);
-              setConfirmDelete(false);
-            }}
-            title="Modifier l'étape"
-            aria-label="Modifier l'étape"
-            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
-            style={{
-              background: isEditing ? accentColor : surface.s2,
-              color: isEditing ? "#FFFFFF" : text.secondary,
-              border: `1px solid ${surface.border}`,
-              cursor: "pointer",
-            }}
-          >
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M10.8 2.6l2.6 2.6M11.6 1.8a1.3 1.3 0 0 1 1.8 1.8l-8 8-2.7.9.9-2.7 8-8Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-            </svg>
-          </button>
+          </div>
 
           {confirmDelete ? (
             <InlineDeleteConfirm onConfirm={onDeleteStep} onCancel={() => setConfirmDelete(false)} />
