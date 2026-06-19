@@ -655,7 +655,7 @@ function ProjectIdentitySettings({
   }
 
   return (
-    <div className="px-6 pt-6">
+    <div className="px-6 pt-6 pb-5">
       <section className="rounded-[22px] p-4" style={{ background: surface.s2, border: `1px solid ${surface.borderSubtle}` }}>
         <h3 className="text-sm font-bold" style={{ color: text.primary, letterSpacing: "-0.005em" }}>
           Projet
@@ -722,13 +722,15 @@ function ProjectIdentitySettings({
           <button
             type="button"
             onClick={save}
-            disabled={isPending || !dirty}
+            disabled={isPending}
             className="rounded-xl px-4 py-2.5 text-xs font-bold"
             style={{
-              background: isPending || !dirty ? surface.s3 : accent,
-              color: isPending || !dirty ? text.muted : "#FFFFFF",
+              // Même rendu que les boutons « Enregistrer » des cartes de statuts
+              // en dessous : violet (accent) plein, texte blanc.
+              background: isPending ? surface.s3 : accent,
+              color: isPending ? text.muted : "#FFFFFF",
               border: "none",
-              cursor: isPending ? "wait" : !dirty ? "default" : "pointer",
+              cursor: isPending ? "wait" : "pointer",
             }}
           >
             {isPending ? "Enregistrement..." : "Enregistrer"}
