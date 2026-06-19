@@ -312,14 +312,6 @@
 html,
 body {
   height: 100%;
-  /* iOS / PWA : on coupe le « rubber-band » (rebond au scroll) en CSS pur, SANS
-     position:fixed. Un élément fixed n'atteint pas le bord physique du bas sur
-     iPhone (la bottom nav se retrouvait avec une bande grise / « surépaisseur »
-     en dessous). En restant en flux normal (shell height:100dvh), la nav touche
-     le bas réel de l'écran ; overscroll-behavior:none suffit à empêcher le
-     rebond. Tout le défilement se fait dans des conteneurs internes. */
-  overflow: hidden;
-  overscroll-behavior: none;
 }
 
 body {
