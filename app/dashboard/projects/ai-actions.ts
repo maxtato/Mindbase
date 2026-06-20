@@ -33,6 +33,7 @@ import {
 } from "@/lib/project-store";
 import type { Project, TaskStatus } from "@/lib/mock-data";
 import { getDisplayStepTitle } from "@/lib/project-display";
+import { deriveTaskStatus } from "@/lib/project-plan";
 import { assertPaidPlan } from "@/lib/account-plan";
 import { getWorkspace, type Workspace } from "@/lib/workspace";
 import type { ProjectPriority } from "@/lib/project-taxonomy";
@@ -430,6 +431,13 @@ export async function applyProjectEvolutionAction(input: {
     if (op.note?.trim()) {
       const previous = located.task.realization?.trim();
       update.realization = previous ? `${previous}\n${op.note.trim()}` : op.note.trim();
+    }
+    // Faire évoluer une tâche avec l'assistant IA ne doit pas la laisser « à
+    // faire » : si l'IA y ajoute une avancée (note/réalisation) sans imposer de
+    // statut, on bascule une tâche encore « à faire » en « en cours » (même
+    // logique que la saisie manuelle d'une réalisation).
+    if (!op.newStatus && op.note?.trim() && deriveTaskStatus(located.task) === "todo") {
+      Object.assign(update, statusUpdate("in_progress"));
     }
     if (Object.keys(update).length === 0) continue;
 
