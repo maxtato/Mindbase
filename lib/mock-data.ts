@@ -192,6 +192,9 @@ export interface Project {
   context: string;
   currentPriority: string;
   nextStep: string;
+  /** Conseils du « conseiller » (synthèse IA) : tips concrets pour bien mener le
+   *  projet. Régénérés avec la synthèse. */
+  advice?: string[];
   decisions: Decision[];
   risks: Risk[];
   blockers: Blocker[];

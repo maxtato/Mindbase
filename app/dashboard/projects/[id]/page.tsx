@@ -183,6 +183,28 @@ export default async function ProjectDetailPage({
                     )}
                   </ProjectRailCard>
 
+                  {/* Conseils du « conseiller » : tips concrets pour bien mener
+                      le projet (le COMMENT), régénérés avec la synthèse. */}
+                  {(project.advice ?? []).length > 0 && (
+                    <ProjectRailCard
+                      title={t("project.advice")}
+                      accentColor={theme.accent}
+                      icon="pulse"
+                      actionLabel={`${(project.advice ?? []).length}`}
+                    >
+                      <div style={{ display: "grid", gap: "0.55rem" }}>
+                        {(project.advice ?? []).map((tip, index) => (
+                          <div key={index} className="flex items-start gap-2 rounded-xl px-2 py-1.5" style={{ background: surface.s2 }}>
+                            <span className="mt-1 h-2 w-2 shrink-0 rounded-full" style={{ background: theme.accent }} />
+                            <p className="min-w-0 text-xs leading-relaxed" style={{ color: text.secondary }}>
+                              {tip}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </ProjectRailCard>
+                  )}
+
                   {/* Décisions : registre interactif (ajout / statut / suppression). */}
                   <ProjectDecisionsCard projectId={project.id} decisions={project.decisions ?? []} />
 

@@ -22,6 +22,7 @@ export interface AIProjectSynthesis {
   summary: string;
   currentState: string;
   nextSteps: string[];
+  advice: string[];
   risks: Array<{
     title: string;
     severity: "high" | "medium" | "low";
@@ -50,6 +51,7 @@ Règles par champ :
   Le résumé doit pouvoir être copié-collé dans une présentation externe sans qu'aucun lecteur ne devine que ce projet est suivi dans un outil. On parle UNIQUEMENT du sujet réel.
 - "currentState" (2-4 phrases) : résume où en est concrètement le projet en termes d'exécution. Cite les avancées clés (étapes passées, livrables produits) et la dynamique. Évite les chiffres bruts — préfère "près de la moitié des tâches sont closes" à "11% (1/9 tâches)".
 - "nextSteps" (2 à 4 actions stratégiques) : propose les axes les plus importants pour faire avancer le projet efficacement maintenant. Plus stratégique que tactique : pas "Cocher la tâche X", plutôt "Verrouiller le budget transport avant de lancer les réservations". Chaque action en 8-15 mots, verbe à l'infinitif d'abord. Le but est d'aiguiller, pas de micro-manager.
+- "advice" (3 à 5 conseils) : parle comme un CONSEILLER SENIOR qui connaît bien ce type de projet et veut le faire RÉUSSIR. Ce ne sont NI des prochaines actions (le "quoi faire") NI des risques (le "ce qui peut mal tourner"), mais le "COMMENT bien mener" : posture à adopter, bon séquencement, points de levier à fort impact, pièges classiques à éviter, ce qu'il faut sécuriser/décider en premier, gestion des parties prenantes, façon de garder l'élan. Chaque conseil : une formule "Titre fort : explication concrète en une phrase" (≤ 22 mots au total), spécifique à CE projet (jamais des banalités type "reste organisé" ou "communique bien"). Ordonne du plus important au moins important.
 - "risks" (0 à 5 risques) : risques réellement perceptibles (retards, blocages, dépendances fragiles, contraintes externes menacées, etc.). Pour chacun : "title" 6-12 mots, "severity" parmi "high"/"medium"/"low", "mitigation" 8-18 mots concrète. Si rien, renvoie [].
 
 Réponds en JSON strict.`;
@@ -62,6 +64,7 @@ const SCHEMA = {
     currentState: { type: "string" },
     summary: { type: "string" },
     nextSteps: { type: "array", items: { type: "string" } },
+    advice: { type: "array", items: { type: "string" } },
     risks: {
       type: "array",
       items: {
@@ -76,7 +79,7 @@ const SCHEMA = {
       },
     },
   },
-  required: ["objective", "context", "currentState", "summary", "nextSteps", "risks"],
+  required: ["objective", "context", "currentState", "summary", "nextSteps", "advice", "risks"],
   additionalProperties: false,
 } as const;
 
@@ -158,7 +161,7 @@ export async function generateProjectSynthesis(project: Project): Promise<AIProj
       { role: "system", content: SYSTEM_PROMPT + (await aiLocaleDirective()) },
       {
         role: "user",
-        content: `Voici l'état du projet :\n\n${snapshot}\n\nRédige la synthèse complète couvrant l'objectif, le contexte, l'état actuel, le résumé, les prochaines étapes et les risques.`,
+        content: `Voici l'état du projet :\n\n${snapshot}\n\nRédige la synthèse complète couvrant l'objectif, le contexte, l'état actuel, le résumé, les prochaines étapes, les conseils du conseiller et les risques.`,
       },
     ],
   });

@@ -3,7 +3,7 @@
 import { refresh, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createProject, updateProject } from "@/lib/project-store";
-import { getWorkspace } from "@/lib/workspace";
+import { getWorkspace, ALL_WORKSPACE } from "@/lib/workspace";
 import {
   getSubcategoryOption,
   isCustomSubcategorySelection,
@@ -196,7 +196,11 @@ export async function createProjectAction(
   // et toutes les vues (dashboard, projets, kanban, calendrier) d'un coup.
   revalidatePath("/", "layout");
 
-  redirect(`/dashboard/projects/${project.id}?workspace=${project.workspace}`);
+  // On NE pingle PAS la vue sur l'environnement du projet : on revient à la vue
+  // agrégée « Tous » pour que le dashboard et le reste continuent d'afficher
+  // tous les environnements (sinon créer un projet Pro masquait le Perso, etc.).
+  // Pour ne voir qu'un environnement, l'utilisateur choisit le filtre dédié.
+  redirect(`/dashboard/projects/${project.id}?workspace=${ALL_WORKSPACE}`);
 }
 
 export async function updateProjectIdentityAction(input: {
