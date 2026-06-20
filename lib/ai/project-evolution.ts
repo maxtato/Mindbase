@@ -115,9 +115,10 @@ function buildSnapshotWithIds(project: Project): string {
       const status = STATUS_LABEL_FR[currentStatus(task)];
       const due = task.dueDate ? ` · échéance ${task.dueDate}` : "";
       const owner = task.owner?.trim() ? ` · resp. ${task.owner.trim()}` : "";
-      const expected = task.expected ? ` — ${clamp(task.expected, 90)}` : "";
+      const expected = task.expected ? ` — attendu : ${clamp(task.expected, 160)}` : "";
+      const done = task.realization?.trim() ? ` · déjà noté : ${clamp(task.realization, 120)}` : "";
       lines.push(
-        `    • TÂCHE [taskId=${task.id}] « ${task.title} » (statut: ${status}${due}${owner})${expected}`,
+        `    • TÂCHE [taskId=${task.id}] « ${task.title} » (statut: ${status}${due}${owner})${expected}${done}`,
       );
     }
   }
@@ -167,6 +168,7 @@ Règles importantes :
 - N'invente RIEN qui ne soit pas étayé par le texte. Si le texte ne justifie aucun changement, renvoie une liste vide.
 - Pour faire avancer une tâche déjà existante, utilise update_task avec son taskId — NE crée PAS de doublon.
 - En revanche, si le texte évoque un travail, une action ou un livrable PERTINENT qui ne correspond à AUCUNE tâche existante, NE L'IGNORE PAS : crée une nouvelle tâche (add_task). Le fait qu'un point ne fasse pas avancer une tâche actuelle n'est pas une raison de l'écarter.
+- COUVERTURE EXHAUSTIVE DES TÂCHES IMPACTÉES (TRÈS IMPORTANT) : un même message contient souvent PLUSIEURS informations qui concernent PLUSIEURS tâches différentes. Procède en deux temps : (1) décompose le message en faits distincts (réservations, achats, montants, dates, décisions, livrables obtenus…) ; (2) PARCOURS CHAQUE tâche existante UNE PAR UNE et, pour chacune, demande-toi : « ce message apporte-t-il une avancée ou une information utile à CETTE tâche ? ». Si oui, ajoute un update_task pour elle (avec une note reprenant l'info pertinente et un statut adapté). N'en oublie AUCUNE et ne te limite pas à la tâche la plus évidente. Une même information peut concerner plusieurs tâches : ex. « j'ai réservé le camping-car pour 3000 € et on a les billets d'avion » fait avancer la tâche de RÉSERVATION (camping-car réservé) ET alimente la tâche d'ÉVALUATION DU BUDGET (3000 € + billets) — il faut donc DEUX update_task, un par tâche concernée.
 - RATTACHEMENT D'UNE NOUVELLE TÂCHE (très important) : avant de choisir, lis le TITRE **et la description** de CHAQUE étape existante, ainsi que les tâches qu'elle contient déjà, pour trouver celle dont le THÈME correspond vraiment à la nouvelle tâche. Renseigne targetStepId avec le stepId EXACT de cette étape. Ne te rabats PAS sur la dernière étape ni sur une étape au hasard : un mauvais rattachement est une erreur. Ne crée une nouvelle étape (newStepTitle) QUE si AUCUNE étape existante ne traite ce sujet. En cas d'hésitation réelle entre plusieurs étapes, demande en mode="question" plutôt que de deviner.
 - CHANGEMENT D'ORIENTATION : quand la direction du projet change, ne te contente pas d'ajouter. Regarde les tâches existantes devenues caduques et propose de les ANNULER (remove_task) ou de les CLÔTURER (update_task newStatus="done") avec une note. L'objectif est que le plan reste cohérent, pas qu'il accumule des tâches sans objet.
 - Ne supprime/ne clôture une tâche que si le texte ou le dialogue le justifie clairement (orientation changée, doublon, abandon explicite). Dans le doute, demande en mode="question".
