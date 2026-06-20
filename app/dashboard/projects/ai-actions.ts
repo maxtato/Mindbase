@@ -392,7 +392,7 @@ export async function applyProjectEvolutionAction(input: {
 
     await addTaskToStep(projectId, stepId, {
       title: op.taskTitle.trim(),
-      description: op.taskExpected?.trim() || undefined,
+      description: op.taskDescription?.trim() || op.taskExpected?.trim() || undefined,
       expected: op.taskExpected?.trim() || undefined,
       priority: op.priority ?? "medium",
       owner: op.owner?.trim() || "",
@@ -428,6 +428,9 @@ export async function applyProjectEvolutionAction(input: {
       update.assignees = [op.owner.trim()];
     }
     if (op.priority) update.priority = op.priority;
+    // Ajustement de l'attendu / du descriptif pour coller à l'évolution.
+    if (op.taskExpected?.trim()) update.expected = op.taskExpected.trim();
+    if (op.taskDescription?.trim()) update.description = op.taskDescription.trim();
     if (op.note?.trim()) {
       const previous = located.task.realization?.trim();
       update.realization = previous ? `${previous}\n${op.note.trim()}` : op.note.trim();

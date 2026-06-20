@@ -28,8 +28,12 @@ export interface EvolutionOperation {
   newStepTitle: string | null;
   /** add_task : titre de la tâche à créer. */
   taskTitle: string | null;
-  /** add_task : attendu / livrable de la tâche. */
+  /** add_task / update_task : attendu / livrable de la tâche. Sur update_task,
+   *  reformule l'attendu pour coller à l'évolution du projet. */
   taskExpected: string | null;
+  /** add_task / update_task : descriptif de la tâche (contexte court). Sur
+   *  update_task, ajuste le descriptif selon l'évolution. */
+  taskDescription: string | null;
   /** update_task : id de la tâche EXISTANTE à mettre à jour. */
   taskId: string | null;
   /** update_task : nouveau statut. */
@@ -116,9 +120,14 @@ function buildSnapshotWithIds(project: Project): string {
       const due = task.dueDate ? ` · échéance ${task.dueDate}` : "";
       const owner = task.owner?.trim() ? ` · resp. ${task.owner.trim()}` : "";
       const expected = task.expected ? ` — attendu : ${clamp(task.expected, 160)}` : "";
-      const done = task.realization?.trim() ? ` · déjà noté : ${clamp(task.realization, 120)}` : "";
+      const desc = task.description?.trim() ? ` · descriptif : ${clamp(task.description, 120)}` : "";
+      const done = task.realization?.trim() ? ` · déjà réalisé : ${clamp(task.realization, 140)}` : "";
+      const checklistItems = task.checklist ?? [];
+      const checklist = checklistItems.length
+        ? ` · checklist : ${clamp(checklistItems.map((item) => `${item.done ? "[x]" : "[ ]"} ${item.label}`).join(" ; "), 220)}`
+        : "";
       lines.push(
-        `    • TÂCHE [taskId=${task.id}] « ${task.title} » (statut: ${status}${due}${owner})${expected}${done}`,
+        `    • TÂCHE [taskId=${task.id}] « ${task.title} » (statut: ${status}${due}${owner})${expected}${desc}${done}${checklist}`,
       );
     }
   }
@@ -140,7 +149,7 @@ CAP PERMANENT — FAIRE AVANCER LE PROJET : pars toujours du principe que le but
 
 Ton ton est clair, concret et serviable. Tu t'adresses à l'utilisateur en français.
 
-Tu reçois l'état actuel du projet avec les identifiants (stepId, taskId) de chaque étape et tâche.
+Tu reçois l'état ACTUEL et COMPLET du projet avec les identifiants (stepId, taskId) de chaque étape et tâche : pour chaque tâche, son statut, son attendu, son descriptif, ce qui est DÉJÀ RÉALISÉ et sa CHECKLIST (cases [x] cochées / [ ] à faire). Lis TOUT cela attentivement — y compris les attendus, réalisations et checklists déjà mis à jour — pour partir de l'état réel et décider comment faire évoluer le projet à partir de là (et non depuis un état périmé). Tiens compte de ce qui est déjà fait pour ne rien proposer en doublon et pour ajuster les attendus/descriptifs restés en décalage avec la réalité.
 
 Tu réponds UNIQUEMENT en JSON strict, selon DEUX MODES possibles :
 
@@ -161,6 +170,8 @@ En mode="plan", chaque opération est l'une de :
    - owner si une personne est désignée
    - priority si l'urgence change
    - note : ce qui a été réalisé / l'info d'avancement tirée du texte (sinon null)
+   - taskExpected : reformule/ajuste l'ATTENDU (le livrable visé) de la tâche quand l'évolution du projet le justifie, pour qu'il colle mieux à la nouvelle réalité (sinon null)
+   - taskDescription : ajuste le DESCRIPTIF (contexte court) de la tâche si nécessaire (sinon null)
    Pour CLÔTURER une tâche déjà traitée ou qui n'a plus à être faite mais qu'on veut garder dans l'historique, utilise newStatus="done" (avec une note expliquant pourquoi).
 4. "remove_task" — SUPPRIMER / ANNULER une tâche qui n'a plus lieu d'être (ex: le projet change d'orientation et certaines tâches deviennent caduques). Renseigne taskId (exact) ; les autres champs restent null. Utilise-la pour nettoyer les tâches obsolètes plutôt que de les laisser traîner.
 
@@ -197,6 +208,7 @@ const OPERATION_SCHEMA = {
           newStepTitle: { type: ["string", "null"] },
           taskTitle: { type: ["string", "null"] },
           taskExpected: { type: ["string", "null"] },
+          taskDescription: { type: ["string", "null"] },
           taskId: { type: ["string", "null"] },
           newStatus: {
             type: ["string", "null"],
@@ -216,6 +228,7 @@ const OPERATION_SCHEMA = {
           "newStepTitle",
           "taskTitle",
           "taskExpected",
+          "taskDescription",
           "taskId",
           "newStatus",
           "dueDate",
@@ -328,6 +341,11 @@ export function describeOperation(
   const found = op.taskId ? findTask(op.taskId) : null;
   return {
     title: found ? `Mettre à jour : ${found.task.title}` : "Mettre à jour une tâche",
-    detail: [...bits, op.note ? `note : ${clamp(op.note, 80)}` : ""].filter(Boolean).join(" · ") || op.reason,
+    detail: [
+      ...bits,
+      op.taskExpected?.trim() ? "attendu ajusté" : "",
+      op.taskDescription?.trim() ? "descriptif ajusté" : "",
+      op.note ? `note : ${clamp(op.note, 80)}` : "",
+    ].filter(Boolean).join(" · ") || op.reason,
   };
 }
