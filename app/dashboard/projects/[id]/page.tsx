@@ -20,7 +20,6 @@ import { ProjectTeamChatLauncher } from "@/components/projects/project-team-chat
 import { ProjectMultiView } from "@/components/projects/project-multi-view";
 import { ProjectRailDetails } from "@/components/projects/project-rail-details";
 import { ExpandableText } from "@/components/projects/expandable-text";
-import { ProjectDecisionsCard } from "@/components/projects/project-decisions-card";
 import { resolveProjectSubcategoryDisplay } from "@/lib/project-taxonomy";
 import {
   flattenProjectTasks,
@@ -184,14 +183,16 @@ export default async function ProjectDetailPage({
                   </ProjectRailCard>
 
                   {/* Conseils du « conseiller » : tips concrets pour bien mener
-                      le projet (le COMMENT), régénérés avec la synthèse. */}
-                  {(project.advice ?? []).length > 0 && (
-                    <ProjectRailCard
-                      title={t("project.advice")}
-                      accentColor={theme.accent}
-                      icon="pulse"
-                      actionLabel={`${(project.advice ?? []).length}`}
-                    >
+                      le projet (le COMMENT), régénérés avec la synthèse. Carte
+                      toujours visible : si vide, on invite à mettre à jour la
+                      synthèse pour les obtenir. */}
+                  <ProjectRailCard
+                    title={t("project.advice")}
+                    accentColor={theme.accent}
+                    icon="pulse"
+                    actionLabel={(project.advice ?? []).length > 0 ? `${(project.advice ?? []).length}` : undefined}
+                  >
+                    {(project.advice ?? []).length > 0 ? (
                       <div style={{ display: "grid", gap: "0.55rem" }}>
                         {(project.advice ?? []).map((tip, index) => (
                           <div key={index} className="flex items-start gap-2 rounded-xl px-2 py-1.5" style={{ background: surface.s2 }}>
@@ -202,11 +203,12 @@ export default async function ProjectDetailPage({
                           </div>
                         ))}
                       </div>
-                    </ProjectRailCard>
-                  )}
-
-                  {/* Décisions : registre interactif (ajout / statut / suppression). */}
-                  <ProjectDecisionsCard projectId={project.id} decisions={project.decisions ?? []} />
+                    ) : (
+                      <p className="text-xs leading-relaxed" style={{ color: text.muted }}>
+                        {t("project.adviceHint")}
+                      </p>
+                    )}
+                  </ProjectRailCard>
 
                   {/* Journal d'activité du projet. */}
                   {(project.activity ?? []).length > 0 && (
