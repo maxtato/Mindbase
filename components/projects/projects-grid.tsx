@@ -199,7 +199,6 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
           {visibleProjects.map((project) => {
             const pendingActions = projectPendingTaskCount(project);
             const openBlockers = project.blockers.filter((blocker) => blocker.status === "open");
-            const pendingDecisions = project.decisions.filter((decision) => decision.status === "pending");
             const subcategoryDisplay = resolveProjectSubcategoryDisplay(project);
             const inactive = isProjectInactive(project);
             const overdue = projectHasOverdueTask(project);
@@ -302,11 +301,6 @@ export function ProjectsGrid({ projects, workspace, qs }: ProjectsGridProps) {
                         {overdue && (
                           <span style={{ color: statusColor.yellow.text }}>
                             {t("card.overdue")}
-                          </span>
-                        )}
-                        {pendingDecisions.length > 0 && (
-                          <span style={{ color: statusColor.yellow.text }}>
-                            {pendingDecisions.length === 1 ? t("card.decisionsOne", { count: pendingDecisions.length }) : t("card.decisionsOther", { count: pendingDecisions.length })}
                           </span>
                         )}
                         {inactive && (
