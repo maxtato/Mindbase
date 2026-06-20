@@ -28,8 +28,12 @@ export interface EvolutionOperation {
   newStepTitle: string | null;
   /** add_task : titre de la tâche à créer. */
   taskTitle: string | null;
-  /** add_task : attendu / livrable de la tâche. */
+  /** add_task / update_task : attendu / livrable de la tâche. Sur update_task,
+   *  reformule l'attendu pour coller à l'évolution du projet. */
   taskExpected: string | null;
+  /** add_task / update_task : descriptif de la tâche (contexte court). Sur
+   *  update_task, ajuste le descriptif selon l'évolution. */
+  taskDescription: string | null;
   /** update_task : id de la tâche EXISTANTE à mettre à jour. */
   taskId: string | null;
   /** update_task : nouveau statut. */
@@ -115,9 +119,15 @@ function buildSnapshotWithIds(project: Project): string {
       const status = STATUS_LABEL_FR[currentStatus(task)];
       const due = task.dueDate ? ` · échéance ${task.dueDate}` : "";
       const owner = task.owner?.trim() ? ` · resp. ${task.owner.trim()}` : "";
-      const expected = task.expected ? ` — ${clamp(task.expected, 90)}` : "";
+      const expected = task.expected ? ` — attendu : ${clamp(task.expected, 160)}` : "";
+      const desc = task.description?.trim() ? ` · descriptif : ${clamp(task.description, 120)}` : "";
+      const done = task.realization?.trim() ? ` · déjà réalisé : ${clamp(task.realization, 140)}` : "";
+      const checklistItems = task.checklist ?? [];
+      const checklist = checklistItems.length
+        ? ` · checklist : ${clamp(checklistItems.map((item) => `${item.done ? "[x]" : "[ ]"} ${item.label}`).join(" ; "), 220)}`
+        : "";
       lines.push(
-        `    • TÂCHE [taskId=${task.id}] « ${task.title} » (statut: ${status}${due}${owner})${expected}`,
+        `    • TÂCHE [taskId=${task.id}] « ${task.title} » (statut: ${status}${due}${owner})${expected}${desc}${done}${checklist}`,
       );
     }
   }
@@ -139,7 +149,7 @@ CAP PERMANENT — FAIRE AVANCER LE PROJET : pars toujours du principe que le but
 
 Ton ton est clair, concret et serviable. Tu t'adresses à l'utilisateur en français.
 
-Tu reçois l'état actuel du projet avec les identifiants (stepId, taskId) de chaque étape et tâche.
+Tu reçois l'état ACTUEL et COMPLET du projet avec les identifiants (stepId, taskId) de chaque étape et tâche : pour chaque tâche, son statut, son attendu, son descriptif, ce qui est DÉJÀ RÉALISÉ et sa CHECKLIST (cases [x] cochées / [ ] à faire). Lis TOUT cela attentivement — y compris les attendus, réalisations et checklists déjà mis à jour — pour partir de l'état réel et décider comment faire évoluer le projet à partir de là (et non depuis un état périmé). Tiens compte de ce qui est déjà fait pour ne rien proposer en doublon et pour ajuster les attendus/descriptifs restés en décalage avec la réalité.
 
 Tu réponds UNIQUEMENT en JSON strict, selon DEUX MODES possibles :
 
@@ -160,6 +170,8 @@ En mode="plan", chaque opération est l'une de :
    - owner si une personne est désignée
    - priority si l'urgence change
    - note : ce qui a été réalisé / l'info d'avancement tirée du texte (sinon null)
+   - taskExpected : reformule/ajuste l'ATTENDU (le livrable visé) de la tâche quand l'évolution du projet le justifie, pour qu'il colle mieux à la nouvelle réalité (sinon null)
+   - taskDescription : ajuste le DESCRIPTIF (contexte court) de la tâche si nécessaire (sinon null)
    Pour CLÔTURER une tâche déjà traitée ou qui n'a plus à être faite mais qu'on veut garder dans l'historique, utilise newStatus="done" (avec une note expliquant pourquoi).
 4. "remove_task" — SUPPRIMER / ANNULER une tâche qui n'a plus lieu d'être (ex: le projet change d'orientation et certaines tâches deviennent caduques). Renseigne taskId (exact) ; les autres champs restent null. Utilise-la pour nettoyer les tâches obsolètes plutôt que de les laisser traîner.
 
@@ -167,6 +179,7 @@ Règles importantes :
 - N'invente RIEN qui ne soit pas étayé par le texte. Si le texte ne justifie aucun changement, renvoie une liste vide.
 - Pour faire avancer une tâche déjà existante, utilise update_task avec son taskId — NE crée PAS de doublon.
 - En revanche, si le texte évoque un travail, une action ou un livrable PERTINENT qui ne correspond à AUCUNE tâche existante, NE L'IGNORE PAS : crée une nouvelle tâche (add_task). Le fait qu'un point ne fasse pas avancer une tâche actuelle n'est pas une raison de l'écarter.
+- COUVERTURE EXHAUSTIVE DES TÂCHES IMPACTÉES (TRÈS IMPORTANT) : un même message contient souvent PLUSIEURS informations qui concernent PLUSIEURS tâches différentes. Procède en deux temps : (1) décompose le message en faits distincts (réservations, achats, montants, dates, décisions, livrables obtenus…) ; (2) PARCOURS CHAQUE tâche existante UNE PAR UNE et, pour chacune, demande-toi : « ce message apporte-t-il une avancée ou une information utile à CETTE tâche ? ». Si oui, ajoute un update_task pour elle (avec une note reprenant l'info pertinente et un statut adapté). N'en oublie AUCUNE et ne te limite pas à la tâche la plus évidente. Une même information peut concerner plusieurs tâches : ex. « j'ai réservé le camping-car pour 3000 € et on a les billets d'avion » fait avancer la tâche de RÉSERVATION (camping-car réservé) ET alimente la tâche d'ÉVALUATION DU BUDGET (3000 € + billets) — il faut donc DEUX update_task, un par tâche concernée.
 - RATTACHEMENT D'UNE NOUVELLE TÂCHE (très important) : avant de choisir, lis le TITRE **et la description** de CHAQUE étape existante, ainsi que les tâches qu'elle contient déjà, pour trouver celle dont le THÈME correspond vraiment à la nouvelle tâche. Renseigne targetStepId avec le stepId EXACT de cette étape. Ne te rabats PAS sur la dernière étape ni sur une étape au hasard : un mauvais rattachement est une erreur. Ne crée une nouvelle étape (newStepTitle) QUE si AUCUNE étape existante ne traite ce sujet. En cas d'hésitation réelle entre plusieurs étapes, demande en mode="question" plutôt que de deviner.
 - CHANGEMENT D'ORIENTATION : quand la direction du projet change, ne te contente pas d'ajouter. Regarde les tâches existantes devenues caduques et propose de les ANNULER (remove_task) ou de les CLÔTURER (update_task newStatus="done") avec une note. L'objectif est que le plan reste cohérent, pas qu'il accumule des tâches sans objet.
 - Ne supprime/ne clôture une tâche que si le texte ou le dialogue le justifie clairement (orientation changée, doublon, abandon explicite). Dans le doute, demande en mode="question".
@@ -195,6 +208,7 @@ const OPERATION_SCHEMA = {
           newStepTitle: { type: ["string", "null"] },
           taskTitle: { type: ["string", "null"] },
           taskExpected: { type: ["string", "null"] },
+          taskDescription: { type: ["string", "null"] },
           taskId: { type: ["string", "null"] },
           newStatus: {
             type: ["string", "null"],
@@ -214,6 +228,7 @@ const OPERATION_SCHEMA = {
           "newStepTitle",
           "taskTitle",
           "taskExpected",
+          "taskDescription",
           "taskId",
           "newStatus",
           "dueDate",
@@ -326,6 +341,11 @@ export function describeOperation(
   const found = op.taskId ? findTask(op.taskId) : null;
   return {
     title: found ? `Mettre à jour : ${found.task.title}` : "Mettre à jour une tâche",
-    detail: [...bits, op.note ? `note : ${clamp(op.note, 80)}` : ""].filter(Boolean).join(" · ") || op.reason,
+    detail: [
+      ...bits,
+      op.taskExpected?.trim() ? "attendu ajusté" : "",
+      op.taskDescription?.trim() ? "descriptif ajusté" : "",
+      op.note ? `note : ${clamp(op.note, 80)}` : "",
+    ].filter(Boolean).join(" · ") || op.reason,
   };
 }
