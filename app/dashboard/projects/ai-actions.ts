@@ -225,6 +225,7 @@ export async function refreshProjectSynthesisAction(projectId: string): Promise<
     description: synthesis.summary,
     currentPriority: synthesis.currentState,
     nextStep: synthesis.nextSteps.join("\n"),
+    advice: synthesis.advice,
     risks: nextRisks,
   });
 
