@@ -338,6 +338,7 @@ const fr: Dict = {
   "newProject.fromScratch": "Partir de zéro",
   "newProject.templateApplied": "Modèle appliqué",
   "newProject.environment": "Environnement",
+  "newProject.environmentDesc": "Choisis l'environnement auquel rattacher ce projet (Perso, Pro ou personnalisé).",
   "newProject.subtitle": "Projet personnalisé",
   "newProject.title": "Créer un projet",
   "newProject.intro":
@@ -732,6 +733,7 @@ const en: Dict = {
   "newProject.fromScratch": "Start from scratch",
   "newProject.templateApplied": "Template applied",
   "newProject.environment": "Environment",
+  "newProject.environmentDesc": "Choose which environment this project belongs to (Personal, Pro or custom).",
   "newProject.subtitle": "Custom project",
   "newProject.title": "Create a project",
   "newProject.intro":

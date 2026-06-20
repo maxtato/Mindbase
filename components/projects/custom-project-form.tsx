@@ -19,7 +19,6 @@ import type { StepStatus, TaskStatus } from "@/lib/mock-data";
 import { ProjectCategoryIcon } from "@/components/projects/project-taxonomy-ui";
 import { AIProjectCreator, AIProjectCreatorTrigger } from "@/components/projects/ai-project-creator";
 import { useEnvironments } from "@/components/environments/environments-provider";
-import { FilterPill } from "@/components/ui/filter-pill";
 import { useT } from "@/components/i18n/locale-provider";
 import { useStatusLabel, usePriorityLabel } from "@/components/i18n/labels";
 import { getAllProjectTemplates, type ProjectTemplateDefinition } from "@/lib/project-templates";
@@ -278,34 +277,49 @@ export function CustomProjectForm({ workspace }: CustomProjectFormProps) {
             </div>
           </section>
 
-          {(
-            <div className="xl:col-span-3" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
-                {t("newProject.environment")}
-              </label>
-              {/* Sélecteur d'environnement : même style que les filtres (pill). */}
-              <FilterPill
-                label={t("newProject.environment")}
-                value={targetWorkspace}
-                options={[
-                  ...BUILTIN_WORKSPACES.map((ws) => ({ value: ws, label: wsLabel(ws), dot: workspaceTheme[ws].accent })),
-                  ...environments.map((env) => ({ value: env.id, label: env.name, dot: theme.accent })),
-                ]}
-                onChange={(value) => {
-                  const next = value as Workspace;
-                  setTargetWorkspace(next);
-                  // Un modèle n'est valide que dans son environnement : si on
-                  // change d'environnement, on retire le modèle appliqué.
-                  if (templateKey) {
-                    const tpl = templates.find((item) => item.key === templateKey);
-                    if (tpl && tpl.workspace !== next) setTemplateKey("");
-                  }
-                }}
-                accentColor={theme.accent}
-                minWidth={220}
-              />
+          {/* Environnement : carte dédiée et bien visible (gros boutons), pour
+              basculer clairement Perso / Pro / personnalisé. */}
+          <section className="mb-card-premium xl:col-span-3 rounded-[22px] p-6" style={{ background: surface.s1 }}>
+            <h2 className="text-sm font-bold" style={{ color: text.primary }}>
+              {t("newProject.environment")}
+            </h2>
+            <p className="mt-1 text-xs leading-relaxed" style={{ color: text.muted }}>
+              {t("newProject.environmentDesc")}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {[
+                ...BUILTIN_WORKSPACES.map((ws) => ({ value: ws as Workspace, label: wsLabel(ws) })),
+                ...environments.map((env) => ({ value: env.id as Workspace, label: env.name })),
+              ].map((option) => {
+                const selected = targetWorkspace === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => {
+                      const next = option.value;
+                      setTargetWorkspace(next);
+                      // Un modèle n'est valide que dans son environnement : si on
+                      // change d'environnement, on retire le modèle appliqué.
+                      if (templateKey) {
+                        const tpl = templates.find((item) => item.key === templateKey);
+                        if (tpl && tpl.workspace !== next) setTemplateKey("");
+                      }
+                    }}
+                    className="rounded-2xl px-4 py-2.5 text-sm font-semibold"
+                    style={{
+                      background: selected ? theme.accent : surface.s3,
+                      color: selected ? "#FFFFFF" : text.secondary,
+                      border: `1px solid ${selected ? theme.accent : surface.borderSubtle}`,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
             </div>
-          )}
+          </section>
           <input type="hidden" name="mode" value="custom" />
           <input type="hidden" name="status" value="preparing" />
           <input type="hidden" name="projectType" value={projectType} />
