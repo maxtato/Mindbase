@@ -141,7 +141,8 @@ const fr: Dict = {
   "project.currentState": "État actuel",
   "project.risks": "Risques identifiés",
   "project.nextActions": "Prochaines actions",
-  "project.advice": "Conseils du conseiller",
+  "project.advice": "Tips du conseiller",
+  "project.adviceHint": "Clique sur « Mettre à jour » (synthèse) pour obtenir les tips du conseiller.",
   "project.decisions": "Décisions",
   "project.activity": "Activité",
   "decision.decided": "Décidé",
@@ -337,6 +338,7 @@ const fr: Dict = {
   "newProject.fromScratch": "Partir de zéro",
   "newProject.templateApplied": "Modèle appliqué",
   "newProject.environment": "Environnement",
+  "newProject.environmentDesc": "Choisis l'environnement auquel rattacher ce projet (Perso, Pro ou personnalisé).",
   "newProject.subtitle": "Projet personnalisé",
   "newProject.title": "Créer un projet",
   "newProject.intro":
@@ -536,6 +538,7 @@ const en: Dict = {
   "project.risks": "Identified risks",
   "project.nextActions": "Next actions",
   "project.advice": "Advisor tips",
+  "project.adviceHint": "Click “Update” (synthesis) to get the advisor's tips.",
   "project.decisions": "Decisions",
   "project.activity": "Activity",
   "decision.decided": "Decided",
@@ -730,6 +733,7 @@ const en: Dict = {
   "newProject.fromScratch": "Start from scratch",
   "newProject.templateApplied": "Template applied",
   "newProject.environment": "Environment",
+  "newProject.environmentDesc": "Choose which environment this project belongs to (Personal, Pro or custom).",
   "newProject.subtitle": "Custom project",
   "newProject.title": "Create a project",
   "newProject.intro":

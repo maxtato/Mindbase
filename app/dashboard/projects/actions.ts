@@ -3,6 +3,8 @@
 import { refresh, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createProject, updateProject } from "@/lib/project-store";
+import { assertPaidPlan } from "@/lib/account-plan";
+import { generateProjectAdvice } from "@/lib/ai/project-advice";
 import { getWorkspace, ALL_WORKSPACE } from "@/lib/workspace";
 import {
   getSubcategoryOption,
@@ -191,6 +193,20 @@ export async function createProjectAction(
     templateKey: templateKey || undefined,
     statusSettings,
   });
+
+  // Tips du conseiller dès la création (best-effort) : on génère 3-5 conseils
+  // à partir de l'objectif/contexte. Réservé au plan payant (comme l'IA) ;
+  // jamais bloquant — si ça échoue (plan gratuit, pas de clé, erreur IA), le
+  // projet est créé quand même et la carte affiche son invite.
+  try {
+    await assertPaidPlan("L'assistant IA");
+    const advice = await generateProjectAdvice(project);
+    if (advice.length > 0) {
+      await updateProject(project.id, { advice });
+    }
+  } catch (error) {
+    console.error("[create_project_advice]", error);
+  }
 
   // Layout-level revalidation : invalide aussi le sidebar/topbar/bottom-nav
   // et toutes les vues (dashboard, projets, kanban, calendrier) d'un coup.
