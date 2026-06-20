@@ -56,6 +56,11 @@ export function FilterPill<T extends string>({
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  // Quand le menu est ouvert, un backdrop plein écran recouvre le bouton. Un
+  // 2e clic sur le bouton tape donc le backdrop (qui ferme), puis le « ghost
+  // click » retombe sur le bouton et le rouvrait. On note l'instant de
+  // fermeture par le backdrop pour ignorer ce clic immédiat → 2e clic = ferme.
+  const closedByBackdropAtRef = useRef(0);
   const [menuPosition, setMenuPosition] = useState<{ top: number; left: number; width: number; flipped: boolean } | null>(null);
   const [mounted, setMounted] = useState(false);
   // Valeur optimiste : reflète immédiatement la sélection (avant que la valeur
@@ -157,7 +162,16 @@ export function FilterPill<T extends string>({
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => {
+          // Ignore le clic « fantôme » juste après une fermeture par le backdrop
+          // (sinon le 2e clic sur le bouton rouvrirait le menu au lieu de le
+          // laisser fermé).
+          if (Date.now() - closedByBackdropAtRef.current < 300) {
+            closedByBackdropAtRef.current = 0;
+            return;
+          }
+          setOpen((current) => !current);
+        }}
         aria-expanded={open}
         aria-haspopup="listbox"
         className="mb-filter-pill"
@@ -202,11 +216,15 @@ export function FilterPill<T extends string>({
             type="button"
             aria-hidden
             tabIndex={-1}
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              closedByBackdropAtRef.current = Date.now();
+              setOpen(false);
+            }}
             onPointerDown={(event) => {
               // Empêche le focus de quitter le bouton de filtre et le
               // click synthétique de se propager au layer du dessous.
               event.preventDefault();
+              closedByBackdropAtRef.current = Date.now();
               setOpen(false);
             }}
             style={{
