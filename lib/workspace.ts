@@ -144,7 +144,10 @@ export function listEnvironmentOptions(custom: CustomEnvironment[]): Environment
 
 export function getWorkspace(param?: string | null): Workspace {
   const v = typeof param === "string" ? param.trim() : "";
-  return v.length > 0 ? v : "personal";
+  // Défaut = « Tous » (vue agrégée) : tant qu'aucun environnement précis n'est
+  // choisi, on voit TOUS les environnements (dashboard, projets, kanban…). Les
+  // écrans de création résolvent « all » vers un environnement concret.
+  return v.length > 0 ? v : ALL_WORKSPACE;
 }
 
 export function buildWorkspaceUrl(
