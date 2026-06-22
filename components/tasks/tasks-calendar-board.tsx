@@ -266,17 +266,95 @@ export function TasksCalendarBoard({
                       <div className="relative">
                         {(() => {
                           const total = dayTasks.length;
+                          const extraCount = total - 1;
+                          const firstItem = dayTasks[0];
                           const isExpanded = expandedDate === key;
                           return (
                             <>
-                              {/* Un point par tâche, à la couleur du thème. Au clic →
-                                  popover (cartes en surépaisseur) ; clic sur une carte
-                                  → ouvre la tâche. */}
+                              {/* DESKTOP (≥ sm) : cartes détaillées comme avant. */}
+                              <div className="hidden sm:block">
+                                {total <= 1 ? (
+                                  <div className="grid gap-1 pb-1.5 xl:overflow-hidden">
+                                    {dayTasks.map((item) => (
+                                      <CalendarTaskCard
+                                        key={`${item.project.id}-${item.entry.id}`}
+                                        item={item}
+                                        workspace={workspace}
+                                        isDragging={draggingKey === getTaskKey(item) || touchDraggingKey === getTaskKey(item)}
+                                        onLongPressEngage={(x, y, element) => begin(getTaskKey(item), item.entry.task.title, x, y, element)}
+                                        onDragStart={() => setDraggingKey(getTaskKey(item))}
+                                        onDragEnd={() => {
+                                          setDraggingKey(null);
+                                          setDragOverDate(null);
+                                        }}
+                                        onOpenStandalone={(task) => setOpenStandaloneTask(task)}
+                                      />
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div
+                                    role="button"
+                                    tabIndex={0}
+                                    style={{ position: "relative" }}
+                                    onClick={(event) => {
+                                      event.preventDefault();
+                                      event.stopPropagation();
+                                      setExpandedDate(key);
+                                    }}
+                                    onKeyDown={(event) => {
+                                      if (event.key === "Enter" || event.key === " ") {
+                                        event.preventDefault();
+                                        setExpandedDate(key);
+                                      }
+                                    }}
+                                    aria-label={`${total} tâches le ${cell.date.getDate()}, voir la liste`}
+                                  >
+                                    <div style={{ pointerEvents: "none" }}>
+                                      <CalendarTaskCard
+                                        item={firstItem}
+                                        workspace={workspace}
+                                        isDragging={false}
+                                        onDragStart={() => {}}
+                                        onDragEnd={() => {}}
+                                      />
+                                    </div>
+                                    <span
+                                      aria-label={`${extraCount} tâche${extraCount > 1 ? "s" : ""} supplémentaire${extraCount > 1 ? "s" : ""}`}
+                                      style={{
+                                        position: "absolute",
+                                        top: 4,
+                                        right: 4,
+                                        minWidth: 20,
+                                        height: 18,
+                                        padding: "0 6px",
+                                        borderRadius: 999,
+                                        background: text.primary,
+                                        color: surface.s1,
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        lineHeight: 1,
+                                        boxShadow: "var(--mb-shadow-xs)",
+                                        zIndex: 20,
+                                        pointerEvents: "none",
+                                      }}
+                                    >
+                                      +{extraCount}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* MOBILE (< sm) : pastille bien visible (points dans une
+                                  puce teintée thème, même pour une seule tâche). Clic →
+                                  popover des cartes ; clic sur une carte → ouvre la tâche. */}
                               <div
                                 role="button"
                                 tabIndex={0}
-                                className="flex flex-wrap items-center gap-1 pb-1.5"
-                                style={{ cursor: "pointer", minHeight: 16, paddingInline: 2 }}
+                                className="sm:hidden flex items-center gap-1 pb-1.5"
+                                style={{ cursor: "pointer", minHeight: 18, paddingInline: 2 }}
                                 onClick={(event) => {
                                   event.preventDefault();
                                   event.stopPropagation();
@@ -295,13 +373,28 @@ export function TasksCalendarBoard({
                                 }}
                                 aria-label={`${total} tâche${total > 1 ? "s" : ""} le ${cell.date.getDate()}, voir`}
                               >
-                                {dayTasks.map((item) => (
-                                  <span
-                                    key={`${item.project.id}-${item.entry.id}`}
-                                    aria-hidden
-                                    style={{ width: 8, height: 8, borderRadius: 999, background: workspaceAccent, flexShrink: 0 }}
-                                  />
-                                ))}
+                                <span
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 3,
+                                    padding: "2px 6px",
+                                    borderRadius: 999,
+                                    background: `color-mix(in srgb, ${workspaceAccent} 18%, transparent)`,
+                                    border: `1px solid color-mix(in srgb, ${workspaceAccent} 45%, transparent)`,
+                                  }}
+                                >
+                                  {dayTasks.slice(0, 4).map((item) => (
+                                    <span
+                                      key={`${item.project.id}-${item.entry.id}`}
+                                      aria-hidden
+                                      style={{ width: 6, height: 6, borderRadius: 999, background: workspaceAccent, flexShrink: 0 }}
+                                    />
+                                  ))}
+                                  {total > 4 && (
+                                    <span style={{ fontSize: 8.5, fontWeight: 800, color: workspaceAccent, lineHeight: 1 }}>+{total - 4}</span>
+                                  )}
+                                </span>
                               </div>
 
                               {/* Modal portal'é vers body : centré sur le
