@@ -262,44 +262,21 @@ export function TasksCalendarBoard({
                     >
                       {cell.date.getDate()}
                     </p>
-                    {dayTasks.length <= 1 ? (
-                      <div className="grid gap-1 pb-1.5 xl:overflow-hidden">
-                        {dayTasks.map((item) => (
-                          <CalendarTaskCard
-                            key={`${item.project.id}-${item.entry.id}`}
-                            item={item}
-                            workspace={workspace}
-                            isDragging={draggingKey === getTaskKey(item) || touchDraggingKey === getTaskKey(item)}
-                            onLongPressEngage={(x, y, element) => begin(getTaskKey(item), item.entry.task.title, x, y, element)}
-                            onDragStart={() => setDraggingKey(getTaskKey(item))}
-                            onDragEnd={() => {
-                              setDraggingKey(null);
-                              setDragOverDate(null);
-                            }}
-                            onOpenStandalone={(task) => setOpenStandaloneTask(task)}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      // Plusieurs tâches le même jour. La carte preview reste
-                      // visible (pour ne pas changer la grille). Au clic →
-                      // popover floating au-dessus de la cellule contenant
-                      // toutes les cartes empilées verticalement, chacune
-                      // ouvrant sa propre modal. Popover en absolute + z-index
-                      // élevé pour ne JAMAIS être clippé par les overflow
-                      // hidden des cellules / lignes du calendrier.
+                    {dayTasks.length > 0 && (
                       <div className="relative">
                         {(() => {
                           const total = dayTasks.length;
-                          const extraCount = total - 1;
-                          const firstItem = dayTasks[0];
                           const isExpanded = expandedDate === key;
                           return (
                             <>
+                              {/* Un point par tâche, à la couleur du thème. Au clic →
+                                  popover (cartes en surépaisseur) ; clic sur une carte
+                                  → ouvre la tâche. */}
                               <div
                                 role="button"
                                 tabIndex={0}
-                                style={{ position: "relative" }}
+                                className="flex flex-wrap items-center gap-1 pb-1.5"
+                                style={{ cursor: "pointer", minHeight: 16, paddingInline: 2 }}
                                 onClick={(event) => {
                                   event.preventDefault();
                                   event.stopPropagation();
@@ -316,42 +293,15 @@ export function TasksCalendarBoard({
                                     setExpandedDate(key);
                                   }
                                 }}
-                                aria-label={`${total} tâches le ${cell.date.getDate()}, voir la liste`}
+                                aria-label={`${total} tâche${total > 1 ? "s" : ""} le ${cell.date.getDate()}, voir`}
                               >
-                                <div style={{ pointerEvents: "none" }}>
-                                  <CalendarTaskCard
-                                    item={firstItem}
-                                    workspace={workspace}
-                                    isDragging={false}
-                                    onDragStart={() => {}}
-                                    onDragEnd={() => {}}
+                                {dayTasks.map((item) => (
+                                  <span
+                                    key={`${item.project.id}-${item.entry.id}`}
+                                    aria-hidden
+                                    style={{ width: 8, height: 8, borderRadius: 999, background: workspaceAccent, flexShrink: 0 }}
                                   />
-                                </div>
-                                <span
-                                  aria-label={`${extraCount} tâche${extraCount > 1 ? "s" : ""} supplémentaire${extraCount > 1 ? "s" : ""}`}
-                                  style={{
-                                    position: "absolute",
-                                    top: 4,
-                                    right: 4,
-                                    minWidth: 20,
-                                    height: 18,
-                                    padding: "0 6px",
-                                    borderRadius: 999,
-                                    background: text.primary,
-                                    color: surface.s1,
-                                    fontSize: 10,
-                                    fontWeight: 700,
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    lineHeight: 1,
-                                    boxShadow: "var(--mb-shadow-xs)",
-                                    zIndex: 20,
-                                    pointerEvents: "none",
-                                  }}
-                                >
-                                  +{extraCount}
-                                </span>
+                                ))}
                               </div>
 
                               {/* Modal portal'é vers body : centré sur le
@@ -415,7 +365,7 @@ export function TasksCalendarBoard({
                                       }}
                                     >
                                       <span className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: text.muted }}>
-                                        {total} tâches · {cell.date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                                        {total} tâche{total > 1 ? "s" : ""} · {cell.date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
                                       </span>
                                       <button
                                         type="button"
@@ -735,7 +685,7 @@ function CalendarTaskCard({
           {/* Titre pleine largeur (le point de priorité passe en dessous, sur
               la ligne méta) → plus de lettres visibles par ligne sur iPhone. */}
           <p
-            className="mb-board-task-title line-clamp-2 text-[10px] font-semibold leading-snug min-w-0"
+            className="mb-board-task-title line-clamp-2 text-[11px] font-semibold leading-snug min-w-0"
             style={{ color: text.primary, paddingRight: 14 }}
           >
             {entry.task.title}
@@ -754,7 +704,7 @@ function CalendarTaskCard({
                 }}
               />
             )}
-            <p className="truncate text-[9.5px] min-w-0" style={{ color: text.muted, margin: 0 }}>
+            <p className="truncate text-[10px] min-w-0" style={{ color: text.muted, margin: 0 }}>
               {standalone ? (
                 <span style={{ color: workspaceTheme[project.workspace].accent, fontWeight: 600 }}>{t("tasks.freeBadge")}</span>
               ) : (
