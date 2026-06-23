@@ -266,85 +266,44 @@ export function TasksCalendarBoard({
                       <div className="relative">
                         {(() => {
                           const total = dayTasks.length;
-                          const extraCount = total - 1;
-                          const firstItem = dayTasks[0];
                           const isExpanded = expandedDate === key;
                           return (
                             <>
-                              {/* DESKTOP (≥ sm) : cartes détaillées comme avant. */}
+                              {/* DESKTOP (≥ sm) : jusqu'à 2 cartes détaillées empilées ;
+                                  au-delà, un « +N » ouvre le popover avec toutes les tâches. */}
                               <div className="hidden sm:block">
-                                {total <= 1 ? (
-                                  <div className="grid gap-1 pb-1.5 xl:overflow-hidden">
-                                    {dayTasks.map((item) => (
-                                      <CalendarTaskCard
-                                        key={`${item.project.id}-${item.entry.id}`}
-                                        item={item}
-                                        workspace={workspace}
-                                        isDragging={draggingKey === getTaskKey(item) || touchDraggingKey === getTaskKey(item)}
-                                        onLongPressEngage={(x, y, element) => begin(getTaskKey(item), item.entry.task.title, x, y, element)}
-                                        onDragStart={() => setDraggingKey(getTaskKey(item))}
-                                        onDragEnd={() => {
-                                          setDraggingKey(null);
-                                          setDragOverDate(null);
-                                        }}
-                                        onOpenStandalone={(task) => setOpenStandaloneTask(task)}
-                                      />
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div
-                                    role="button"
-                                    tabIndex={0}
-                                    style={{ position: "relative" }}
-                                    onClick={(event) => {
-                                      event.preventDefault();
-                                      event.stopPropagation();
-                                      setExpandedDate(key);
-                                    }}
-                                    onKeyDown={(event) => {
-                                      if (event.key === "Enter" || event.key === " ") {
-                                        event.preventDefault();
-                                        setExpandedDate(key);
-                                      }
-                                    }}
-                                    aria-label={`${total} tâches le ${cell.date.getDate()}, voir la liste`}
-                                  >
-                                    <div style={{ pointerEvents: "none" }}>
-                                      <CalendarTaskCard
-                                        item={firstItem}
-                                        workspace={workspace}
-                                        isDragging={false}
-                                        onDragStart={() => {}}
-                                        onDragEnd={() => {}}
-                                      />
-                                    </div>
-                                    <span
-                                      aria-label={`${extraCount} tâche${extraCount > 1 ? "s" : ""} supplémentaire${extraCount > 1 ? "s" : ""}`}
-                                      style={{
-                                        position: "absolute",
-                                        top: 4,
-                                        right: 4,
-                                        minWidth: 20,
-                                        height: 18,
-                                        padding: "0 6px",
-                                        borderRadius: 999,
-                                        background: text.primary,
-                                        color: surface.s1,
-                                        fontSize: 10,
-                                        fontWeight: 700,
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        lineHeight: 1,
-                                        boxShadow: "var(--mb-shadow-xs)",
-                                        zIndex: 20,
-                                        pointerEvents: "none",
+                                <div className="grid gap-1 pb-1.5 xl:overflow-hidden">
+                                  {dayTasks.slice(0, 2).map((item) => (
+                                    <CalendarTaskCard
+                                      key={`${item.project.id}-${item.entry.id}`}
+                                      item={item}
+                                      workspace={workspace}
+                                      isDragging={draggingKey === getTaskKey(item) || touchDraggingKey === getTaskKey(item)}
+                                      onLongPressEngage={(x, y, element) => begin(getTaskKey(item), item.entry.task.title, x, y, element)}
+                                      onDragStart={() => setDraggingKey(getTaskKey(item))}
+                                      onDragEnd={() => {
+                                        setDraggingKey(null);
+                                        setDragOverDate(null);
                                       }}
+                                      onOpenStandalone={(task) => setOpenStandaloneTask(task)}
+                                    />
+                                  ))}
+                                  {total > 2 && (
+                                    <button
+                                      type="button"
+                                      onClick={(event) => {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        setExpandedDate(key);
+                                      }}
+                                      className="rounded-lg px-2 py-1 text-left text-[10px] font-semibold"
+                                      style={{ background: surface.s2, color: text.secondary, border: `1px solid ${surface.borderSubtle}`, cursor: "pointer" }}
+                                      aria-label={`${total - 2} autre${total - 2 > 1 ? "s" : ""} tâche${total - 2 > 1 ? "s" : ""} le ${cell.date.getDate()}, voir la liste`}
                                     >
-                                      +{extraCount}
-                                    </span>
-                                  </div>
-                                )}
+                                      +{total - 2} autre{total - 2 > 1 ? "s" : ""}
+                                    </button>
+                                  )}
+                                </div>
                               </div>
 
                               {/* MOBILE (< sm) : pastille bien visible (points dans une
@@ -377,22 +336,23 @@ export function TasksCalendarBoard({
                                   style={{
                                     display: "inline-flex",
                                     alignItems: "center",
-                                    gap: 3,
-                                    padding: "2px 6px",
+                                    gap: 2,
+                                    maxWidth: "100%",
+                                    padding: "2px 5px",
                                     borderRadius: 999,
                                     background: `color-mix(in srgb, ${workspaceAccent} 18%, transparent)`,
                                     border: `1px solid color-mix(in srgb, ${workspaceAccent} 45%, transparent)`,
                                   }}
                                 >
-                                  {dayTasks.slice(0, 4).map((item) => (
+                                  {dayTasks.slice(0, 3).map((item) => (
                                     <span
                                       key={`${item.project.id}-${item.entry.id}`}
                                       aria-hidden
-                                      style={{ width: 6, height: 6, borderRadius: 999, background: workspaceAccent, flexShrink: 0 }}
+                                      style={{ width: 5, height: 5, borderRadius: 999, background: workspaceAccent, flexShrink: 0 }}
                                     />
                                   ))}
-                                  {total > 4 && (
-                                    <span style={{ fontSize: 8.5, fontWeight: 800, color: workspaceAccent, lineHeight: 1 }}>+{total - 4}</span>
+                                  {total > 3 && (
+                                    <span style={{ fontSize: 8, fontWeight: 800, color: workspaceAccent, lineHeight: 1, flexShrink: 0 }}>+{total - 3}</span>
                                   )}
                                 </span>
                               </div>
