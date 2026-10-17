@@ -3,7 +3,7 @@
 // compte (sidebar), l'attribution des messages/commentaires, et le filtre
 // « Mes tâches » (assigné à moi). Repli en mémoire si Redis absent.
 
-import { createClient, type RedisClientType } from "redis";
+import { makeRedisGetter } from "@/lib/redis-client";
 import { ACTIVE_ACCOUNT_NAME } from "@/lib/current-account";
 
 export type AccountPlan = "free" | "pro";
@@ -21,24 +21,8 @@ const REDIS_KEY = "mindbase:profile";
 // Par défaut "pro" : le compte propriétaire existant garde tout l'accès.
 const DEFAULT_PROFILE: AccountProfile = { name: ACTIVE_ACCOUNT_NAME, email: "", plan: "pro" };
 
-type RedisClient = RedisClientType<Record<string, never>, Record<string, never>, Record<string, never>>;
-let redisClientPromise: Promise<RedisClient> | null = null;
 
-function getRedisClient(): Promise<RedisClient> {
-  if (!REDIS_URL) return Promise.reject(new Error("REDIS_URL is not set"));
-  if (!redisClientPromise) {
-    const client = createClient({ url: REDIS_URL }) as RedisClient;
-    client.on("error", (err) => console.error("[account-store] redis error:", err));
-    redisClientPromise = client
-      .connect()
-      .then(() => client)
-      .catch((err) => {
-        redisClientPromise = null;
-        throw err;
-      });
-  }
-  return redisClientPromise;
-}
+const getRedisClient = makeRedisGetter("account-store", REDIS_URL);
 
 let memory: AccountProfile = { ...DEFAULT_PROFILE };
 

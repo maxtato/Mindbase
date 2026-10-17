@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { cache } from "react";
-import { createClient, type RedisClientType } from "redis";
+import { makeRedisGetter } from "@/lib/redis-client";
 import type { Workspace } from "@/lib/workspace";
 import { projects as projectSeeds, type Action, type ChecklistItem, type Decision, type Project, type ProjectActivityItem, type ProjectFile, type ProjectMode, type ProjectPerson, type ProjectStatus, type ProjectStatusSettings, type ProjectTeam, type ProjectTeamMessage, type Risk, type Step, type StepStatus, type Task, type TaskDiscussionMessage, type TaskStatus } from "@/lib/mock-data";
 import {
@@ -610,27 +610,8 @@ interface RedisStore {
 // serverless pour ne pas se reconnecter à chaque requête. Vercel garde
 // les instances warm un certain temps, donc la même connexion TCP est
 // réutilisée. Les erreurs sont loggées et n'arrêtent pas le rendu.
-type RedisClient = RedisClientType<Record<string, never>, Record<string, never>, Record<string, never>>;
-let redisClientPromise: Promise<RedisClient> | null = null;
-
-function getRedisClient(): Promise<RedisClient> {
-  if (!REDIS_URL) {
-    return Promise.reject(new Error("REDIS_URL is not set"));
-  }
-  if (!redisClientPromise) {
-    const client = createClient({ url: REDIS_URL }) as RedisClient;
-    client.on("error", (err) => {
-      console.error("[project-store] redis error:", err);
-    });
-    redisClientPromise = client.connect().then(() => client).catch((err) => {
-      // Reset pour qu'une prochaine tentative refasse un connect plutôt
-      // que de garder une promesse rejetée à vie.
-      redisClientPromise = null;
-      throw err;
-    });
-  }
-  return redisClientPromise;
-}
+// Voir lib/redis-client.ts : échec rapide si la base est injoignable.
+const getRedisClient = makeRedisGetter("project-store", REDIS_URL);
 
 async function ensureProjectStore() {
   // Priorité 1 : Redis (Vercel Marketplace via REDIS_URL).

@@ -1,30 +1,14 @@
 // Stockage des abonnements push. Réutilise Redis (REDIS_URL) comme le store
 // projets ; repli en mémoire si Redis absent (dev). Dédup par endpoint.
 
-import { createClient, type RedisClientType } from "redis";
+import { makeRedisGetter } from "@/lib/redis-client";
 import type { PushSubscriptionRecord } from "@/lib/push/web-push";
 
 const REDIS_URL = process.env.REDIS_URL;
 const REDIS_KEY = "mindbase:push:subscriptions";
 
-type RedisClient = RedisClientType<Record<string, never>, Record<string, never>, Record<string, never>>;
-let redisClientPromise: Promise<RedisClient> | null = null;
 
-function getRedisClient(): Promise<RedisClient> {
-  if (!REDIS_URL) return Promise.reject(new Error("REDIS_URL is not set"));
-  if (!redisClientPromise) {
-    const client = createClient({ url: REDIS_URL }) as RedisClient;
-    client.on("error", (err) => console.error("[push-store] redis error:", err));
-    redisClientPromise = client
-      .connect()
-      .then(() => client)
-      .catch((err) => {
-        redisClientPromise = null;
-        throw err;
-      });
-  }
-  return redisClientPromise;
-}
+const getRedisClient = makeRedisGetter("push-store", REDIS_URL);
 
 // Repli mémoire (dev sans Redis) — par instance serverless.
 let memory: PushSubscriptionRecord[] = [];

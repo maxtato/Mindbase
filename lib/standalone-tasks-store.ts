@@ -3,7 +3,7 @@
 // une date de création. Persistées dans Redis avec repli en mémoire, comme les
 // autres stores légers (cf. account-store).
 
-import { createClient, type RedisClientType } from "redis";
+import { makeRedisGetter } from "@/lib/redis-client";
 import type { ChecklistItem, ProjectFile, Task, TaskStatus } from "@/lib/mock-data";
 import type { ProjectPriority } from "@/lib/project-taxonomy";
 import type { Workspace } from "@/lib/workspace";
@@ -18,24 +18,8 @@ export interface StandaloneTask extends Task {
 const REDIS_URL = process.env.REDIS_URL;
 const REDIS_KEY = "mindbase:standalone-tasks";
 
-type RedisClient = RedisClientType<Record<string, never>, Record<string, never>, Record<string, never>>;
-let redisClientPromise: Promise<RedisClient> | null = null;
 
-function getRedisClient(): Promise<RedisClient> {
-  if (!REDIS_URL) return Promise.reject(new Error("REDIS_URL is not set"));
-  if (!redisClientPromise) {
-    const client = createClient({ url: REDIS_URL }) as RedisClient;
-    client.on("error", (err) => console.error("[standalone-tasks] redis error:", err));
-    redisClientPromise = client
-      .connect()
-      .then(() => client)
-      .catch((err) => {
-        redisClientPromise = null;
-        throw err;
-      });
-  }
-  return redisClientPromise;
-}
+const getRedisClient = makeRedisGetter("standalone-tasks", REDIS_URL);
 
 // Repli mémoire (process) quand Redis est absent (dev local sans REDIS_URL).
 let memory: StandaloneTask[] = [];

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "redis";
+import { createRedisClient } from "@/lib/redis-client";
 
 // Endpoint de debug pour vérifier l'état du store Redis en production.
 // GET /api/debug/kv-status
@@ -20,7 +20,8 @@ export async function GET() {
 
   let probe: { ok: boolean; readback?: unknown; error?: string } = { ok: false };
   if (process.env.REDIS_URL) {
-    const client = createClient({ url: process.env.REDIS_URL });
+    const client = createRedisClient(process.env.REDIS_URL);
+    client.on("error", () => {});
     try {
       await client.connect();
       const stamp = Date.now().toString();
