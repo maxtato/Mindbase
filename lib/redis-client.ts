@@ -68,3 +68,23 @@ export function makeRedisGetter(label: string, url: string | undefined) {
     return clientPromise;
   };
 }
+
+// Garde la base « active » : les offres gratuites (Redis Cloud, Upstash)
+// suppriment ou archivent une base qui ne reçoit aucune commande pendant
+// quelques semaines. Appelé chaque jour par le cron (vercel.json).
+const KEEPALIVE_KEY = "mindbase:keepalive";
+const getKeepaliveClient = makeRedisGetter(
+  "keepalive",
+  process.env.REDIS_URL || process.env.KV_URL,
+);
+
+export async function pingRedis(): Promise<{ ok: boolean; at?: string; error?: string }> {
+  try {
+    const client = await getKeepaliveClient();
+    const at = new Date().toISOString();
+    await client.set(KEEPALIVE_KEY, at);
+    return { ok: true, at };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : String(error) };
+  }
+}

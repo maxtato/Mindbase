@@ -5,6 +5,7 @@ import { getSubscriptions, removeSubscriptions } from "@/lib/push/push-store";
 import { sendPush, isPushConfigured, type PushPayload } from "@/lib/push/web-push";
 import type { Workspace } from "@/lib/workspace";
 import { getServerT } from "@/lib/i18n/server";
+import { pingRedis } from "@/lib/redis-client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,8 +27,13 @@ export async function GET(request: Request) {
     }
   }
 
+  // Avant tout le reste : une écriture quotidienne pour que la base ne soit
+  // jamais considérée inactive (sinon suppression/archivage par l'hébergeur).
+  const keepalive = await pingRedis();
+  if (!keepalive.ok) console.error("[cron] keepalive Redis échoué:", keepalive.error);
+
   if (!isPushConfigured) {
-    return NextResponse.json({ ok: true, skipped: "push non configuré (VAPID_PRIVATE_KEY manquant)" });
+    return NextResponse.json({ ok: true, keepalive, skipped: "push non configuré (VAPID_PRIVATE_KEY manquant)" });
   }
 
   // Agrégation des compteurs + top action, tous espaces confondus.

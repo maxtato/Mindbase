@@ -12,15 +12,16 @@ export async function GET() {
   const env = {
     isVercel: Boolean(process.env.VERCEL),
     nodeEnv: process.env.NODE_ENV,
-    hasRedisUrl: Boolean(process.env.REDIS_URL),
+    hasRedisUrl: Boolean(process.env.REDIS_URL || process.env.KV_URL),
     hasKvRestApiUrl: Boolean(process.env.KV_REST_API_URL),
     hasUpstashRedisRestUrl: Boolean(process.env.UPSTASH_REDIS_REST_URL),
     matchingEnvVarNames: matching,
   };
 
   let probe: { ok: boolean; readback?: unknown; error?: string } = { ok: false };
-  if (process.env.REDIS_URL) {
-    const client = createRedisClient(process.env.REDIS_URL);
+  const redisUrl = process.env.REDIS_URL || process.env.KV_URL;
+  if (redisUrl) {
+    const client = createRedisClient(redisUrl);
     client.on("error", () => {});
     try {
       await client.connect();
@@ -38,7 +39,7 @@ export async function GET() {
       }
     }
   } else {
-    probe = { ok: false, error: "REDIS_URL not set" };
+    probe = { ok: false, error: "REDIS_URL / KV_URL not set" };
   }
 
   return NextResponse.json({ env, probe });

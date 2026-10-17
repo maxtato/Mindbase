@@ -597,7 +597,7 @@ const IS_READONLY_FS = Boolean(process.env.VERCEL) || process.env.NODE_ENV === "
 // son propre cache mémoire, ce qui causait des 404 aléatoires quand
 // l'utilisateur naviguait sur une instance qui n'avait jamais vu la
 // création/mutation. On lit REDIS_URL injecté par Vercel.
-const REDIS_URL = process.env.REDIS_URL;
+const REDIS_URL = process.env.REDIS_URL || process.env.KV_URL;
 const REDIS_AVAILABLE = Boolean(REDIS_URL);
 const REDIS_KEY = "mindbase:projects";
 

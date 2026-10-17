@@ -4,7 +4,7 @@
 import { makeRedisGetter } from "@/lib/redis-client";
 import type { PushSubscriptionRecord } from "@/lib/push/web-push";
 
-const REDIS_URL = process.env.REDIS_URL;
+const REDIS_URL = process.env.REDIS_URL || process.env.KV_URL;
 const REDIS_KEY = "mindbase:push:subscriptions";
 
 
