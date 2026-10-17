@@ -12,14 +12,14 @@ export async function GET() {
   const env = {
     isVercel: Boolean(process.env.VERCEL),
     nodeEnv: process.env.NODE_ENV,
-    hasRedisUrl: Boolean(process.env.REDIS_URL || process.env.KV_URL),
+    hasRedisUrl: Boolean(process.env.KV_URL || process.env.REDIS_URL),
     hasKvRestApiUrl: Boolean(process.env.KV_REST_API_URL),
     hasUpstashRedisRestUrl: Boolean(process.env.UPSTASH_REDIS_REST_URL),
     matchingEnvVarNames: matching,
   };
 
   let probe: { ok: boolean; readback?: unknown; error?: string } = { ok: false };
-  const redisUrl = process.env.REDIS_URL || process.env.KV_URL;
+  const redisUrl = process.env.KV_URL || process.env.REDIS_URL;
   if (redisUrl) {
     const client = createRedisClient(redisUrl);
     client.on("error", () => {});

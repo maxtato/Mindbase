@@ -75,7 +75,7 @@ export function makeRedisGetter(label: string, url: string | undefined) {
 const KEEPALIVE_KEY = "mindbase:keepalive";
 const getKeepaliveClient = makeRedisGetter(
   "keepalive",
-  process.env.REDIS_URL || process.env.KV_URL,
+  process.env.KV_URL || process.env.REDIS_URL,
 );
 
 export async function pingRedis(): Promise<{ ok: boolean; at?: string; error?: string }> {

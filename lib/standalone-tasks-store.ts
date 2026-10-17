@@ -15,7 +15,7 @@ export interface StandaloneTask extends Task {
   createdAt: string;
 }
 
-const REDIS_URL = process.env.REDIS_URL || process.env.KV_URL;
+const REDIS_URL = process.env.KV_URL || process.env.REDIS_URL;
 const REDIS_KEY = "mindbase:standalone-tasks";
 
 

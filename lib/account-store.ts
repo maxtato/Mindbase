@@ -15,7 +15,7 @@ export interface AccountProfile {
   plan: AccountPlan;
 }
 
-const REDIS_URL = process.env.REDIS_URL || process.env.KV_URL;
+const REDIS_URL = process.env.KV_URL || process.env.REDIS_URL;
 const REDIS_KEY = "mindbase:profile";
 
 // Par défaut "pro" : le compte propriétaire existant garde tout l'accès.
